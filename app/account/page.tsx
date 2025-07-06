@@ -365,7 +365,7 @@ export default function AccountPage() {
                             Payment (PayPal Setting)
                         </h2>
                         <Button className="w-full bg-emerald-500 text-black hover:bg-emerald-600">
-                            Link your PayPal Account 2
+                            Link your PayPal Account
                         </Button>
                     </Card>
                 </div>
