@@ -1,0 +1,48 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+flowchart TD
+    A[Homepage] --> B[SignUp and Google SignIn]
+    B --> C{User Role Decision}
+    
+    C -->|Admin| D[Admin Panel]
+    C -->|Free User| E[Explore Platform]
+    C -->|PRO User| F[PRO Dashboard]
+    
+    %% Admin Panel Breakdown
+    D --> G[User Management]
+    D --> H[Melody Management]
+    D --> I[Sample Pack Management]
+    D --> J[Payments and Subscriptions]
+    D --> K[Statistics]
+    D --> L[Content Management]
+    
+    %% Free User Flow
+    E --> M[View Homepage with Emerald Accent]
+    M --> N[Explore Melodies]
+    N --> O[Filter and Search (Popularity, Genre, BPM, etc)]
+    O --> P[Select Melody]
+    P --> Q[Download Melody]
+    Q --> R[Display Legal Agreement]
+    R --> S[Accept Agreement]
+    S --> T[Generate PDF with Collaboration Details]
+    S --> U[Prompt Upgrade for Premium Features]
+    
+    %% PRO User Flow
+    F --> V[Access Advanced Analytics (Real-time or 30-min refresh)]
+    F --> W[Manage Profile and Subscriptions]
+    F --> X[Purchase Sample Packs]
+    X --> Y[Checkout via PayPal (3% commission)]
+    X --> Z[View Sales History]
+    
+    %% Marketplace Common Flow
+    N --> AA[Access Marketplace]
+    AA --> AB[Purchase Sample Packs via PayPal]
+    AB --> AC[Process Payment and Commission]
+    
+    %% Subscription Management for All Users
+    E --> AD[Manage Profile and Subscriptions]

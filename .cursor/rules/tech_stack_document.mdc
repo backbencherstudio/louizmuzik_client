@@ -1,0 +1,90 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Melody Collab Tech Stack Document
+
+This document explains the technology choices for Melody Collab using plain language. Our aim is to ensure that anyone can understand how each component contributes to the overall project, regardless of technical expertise.
+
+## Frontend Technologies
+
+The frontend is what users see and interact with. Here’s how we build a friendly and responsive interface:
+
+- **React**
+  - Builds a dynamic user experience and helps us update content quickly in real time.
+- **Next.js**
+  - Enhances React by allowing for server-side rendering, which means faster page loads and a smoother experience when navigating the site.
+- **Styling and UI Libraries** (with our custom color themes such as Emerald green for highlights and Zinc darks for backgrounds)
+  - Our tailored styling provides consistency with the Emerald accents and dark themes, ensuring that the design is not only visually appealing but also easy to read and navigate.
+- **Cursor** (Advanced IDE tool integration)
+  - Boosts developer productivity during frontend development by offering real-time suggestions and streamlining code management.
+
+These choices help create a fast, attractive, and user-friendly interface. Whether filtering melodies by BPM, genre, or instrument, users get a smooth, intuitive experience.
+
+## Backend Technologies
+
+The backend handles all the behind-the-scenes tasks such as data storage, processing requests, and ensuring security. The components include:
+
+- **Node.js & Express**
+  - Provides a robust server environment. Express simplifies routing and handling API calls so that data flows seamlessly between the frontend and backend.
+- **Firebase**
+  - Manages user authentication (email/password and Google Sign-In) and takes care of securely storing user-related data. This central authentication system makes it easier to manage different user roles like Admin, Free User, and PRO User.
+- **Supabase**
+  - Acts as our database solution, ensuring fast and scalable storage and retrieval of data, from track metadata to user profile information.
+
+These backend choices ensure that all functionalities—from uploading melodies to generating PDFs—operate reliably and efficiently.
+
+## Infrastructure and Deployment
+
+To ensure that Melody Collab runs smoothly and remains reliable, we have carefully chosen our infrastructure components:
+
+- **Hosting Platforms**
+  - Cloud-based hosting solutions provide reliable performance and scalability so the platform can grow with our user base.
+- **CI/CD Pipelines**
+  - Automated testing and deployment pipelines ensure that updates or bug fixes are rolled out reliably and quickly.
+- **Version Control Systems (Git)**
+  - Helps manage changes and track development progress, making collaboration among team members efficient.
+
+These infrastructural decisions guarantee that our platform is always up-to-date, consistently high-performing, and able to quickly adapt to new requirements.
+
+## Third-Party Integrations
+
+To add extra functionality without building everything from scratch, we integrate several third-party services:
+
+- **Stripe & PayPal**
+  - **Stripe**: Used for handling subscription payments, ensuring easy, secure, and reliable membership transactions.
+  - **PayPal**: Facilitates transactions for sample packs and other digital products purchased in the marketplace. Direct payments to sellers use PayPal, while the platform retains a 3% commission on each sale.
+- **Firebase Authentication**
+  - Simplifies and secures the login process, managing both email/password and Google Sign-In.
+
+These integrations allow us to focus on the unique features of Melody Collab while leveraging well-established, secure payment and authentication services.
+
+## Security and Performance Considerations
+
+Security and performance are essential to provide a safe and fast user experience. We incorporate:
+
+- **Authentication and Data Protection**
+  - Firebase handles secure user sign-ins, protecting personal information. We also ensure that communication between the frontend and backend is secure.
+- **Server-side Rendering and Optimized API Responses**
+  - Next.js and Express help improve load times and overall responsiveness, keeping the experience smooth for users even during heavy traffic.
+- **Payment Security**
+  - Both Stripe and PayPal come with built-in security measures to protect financial data during transactions.
+
+These measures ensure that all data is secure and that the site performs well even as usage grows.
+
+## Conclusion and Overall Tech Stack Summary
+
+Melody Collab uses a blend of modern technologies that work together harmoniously to deliver a smooth and secure experience:
+
+- **Frontend**: React and Next.js provide dynamic and quick-loading interfaces that leverage custom styling for a uniquely branded experience.
+- **Backend**: Node.js, Express, Firebase, and Supabase form the backbone of our application, ensuring data integrity and smooth interactions across the platform.
+- **Infrastructure**: Cloud hosting, automated CI/CD pipelines, and version control make our platform scalable, reliable, and easy to maintain.
+- **Third-Party Integrations**: Stripe and PayPal handle payments securely, while Firebase manages authentication, reducing the complexity of securing our users' data.
+- **Security and Performance**: Focused on protecting user data and ensuring fast load times across all interactions, these measures ensure a safe and responsive user experience.
+
+By combining these technologies, Melody Collab efficiently connects music producers while facilitating seamless collaboration, secure transactions, and an intuitive user experience. This carefully chosen tech stack sets our platform apart, ensuring it is robust, scalable, and user-friendly.
+
+We hope this document clarifies our technology choices and the benefits each component brings to creating a dynamic and engaging platform for musical collaboration.

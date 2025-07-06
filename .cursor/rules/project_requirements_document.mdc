@@ -1,0 +1,187 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Melody Collab Project Requirements Document
+
+## 1. Project Overview
+
+Melody Collab is a platform built specifically for music producers who want to collaborate, share, and monetize their work. Producers can upload melodies, collaborate with others, and sell digital products such as sample packs. A standout feature is that every time a melody is downloaded, a PDF is automatically generated to document the collaboration percentage, ensuring transparency and formalizing agreements between parties.
+
+The project is being built to connect producers, streamline creative collaboration, and offer a secure and transparent digital marketplace. Key objectives include enabling both free and PRO users to access tailored functionalities—from basic uploads and downloads to advanced analytics dashboards and product sales—and ensuring smooth payment integration via Stripe and PayPal. Success will be measured by user growth, active collaborations, streamlined transactions with a fixed commission (3% on sales), and high user engagement on both the creative and administrative sides.
+
+## 2. In-Scope vs. Out-of-Scope
+
+**In-Scope:**
+
+*   User authentication using Email/Password and Google Sign-In (managed with Firebase).
+*   Three user roles: Admin, Free User, and PRO User with distinct privileges.
+*   Melody upload feature that generates a PDF (using provided HTML templates) for collaboration agreements.
+*   Integrated digital marketplace for sample packs (grid view, demo audio, audio preview, cover, pricing).
+*   Payment integrations: Stripe for memberships and both Stripe/PayPal for marketplace transactions.
+*   Automated commission management (3% fee from each sale).
+*   Advanced search and filtering in the "Explorar Melodías" section (by Popularity, Genres, BPM, Instruments, Key, and Artist Type).
+*   Interactive dashboards for PRO users with real-time or 30-minute refreshable analytics (plays, downloads, sales, followers).
+*   Profile pages for producers with bio, social links, and a showcase of uploaded content.
+*   Account management (edit profile, change password, subscription management, linking PayPal for PRO users).
+*   Administrative panel with comprehensive user, melody, and product management including moderation capabilities.
+
+**Out-of-Scope:**
+
+*   Two-factor authentication or additional advanced security measures beyond Firebase.
+*   Email notifications for every minor event (only key notifications, such as purchase confirmations, are prioritized).
+*   Extensive third-party data visualization integrations outside simple interactive graphs.
+*   Complex marketing automation aside from the basic "Feed Personalizado" and in-platform prompts.
+*   Development of mobile-specific native apps; the focus is on web and desktop experiences.
+*   Custom layouts behind the automatically generated PDF—the layout will use the provided HTML template with no additional design overhauls.
+
+## 3. User Flow
+
+A new user lands on Melody Collab’s visually engaging homepage that leverages Emerald accents and dark Zinc backdrops. Here, they are greeted with an overview of the platform’s community and features, with clear calls to action to sign up or log in using email/password or Google Sign-In. Upon registration via Firebase, the user transitions smoothly to a personalized home view where they see featured melodies, sample packs, and updates from producers.
+
+Once signed in, the journey continues to the "Explorar Melodías" section where the user can search and filter melodies using various criteria such as Popularity, Genres, BPM, Instruments, Key, and Artist Type. When a user selects a melody, they are taken to a detailed view with metadata, a waveform preview, and a download option that triggers a modal. In this modal, users need to accept a legal collaboration agreement before downloading the melody along with an auto-generated PDF containing collaboration details. Users can also browse a dedicated marketplace, add products to a cart, and proceed with checkout via PayPal (for marketplace sales) or Stripe (for membership payments).
+
+## 4. Core Features
+
+*   **User Roles & Authentication:**
+
+    *   Multiple user types (Admin, Free, and PRO) with specific access rights.
+    *   Email/Password and Google Sign-In managed by Firebase.
+
+*   **Melody Upload & PDF Generation:**
+
+    *   Upload melodies and sample packs with audio demos, cover art, and metadata.
+    *   Automatically generate a PDF containing essential collaboration details (split percentage, date/time, and producer names).
+
+*   **Marketplace Integration:**
+
+    *   Display sample packs in a grid view with demo audio, cover images, descriptions, and prices.
+    *   Payment processing via PayPal for marketplace purchases (direct payment to sellers with a 3% commission fee taken by Melody Collab).
+
+*   **Advanced Search & Filtering:**
+
+    *   Filter melodies by Popularity, Genres, BPM, Instruments, Key, and Artist Type.
+
+*   **Dashboard for PRO Users:**
+
+    *   Metrics including followers, plays, downloads, and sales.
+    *   Interactive graphs that update in real time or every 30 minutes.
+    *   Exportable data and advanced content management.
+
+*   **Profile & Directory:**
+
+    *   Public producer profiles with bio, social networks, uploaded melodies, and sample packs.
+    *   Verified badge and enhanced features for PRO users.
+
+*   **Account & Subscription Management:**
+
+    *   Manage profile, password, and subscription via a dedicated user settings page.
+    *   Seamless upgrade from Free to PRO with a 7-day free trial and simple subscription handling.
+
+*   **Checkout & Order Management:**
+
+    *   Shopping cart functionality with clear product previews and secure payment gateways.
+    *   Order confirmation pages with immediate download options and email receipts.
+
+*   **Legal Agreement Modal for Downloads:**
+
+    *   Enforce acceptance of collaboration terms and generate compliant PDF agreements.
+
+*   **Administrative Panel:**
+
+    *   Full backend control for user management (filter, modify, or block users).
+    *   Content moderation for melodies and sample packs with review, approval, or deletion options.
+    *   Tracking payment histories, subscription statuses, and general platform statistics.
+
+## 5. Tech Stack & Tools
+
+*   **Frontend Frameworks/Languages:**
+
+    *   React or Next.js for building a dynamic client-side application that offers smooth navigation and real-time updates.
+
+*   **Backend Frameworks/Languages:**
+
+    *   Node.js with Express for server-side functionality and RESTful API management.
+
+*   **Authentication & Database:**
+
+    *   Firebase for user authentication (Email/Password, Google Sign-In) and potentially for real-time data needs.
+    *   Supabase may be considered for additional database functionalities.
+
+*   **Payment Integrations:**
+
+    *   Stripe for membership subscriptions.
+    *   PayPal for product purchases in the marketplace.
+
+*   **PDF Generation:**
+
+    *   A server-side or third-party PDF generation library that uses provided HTML templates to generate the collaboration PDF.
+
+*   **IDE/Plugin Integrations:**
+
+    *   Cursor: An advanced IDE for AI-powered coding with real-time suggestions will be leveraged during development for speed and accuracy.
+
+## 6. Non-Functional Requirements
+
+*   **Performance:**
+
+    *   Fast loading times for the landing page and dynamic content sections.
+    *   Real-time updates on the PRO dashboard or refresh intervals set to a maximum of 30 minutes.
+    *   Quick checkout and payment processing actions without delays.
+
+*   **Security:**
+
+    *   Secure handling of user data with Firebase authentication.
+    *   Payment data processed securely through Stripe and PayPal.
+    *   Strict adherence to data protection regulations and ensuring that all PDF generation reflects accurate collaboration details.
+
+*   **Compliance:**
+
+    *   Ensure that the legal agreement for downloads is compliant with common digital collaboration regulations.
+    *   Store user and transaction data following best industry practices.
+
+*   **Usability:**
+
+    *   Intuitive user navigation and design consistency using Emerald accents and dark Zinc themes.
+    *   Clear prompts when accessing premium features to facilitate seamless upgrades.
+    *   Responsive design adaptable for various desktop screen sizes.
+
+## 7. Constraints & Assumptions
+
+*   The system assumes availability and stability of Firebase for authentication and real-time database requirements.
+*   There is a dependency on reliable payment gateways (Stripe and PayPal) for handling transactions.
+*   The PDF generation will rely on an existing HTML template, so the design is fixed to that template.
+*   The 3% commission on sales is static and will not be adjusted dynamically; it is assumed to be similar for all transactions.
+*   The analytics dashboard is expected to provide real-time updates or refresh every 30 minutes, which might depend on data volume and server load.
+*   There is no plan for two-factor authentication or other advanced security measures beyond basic Firebase authentication.
+
+## 8. Known Issues & Potential Pitfalls
+
+*   **API Rate Limits & Performance:**
+
+    *   Firebase or third-party APIs may impose rate limits. Ensure that the system gracefully handles potential delays or exceeding limits.
+
+*   **Payment Gateway Downtime:**
+
+    *   Temporary service disruptions from Stripe or PayPal could impact the purchase flow. Implement robust error handling and clear user messaging in these cases.
+
+*   **PDF Generation Complexity:**
+
+    *   Converting the provided HTML into a properly formatted PDF might have edge cases (e.g., special characters or layout issues). Early testing and fallback mechanisms should be considered.
+
+*   **Scalability of Real-Time Analytics:**
+
+    *   The real-time or 30-minute refresh intervals on the dashboard could impact performance if the data volume increases significantly. Consider caching strategies or incremental data updates.
+
+*   **User Role Management & Access Control:**
+
+    *   Ensuring that Free users do not accidentally access PRO-only functionalities will require precise role validation checks throughout the application.
+
+*   **Moderation Tools in the Admin Panel:**
+
+    *   Balancing automated moderation with manual checks can be challenging. Initially, implement basic moderation with manual overrides, and later integrate more advanced automated reviews if needed.
+
+This document serves as the main blueprint for developing Melody Collab and will support subsequent detailed documents (Tech Stack, Frontend Guidelines, Backend Structure, App Flow, File Structure, IDE rules, etc.). Every section has been explained in plain language, ensuring that each part of the project is fully understood and leaves no room for guesswork.

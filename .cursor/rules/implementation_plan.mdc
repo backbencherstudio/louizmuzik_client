@@ -1,0 +1,105 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Implementation plan
+
+## Phase 1: Environment Setup
+
+1. **Prevalidation:** Check if the current directory already contains a project (look for an existing `package.json` or project-specific folders). If yes, skip project initialization steps. (Reference: Project Description: General Setup)
+2. **Node.js Version Check:** Validate that Node.js v20.2.1 is installed. Run `node -v` and confirm the version. If not installed, download and install Node.js v20.2.1. (Reference: Tech Stack: Core Tools)
+3. **Project Initialization:** If no project exists, initialize a new Node project by running `npm init -y` in the project root. (Reference: Project Description: General Setup)
+4. **IDE - Cursor Environment Setup:** Create a `.cursor` directory in the project root if it does not already exist. (Reference: IDE: Cursor Setup)
+5. **Create Configuration File:** Inside `.cursor`, create a file named `mcp.json` if it does not already exist. Open the file for editing. (Reference: IDE: Cursor Setup)
+6. **Add MCP Configuration (macOS):** If you are on macOS, add the following configuration to `mcp.json`:
+   ```json
+   { "mcpServers": { "supabase": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-postgres", "<connection-string>"] } } }
+   ```
+   (Reference: IDE: Cursor Setup)
+7. **Add MCP Configuration (Windows):** If you are on Windows, use the following configuration instead:
+   ```json
+   { "mcpServers": { "supabase": { "command": "cmd", "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-postgres", "<connection-string>"] } } }
+   ```
+   (Reference: IDE: Cursor Setup)
+8. **Display Connection String Link:** Inform the user to obtain their Supabase MCP connection string by visiting: [Supabase MCP Connection Guide](https://supabase.com/docs/guides/getting-started/mcp#connect-to-supabase-using-mcp). After obtaining the connection string, replace `<connection-string>` in the configuration with the actual value. (Reference: IDE: Cursor Setup)
+9. **MCP Active Status Check:** Navigate to Settings/MCP within Cursor. Confirm that the server shows a green active status, indicating a successful connection. (Reference: IDE: Cursor Setup)
+10. **Firebase & Supabase Config Prevalidation:** Ensure that configuration files for Firebase (for authentication) and for Supabase (for database connectivity) are present. Create placeholder files (e.g., `firebase.config.js`, `.env.supabase`) if not already existing. (Reference: Project Description: Authentication & Database)
+
+## Phase 2: Frontend Development
+
+11. **Next.js 14 Setup:** Create a new Next.js project using Next.js 14 (note: Next.js 14 is recommended for compatibility with current AI coding tools). Run: 
+    ```bash
+    npx create-next-app@14 melody-collab-frontend
+    ```
+    (Reference: Tech Stack: Frontend)
+12. **Tailwind CSS Integration:** In the newly created Next.js project, install Tailwind CSS and initialize configuration by following the Tailwind CSS docs. Ensure that Tailwind is configured to use Emerald Green accents (`text-emerald-500`) and Dark Zinc themes (`bg-zinc-950`, `bg-zinc-900`, `bg-zinc-900/50`, `border-zinc-800`, `text-zinc-400`). (Reference: Branding & Design)
+13. **Folder Structure Setup:** Create directories for components, pages, and styles if not automatically generated. For example, create `/components` for shared UI elements and `/pages` for routing. (Reference: Tech Stack: Frontend)
+14. **Firebase Configuration:** Create a Firebase configuration file (e.g., `/frontend/firebase/firebase.js`) to initialize Firebase for Email/Password and Google Sign-In authentication. (Reference: Project Description: Authentication)
+15. **Authentication UI Components:** Create React components for Login and Signup forms in `/components/Auth`. Ensure these components support both Email/Password and Google Sign-In. (Reference: Project Description: Authentication)
+16. **Routing Setup:** Implement routing in Next.js by creating pages such as:
+    - `/pages/index.js` for Home
+    - `/pages/explorar.js` for the "Explorar Melodías" search and filtering interface
+    - `/pages/upload.js` for melody uploads
+    - `/pages/dashboard.js` for PRO user analytics dashboard
+    - `/pages/admin.js` for the Admin Panel
+    (Reference: Key Functionalities: User Roles, PRO Dashboard, Admin Panel)
+17. **UI Styling:** Apply Tailwind CSS classes in components and pages to reflect the Emerald Green accents, Dark Zinc background themes, and White primary text as specified. (Reference: Branding & Design)
+18. **Component Validation:** Run the development server (`npm run dev`) and verify that pages load and that UI components (e.g., buttons, inputs) display the correct styles and routing works. (Reference: Frontend Development)
+
+## Phase 3: Backend Development
+
+19. **Backend Project Setup:** In the project root, create a `/backend` directory and initialize a new Node.js project by running `npm init -y` inside `/backend`. (Reference: Tech Stack: Backend)
+20. **Install Dependencies:** Install Express by running `npm install express` and other required libraries such as `cors`, `body-parser`, and relevant Firebase Admin SDK if needed. (Reference: Tech Stack: Backend)
+21. **Server Setup:** Create a main server file (`/backend/server.js`) to configure the Express server. (Reference: Project Description: General Setup)
+22. **Supabase Connection:** Configure the backend to connect to the Supabase database. Use the Supabase connection string (ensure it matches the one used in the Cursor MCP configuration). Store this value securely, for example in an `.env` file in `/backend`. (Reference: Tech Stack: Authentication & Database)
+23. **Authentication Endpoints:** Create API endpoints for authentication:
+    - POST `/api/auth/register` for user registration
+    - POST `/api/auth/login` for user login
+    These endpoints should integrate with Firebase authentication. (Reference: Project Description: Authentication)
+24. **Melody Upload & PDF Generation Endpoint:** Create an endpoint, e.g., POST `/api/melodies/upload`, to handle melody uploads and trigger the generation of a collaboration agreement PDF. Use a server-side or third-party PDF generation library that accepts an HTML template. (Reference: Key Functionalities: Melody Upload & Collaboration PDF)
+25. **Marketplace Endpoints:** Create API endpoints for sample pack marketplace transactions:
+    - GET `/api/marketplace/products` to fetch sample packs
+    - POST `/api/marketplace/purchase` to process purchases via PayPal
+    Ensure that upon a purchase, a 3% commission is calculated. (Reference: Key Functionalities: Marketplace & Commission)
+26. **Search & Filtering Endpoint:** Create a GET endpoint at `/api/melodies` that supports query parameters for filtering by Popularity, Genres, BPM, Instruments, Key, and Artist Type. (Reference: Key Functionalities: Search & Filtering)
+27. **Analytics Dashboard Endpoint:** For PRO users, create an endpoint (e.g., GET `/api/analytics`) that returns analytics data (followers, plays, downloads, sales) and supports updates in real time or every 30 minutes. (Reference: Key Functionalities: PRO User Dashboard)
+28. **Admin Panel Endpoints:** Develop administrative endpoints for managing users, melodies, sample packs, payments, and categories. For example, implement:
+    - GET `/api/admin/users`
+    - PATCH `/api/admin/users/:id`
+    - GET `/api/admin/melodies`
+    - DELETE `/api/admin/melodies/:id`
+    (Reference: Admin Panel Features)
+29. **Payment Processing Integration:** Integrate Stripe for subscription management (subscriptions at $9.99/month with a 7-day free trial) and PayPal for marketplace transactions (direct to seller). Create endpoints to manage these transactions, ensuring secure handling of API keys and secrets. (Reference: Key Functionalities: Subscription & Payments)
+30. **Role-Based Access Control:** Implement middleware in Express to enforce different access levels (Admin, Free User, PRO User) across endpoints. (Reference: Key Functionalities: User Roles)
+31. **Backend Validation:** Test endpoints using tools like Postman or CURL. For example, test the authentication endpoints and ensure they return the correct statuses. (Reference: Backend Development)
+
+## Phase 4: Integration
+
+32. **API Integration in Frontend:** In the Next.js project, create an `/frontend/services` directory and implement API clients (using axios or fetch) to interact with backend endpoints (e.g., authentication, melody upload, marketplace transactions). (Reference: App Flow: Integration)
+33. **Authentication Flow Integration:** Connect the frontend Login and Signup components to the backend authentication endpoints, ensuring proper Firebase token handling and session management. (Reference: Project Description: Authentication)
+34. **Melody and PDF Flow:** Integrate the melody upload component with the backend `/api/melodies/upload` endpoint. Validate that upon successful upload, a PDF collaboration agreement is generated and downloadable. (Reference: Key Functionalities: Melody Upload & Collaboration PDF)
+35. **Search & Filtering Integration:** Ensure the "Explorar Melodías" page calls the GET `/api/melodies` endpoint with appropriate query parameters and displays the filtered results. (Reference: Key Functionalities: Search & Filtering)
+36. **Payment Flow Integration:** Integrate Stripe and PayPal payment flows in the frontend. Validate that purchases and subscription sign-ups trigger calls to the correct backend endpoints and that commission calculations are applied. (Reference: Key Functionalities: Payments)
+37. **Real-time Analytics Update:** Ensure the PRO dashboard in the frontend periodically fetches data from `/api/analytics` (real-time or every 30 minutes) and updates the interactive graphs. (Reference: Key Functionalities: PRO User Dashboard)
+38. **Integration Validation:** Perform end-to-end testing by simulating user flows (login, upload, purchase, analytics view) to confirm communication between frontend and backend. (Reference: App Flow: Integration)
+
+## Phase 5: Deployment
+
+39. **Environment Variables Setup:** Consolidate all environment variables for production (e.g., Supabase connection string, Firebase config, Stripe and PayPal API keys) and store them securely. (Reference: Backend Development)
+40. **Backend Deployment:** Deploy the backend Express server to your chosen Node.js hosting service. Ensure that the environment variables are correctly configured. (Reference: Tech Stack: Deployment)
+41. **Frontend Deployment:** Deploy the Next.js 14 frontend project to a platform that supports Next.js (such as Vercel). Ensure that Tailwind CSS and routing configurations are preserved in production. (Reference: Tech Stack: Frontend)
+42. **MCP Verification in Production:** After deployment, verify that the Supabase MCP server remains connected by checking the green active status in Cursor’s Settings/MCP. (Reference: IDE: Cursor Setup)
+43. **Post-Deployment Testing:** Run comprehensive end-to-end tests to simulate key user flows: user registration/login, melody upload with PDF generation, marketplace purchase (with commission calculation), and analytics dashboard updates. (Reference: Q&A: Pre-Launch Checklist)
+44. **Admin Panel Verification:** Log into the admin panel and confirm that all administrative functionalities (user management, melody management, sample pack management, payment tracking, and analytics) are working as expected. (Reference: Admin Panel Features)
+45. **Security Testing:** Verify that role-based access control correctly restricts endpoints and that API keys and secrets are securely managed. (Reference: Admin Panel Features: Security)
+
+## Final Validation and Testing
+
+46. **UI/UX Review:** Perform a final review of the frontend UI ensuring that Emerald Green accents, Dark Zinc backgrounds, and White primary text are consistent across the application. (Reference: Branding & Design)
+47. **Cross-Browser Testing:** Test the application on multiple browsers to ensure compatibility and responsive design. (Reference: Frontend Development)
+48. **Performance Monitoring:** Implement basic performance monitoring to check load times, especially on pages with interactive graphs and PDF generation functionality. (Reference: PRO User Dashboard)
+49. **Documentation Update:** Ensure that all configuration files, API endpoints, and integration steps are well-documented for future maintenance. (Reference: Project Description: General Setup)
+50. **Final Deployment Check:** Conduct a final round of tests in the production environment to confirm that all systems (authentication, PDF generation, payment processing, analytics, and admin panel moderation) are operating as intended. (Reference: Q&A: Pre-Launch Checklist)

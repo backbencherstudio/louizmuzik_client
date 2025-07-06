@@ -1,0 +1,182 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Backend Structure Document
+
+This document provides an overview of the backend architecture and infrastructure for the Melody Collab project. It explains how different components work together to deliver a scalable, secure, and high-performance experience.
+
+## 1. Backend Architecture
+
+The backend is built using a modular design relying on Node.js and Express. Here are the main points:
+
+*   **Framework & Language:**
+
+    *   Node.js for the runtime
+    *   Express for building web APIs
+
+*   **Design Patterns:**
+
+    *   Model-View-Controller (MVC) for structured code organization and separation of concerns
+    *   RESTful API design for clear and standardized communication with the frontend
+
+*   **Key Attributes:**
+
+    *   **Scalability:** Designed to handle increasing numbers of users and requests by leveraging modular design and horizontally scalable components in the infrastructure.
+    *   **Maintainability:** Clear separation of business logic, routing, and data management ensures that future changes and updates are straightforward.
+    *   **Performance:** Lightweight Node.js combined with efficient routing and middleware guarantees fast and responsive API calls.
+
+## 2. Database Management
+
+Data is managed using Supabase, a service offering a PostgreSQL database (SQL). This system handles the following:
+
+*   **Database Type:**
+
+    *   SQL database powered by PostgreSQL
+
+*   **Data Storage and Access:**
+
+    *   Organized into tables to support key features like user profiles, melodies, sample packs, transactions, and admin data.
+    *   Optimized queries and indexes are used to ensure fast retrieval of analytics and search filtering for the "Explore Melodies" section.
+
+*   **Data Management Practices:**
+
+    *   Regular backups and versioning
+    *   Consistent database schema updates as the project evolves
+    *   Use of Supabase’s built-in authentication and security features for data access
+
+## 3. Database Schema
+
+For clarity, here is a human-readable overview of the PostgreSQL database schema:
+
+*   **Users Table:**
+
+    *   Stores user information such as email, name, role (Admin, Free, PRO), and subscription status
+    *   Linked with Firebase for authentication
+
+*   **Melodies Table:**
+
+    *   Contains file references, metadata (genre, BPM, key, instruments), and upload status
+    *   Stores collaborations details for PDF generation
+
+*   **Marketplace Table:**
+
+    *   Manages sample packs including product details, prices, and vendor information
+    *   Tracks transactions and associated commissions
+
+*   **Analytics Table:**
+
+    *   Stores data related to plays, downloads, and sales
+    *   Supports PRO dashboard with near real-time or 30-minute refresh insights
+
+*   **Legal Agreements Table:**
+
+    *   Captures timestamped user acceptance of the collaboration terms
+    *   References specific melody downloads
+
+## 4. API Design and Endpoints
+
+APIs are built as RESTful endpoints using Express. Key details include:
+
+*   **API Structure:**
+
+    *   Endpoints are organized based on resource type (e.g., users, melodies, marketplace, analytics)
+    *   Clear separation of concerns ensures each endpoint handles a specific task
+
+*   **Key Endpoints Include:**
+
+    *   **/api/users:** Handles user registration, profile updates, and subscription management
+    *   **/api/melodies:** Facilitates uploading, editing, retrieval, and deletion of melodies
+    *   **/api/download:** Triggers legal agreement modal and PDF generation upon melody download
+    *   **/api/marketplace:** Manages sample pack listings, purchases through PayPal, and commission calculations
+    *   **/api/analytics:** Provides data for dashboard insights, particularly for PRO users
+    *   **/api/admin:** Offers a suite of management tools for user accounts, melodies, and product listings
+
+## 5. Hosting Solutions
+
+The backend is hosted in a cloud environment for maximum reliability and scalability. Details include:
+
+*   **Cloud Provider:**
+
+    *   A major provider such as AWS, Google Cloud, or Azure is employed (exact choice depends on organizational needs).
+
+*   **Benefits of the Chosen Hosting: **
+
+    *   **Reliability:** Guaranteed uptime and performance through managed services and redundancy
+    *   **Scalability:** Easy to scale resources up or down based on demand
+    *   **Cost-Effectiveness:** Pay-as-you-go model with efficient resource management
+
+## 6. Infrastructure Components
+
+Various infrastructure components ensure the seamless delivery of the Melody Collab backend services. These include:
+
+*   **Load Balancers:**
+
+    *   Distribute incoming traffic across multiple server instances to prevent overload
+
+*   **Caching Mechanisms:**
+
+    *   Implement in-memory caches using services like Redis to store frequently accessed data
+
+*   **Content Delivery Networks (CDNs):**
+
+    *   Serve static assets, ensuring fast delivery to end-users regardless of location
+
+*   **Additional Components:**
+
+    *   Auto-scaling groups to automatically adjust resource allocation
+    *   Managed database services from Supabase to handle PostgreSQL operations efficiently
+
+## 7. Security Measures
+
+Security is a top priority at Melody Collab, with several layers protecting data and services:
+
+*   **Authentication:**
+
+    *   Managed by Firebase, ensuring secure login using Email/Password and Google Sign-In
+
+*   **Authorization:**
+
+    *   Role-based access control to differentiate between Admin, Free, and PRO users
+
+*   **Data Encryption:**
+
+    *   Data in transit is secured using HTTPS/SSL
+    *   Sensitive user data is encrypted at rest in the database
+
+*   **Additional Practices:**
+
+    *   Regular audits and automated security updates
+    *   Use of secure payment processing (Stripe for subscriptions and PayPal for marketplace transactions) to protect sensitive financial interactions
+
+## 8. Monitoring and Maintenance
+
+To ensure reliability and performance, the following practices are in place:
+
+*   **Monitoring Tools:**
+
+    *   Cloud provider monitoring services (like AWS CloudWatch, Google Stackdriver, or Azure Monitor)
+    *   Application-level logging to track API usage, errors, and performance bottlenecks
+
+*   **Maintenance Strategies:**
+
+    *   Scheduled updates and patches to keep software up-to-date
+    *   Automated backup routines for the PostgreSQL database using Supabase
+    *   Regular performance reviews and load testing to pre-emptively address issues
+
+## 9. Conclusion and Overall Backend Summary
+
+The backend for Melody Collab is designed to provide a secure, scalable, and high-performance service to support collaboration among music producers. Here is a recap:
+
+*   **Backend Architecture:** Built with Node.js and Express using a modular and scalable design.
+*   **Database Management:** Utilizes Supabase with PostgreSQL to structuredly store and manage data.
+*   **API Design:** RESTful APIs with clearly defined endpoints for users, melodies, marketplace, analytics, and admin functions.
+*   **Hosting:** Cloud-based hosting ensures reliability and auto-scaling to meet varying demand.
+*   **Infrastructure:** Involves load balancers, caching, and CDNs to optimize performance and user experience.
+*   **Security:** Incorporates Firebase authentication, role-based access control, and secure payment integrations.
+*   **Monitoring:** Uses comprehensive monitoring and maintenance practices to ensure the backend remains robust and up-to-date.
+
+This backend setup not only meets the current needs of Melody Collab but is also designed to grow with the platform, ensuring a seamless and efficient experience for all users.

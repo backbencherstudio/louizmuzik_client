@@ -1,0 +1,640 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🧑‍💻 Authentication & User Registration
+
+In Melody Collab, users can create an account using their email and password or sign in with their Google account. When a user registers for the first time, their profile is automatically created and stored in the platform’s database.
+
+### Sign-in Options:
+
+- **Email & Password:** Users fill out a sign-up form, and their credentials are verified through Firebase.
+- **Google Sign-In:** If users choose this method, Firebase securely handles the entire authentication process. The platform creates a user profile automatically upon first login.
+
+Once registered, the user can:
+
+- Complete their profile with details such as artist name, country, social media links, and profile picture.
+- Access platform features depending on their account type (Free or PRO).
+
+# **Melodies – Uploading, Downloading & Licensing**
+
+Melody Collab allows producers to upload their original melodies and share them with others for collaboration. These melodies are displayed publicly across the platform, where other users can explore, preview, and download them.
+
+**Uploading a Melody**
+
+When a user uploads a melody:
+
+- The original audio file (usually in .wav format) is securely stored on the server. This high-quality version will be used when other users download the melody.
+- To improve the listening experience across the platform, the uploaded .wav file is automatically converted to a lightweight .mp3 version using an internal converter already integrated into the platform.
+- The .mp3 version is used for fast streaming and previewing in sections like “Browse All Melodies.”
+- The platform also collects important metadata such as the melody title, BPM, key, genre, instruments used, and the collaboration percentage (e.g., 50%).
+- Once submitted, the melody is published to the public browsing section, the user’s profile, and the feeds of users who follow them.
+- Free users have a limited number of uploads per month, while PRO users can upload unlimited melodies.
+
+**Downloading a Melody**
+
+When a user downloads a melody for collaboration:
+
+- A PDF license is automatically generated during the download process.
+- This license includes key information such as:
+    - Melody name and metadata
+    - Original producer’s full name and alias
+    - Username of the downloader
+    - The agreed collaboration percentage
+    - A timestamp of the download
+- The PDF serves as a legal record confirming the collaboration agreement between both users.
+
+**Collaboration Agreement Modal**
+
+Before downloading a melody, users are presented with a modal showing the full collaboration terms. They must agree by checking a confirmation box. Only after accepting the agreement are the download buttons for the audio file and the license PDF enabled.
+
+This process ensures transparency in collaborations and protects the rights of the original creator while providing a smooth and fast experience for users listening to melodies on the platform.
+
+# **Sample Packs & Marketplace**
+
+The Marketplace is the section where producers can sell their sample packs and other digital products directly through the platform. Only PRO users are allowed to upload and sell products, but all users (Free and PRO) can browse and purchase items.
+
+**Uploading a Sample Pack**
+
+When a PRO user uploads a new sample pack:
+
+- They are required to provide a title, price (minimum $0.99), a description, and cover artwork.
+- They upload the product as a .zip file containing all the samples or content they wish to sell.
+- An audio demo (usually .wav or .mp3) must also be uploaded so users can preview the pack before purchasing.
+- Optionally, the producer can add a YouTube or Vimeo video to showcase the pack in more detail.
+- The uploaded product is stored securely on the server, and its metadata is saved to the database.
+- Once published, the pack appears in the Marketplace and on the producer’s public profile under the "Premium Packs" section.
+
+**Purchasing a Sample Pack**
+
+When a user (Free or PRO) buys a sample pack:
+
+- The payment is processed using PayPal, and the funds go directly to the PayPal account linked to the producer who is selling the pack.
+- After the payment is successfully completed, the buyer gets immediate access to download the .zip file.
+- The purchase is also reflected in the user’s personal "My Downloads" section, where they can re-download the pack at any time.
+- The platform also stores this transaction to be displayed later in the PRO user’s sales analytics dashboard.
+
+**Browsing the Marketplace**
+
+All users can explore the Marketplace, search for products, and use filters to find packs by genre, instrument, price, and more.
+
+- A featured banner at the top highlights selected sample packs.
+- Packs are displayed in a grid format with information like cover image, title, producer name, and price.
+- Users can preview the demo audio or click on a pack to see the full product page with detailed descriptions and additional media.
+
+**Product Page Details**
+
+Each sample pack has its own product page where users can:
+
+- Listen to the demo audio.
+- Watch a promotional video (if available).
+- Read a full description of what’s included.
+- View metadata like genre, file size, and category.
+- Add the product to their cart and proceed to checkout.
+
+This system allows PRO users to monetize their work directly within the Melody Collab ecosystem while giving all users access to high-quality digital products from other creators.
+
+# **PRO Membership & Subscription Flow**
+
+Melody Collab offers a PRO membership that unlocks advanced features for music producers who want to get the most out of the platform. This includes the ability to sell sample packs, upload unlimited melodies, access detailed analytics, and appear in featured areas of the site.
+
+**How to Become a PRO Member**
+
+Free users can upgrade to PRO by visiting the “Become a PRO” page:
+
+- Users are offered a **7-day free trial**, during which they get **full access to all PRO features**.
+- During the trial, users can explore every tool available to PRO members without restrictions.
+- To start the trial, users must select a payment method via **Stripe** (credit/debit card) or **PayPal**.
+- If the user does **not complete the payment after the trial ends**, the account is automatically downgraded back to a **Free account**, and access to PRO features is removed.
+- If the payment is successfully processed after the trial, the user keeps their PRO access seamlessly without interruption.
+
+**Subscription Management**
+
+From the account settings page, users with an active PRO plan can:
+
+- View their current plan status: trialing, active, canceled, or expired.
+- See the next billing date and list of PRO benefits.
+- Update or change their payment method (Stripe or PayPal).
+- Cancel the subscription at any time. The PRO access will remain active until the end of the billing period, after which it will revert to a Free plan.
+- Receive confirmation emails when subscribing, canceling, or updating billing info.
+
+**Billing & Security**
+
+- Future versions of the platform will include a billing history view for PRO users.
+- All sensitive billing data is securely processed by Stripe or PayPal. Melody Collab does not store any credit card information.
+
+**Access Control**
+
+- The system automatically checks the subscription status to determine access to PRO-only features such as uploading and selling sample packs, accessing the dashboard, and profile customization.
+- If a Free user attempts to access these areas, a modal is displayed encouraging them to upgrade and showing the benefits of becoming a PRO member.
+
+# **User Profiles & Producer Directory**
+
+Melody Collab provides public profiles for all registered users, allowing them to showcase their identity, music catalog, and build a presence within the platform. This section helps producers connect with each other and discover new collaborators or products.
+
+**Producer Profile Page**
+
+Each user has their own profile page that includes:
+
+- Artist name, profile picture, and country
+- Number of followers and total melodies uploaded
+- A "Follow" button that allows others to subscribe to their content
+- Social media links such as YouTube, Instagram, TikTok, and BeatStars
+- A short bio or description written by the user
+- A “Verified” badge for PRO users
+
+**Content Displayed on the Profile:**
+
+1. **Premium Packs (Visible only for PRO users):**
+    
+    This section displays all the sample packs or digital products uploaded by the producer, including cover image, title, and price.
+    
+2. **Melody Table:**
+    
+    A searchable table that shows all the melodies uploaded by the user, along with metadata such as BPM, key, genre, and instruments used. Users can preview and download melodies directly from here.
+    
+
+**Access:**
+
+- Both Free and PRO users can view and customize their own profile.
+- All users can visit other profiles, follow/unfollow them, and preview melodies.
+- Only PRO users can display and sell digital products on their profiles.
+
+**Producer Directory Page**
+
+This section allows users to explore all registered producers on the platform.
+
+- At the top, there is a featured section that highlights the top producers on the platform (based on followers I think)
+- Below that, all producers are displayed in a card-based layout, each showing the name, country, and profile picture.
+- Users can click on any producer to visit their full profile.
+
+**Search & Filters:**
+
+- Users can search for producers by name or alias.
+- A country filter allows narrowing results by location.
+- A “Global View” option resets all filters to show every producer.
+
+# **Dashboard & Analytics (PRO Only)**
+
+The Dashboard is an exclusive area available only to PRO users. It provides producers with personal performance metrics, sales insights, and useful data to help them grow and track their progress on the platform.
+
+**Access Control**
+
+- If a Free user tries to access the dashboard, a modal appears informing them that this section is only available to PRO members.
+- PRO users gain full access immediately after upgrading or starting their free trial.
+
+**Main Dashboard View**
+
+Once inside, PRO users can see a personalized summary of their account, including:
+
+- Total number of followers
+- Total melody plays (streams)
+- Total melody downloads
+- Total product sales (sample packs or digital products)
+
+These numbers update in real-time as users interact with their content.
+
+**Data Visualization**
+
+The dashboard includes interactive charts and graphs that help users understand how their content is performing. Users can select different timeframes to view trends, including:
+
+- Last 7 days
+- Last 30 days
+- Last 90 days
+- Custom date range
+
+This data-driven view helps producers measure growth, identify what’s working, and optimize their strategy within Melody Collab.
+
+# **Feed – Followed Producers Content**
+
+The Feed is a personalized section that helps users stay updated with new content from the producers they follow. It’s designed to make the experience more relevant by showing only the uploads from trusted or favorite creators.
+
+**How It Works**
+
+- The feed displays new melodies and digital products (like sample packs) uploaded by producers the user is currently following.
+- This section is updated in real-time as followed producers add new content.
+- The user can follow or unfollow producers from their profile or directly from other parts of the platform like the browse page or marketplace.
+
+**Feed Layout**
+
+The feed is divided into two parts:
+
+1. **Latest Products (Top Section):**
+    
+    A scrollable or grid-style view that shows all the newest sample packs or digital products from followed producers. Each item displays:
+    
+    - Cover image
+    - Product name
+    - Producer name
+    - Price
+    - Buttons to preview the demo or visit the full product page
+2. **Melodies Table (Bottom Section):**
+    
+    A table showing the latest melodies from followed producers. Each row includes:
+    
+    - Preview/play button
+    - Waveform display
+    - Metadata (BPM, key, genre)
+    - Favorite and download buttons
+
+**User Access**
+
+- Available to both Free and PRO users.
+- Interactions like previewing, downloading, and favoriting function the same as in the general browsing sections.
+
+This feature helps users save time, discover new uploads from people they trust, and stay engaged with their favorite producers.
+
+# **Favorites – Saved Items**
+
+The Favorites section allows users to save melodies and sample packs they like so they can easily access them later. It acts as a personal collection of bookmarked content across the platform.
+
+**How It Works**
+
+- When browsing melodies or products, users can click the heart icon to mark an item as a favorite.
+- The heart icon fills in to confirm the item has been saved.
+- Favorites are stored in the database and synced with the user’s account, so they remain saved across different devices and sessions.
+
+**Favorites Page Layout**
+
+The Favorites page is organized similarly to other browsing sections, but it only displays items the user has marked as favorites. It includes:
+
+- A table of favorite melodies, each showing:
+    - Preview/play button
+    - Waveform display
+    - BPM, key, genre
+    - Artist name
+    - Download button (if available)
+    - Favorite icon (can be clicked again to remove the item)
+- A grid of favorite sample packs, each showing:
+    - Cover image
+    - Title
+    - Producer name
+    - Price
+    - Preview or product page button
+
+**Filters**
+
+Users can filter their favorites by:
+
+- Type (Melody or Sample Pack)
+- Genre
+- BPM
+- Instrument
+- Key
+- Artist Type
+
+**Access**
+
+- Available to both Free and PRO users.
+- Users must be logged in to view or manage their favorites.
+
+This section gives users a quick way to revisit the content they’re most interested in, making it easier to organize inspiration or plan future collaborations and purchases.
+
+# **My Downloads – Purchased & Downloaded Content**
+
+The "My Downloads" section gives users access to all the content they’ve acquired through the platform — whether they downloaded a melody for collaboration or purchased a sample pack from the marketplace.
+
+**How It Works**
+
+As users interact with the platform by downloading or buying content, each action is tracked and displayed in their personal downloads page. This provides a clear history of everything they've collected over time.
+
+**Downloaded Melodies**
+
+- When a user downloads a melody, it appears in this section automatically.
+- Each melody includes:
+    - Play/preview button
+    - Waveform display
+    - BPM, key, genre
+    - Producer name
+    - Download button to get the original WAV file again
+    - Option to re-download the PDF collaboration license
+- The license PDF confirms the collaboration agreement and includes:
+    - Melody name and metadata
+    - Producer’s full name and alias
+    - Downloading user’s alias
+    - Collaboration percentage
+    - Timestamp of the download
+
+**Purchased Sample Packs**
+
+- Every sample pack or digital product a user has purchased is also listed here.
+- Each product card includes:
+    - Cover image
+    - Product title
+    - Producer name
+    - Price
+    - Button to re-download the .zip file
+
+**Filters**
+
+To help users find specific items, filters are available for:
+
+- Type (Melody or Product)
+- Genre
+- BPM
+- Instrument
+- Key
+- Artist Type
+
+**Access**
+
+- This section is available to both Free and PRO users.
+- Users must be logged in to view or manage their downloads.
+- All downloads are tied to the user’s account for permanent access.
+
+This section serves as a personal hub where users can manage their licenses, retrieve their files anytime, and stay organized with their past activity on the platform.
+
+# **Shopping Cart & Checkout Flow**
+
+Melody Collab is planning to include a full shopping cart and checkout system that allows users to purchase sample packs and digital products directly from other producers on the platform.
+
+> ⚠️ Important Note for Developers:
+> 
+> 
+> This shopping cart and checkout system is **not yet implemented** on the platform. It is a feature that needs to be fully developed.
+> 
+> The purchase flow and user interface described below represent the intended behavior and functionality.
+> 
+
+**Shopping Cart**
+
+- Users will be able to add sample packs to their cart before purchasing.
+- The cart should display:
+    - Product title
+    - Cover image
+    - Producer name
+    - Price
+    - Option to remove individual items
+- A sidebar should summarize:
+    - Subtotal
+    - Taxes note (if applicable)
+    - Total amount in USD
+    - Button to proceed to checkout
+    - Option to continue shopping
+- For guests, the cart will be saved temporarily (e.g. in session or local storage).
+- For logged-in users, the cart will be saved in the database and synced across devices.
+
+**Checkout Page**
+
+- During checkout, users will enter billing information (name and email).
+- The **only payment method available for product purchases** will be **PayPal**.
+- The user will be redirected to PayPal to securely complete the payment.
+- Upon successful payment, the user will be redirected to a **Thank You page**, where they can immediately download the product.
+
+**Post-Purchase Behavior**
+
+- A confirmation email will be sent with:
+    - Order summary
+    - Download link
+    - Receipt or invoice
+- The purchased item will also appear in the user’s **My Downloads** section for future access.
+
+**Payment Details**
+
+- **PayPal will be the only option for purchasing products from other producers.**
+- For subscriptions (PRO Membership), both **PayPal and Stripe** are supported.
+- Melody Collab does not store any sensitive payment information.
+
+This flow is designed to provide a secure, smooth shopping experience for users while enabling PRO producers to monetize their work through direct PayPal transactions.
+
+# **Thank You Page – Order Confirmation & Download**
+
+After a user successfully completes a purchase, they are redirected to the **Thank You Page**, which serves as the final step in the purchase flow. This page confirms the transaction and gives the user immediate access to the product they just bought.
+
+**What the Thank You Page Should Display:**
+
+1. **Success Message**
+    
+    A clear confirmation that the purchase was successful (e.g., “Thank you for your purchase!”).
+    
+2. **Order Details Table**
+    
+    A summary that includes:
+    
+    - Order number (e.g., #MC-2025-00123)
+    - Purchase date
+    - Total amount paid
+    - Payment method used (PayPal)
+3. **Download Section**
+    
+    A highlighted area that confirms the file is ready to download:
+    
+    - “Your download is ready”
+    - A button labeled **Download Now** that provides direct access to the product (usually a .zip file)
+4. **Security & Link Handling**
+    - The download link should be secure and, if possible, expire after a certain time or number of uses.
+    - Files are hosted on the server (e.g., Cloudways or similar storage solution).
+5. **Email Confirmation**
+    
+    Alongside the Thank You page, the system should automatically send a confirmation email to the user. The email includes:
+    
+    - Order summary
+    - Payment receipt
+    - A backup link to download the product
+6. **Navigation Options**
+    - A button like “Continue Shopping” should be available to redirect the user back to the marketplace or another relevant area of the platform.
+
+**Purpose of This Page**
+
+- Reinforces user trust with clear and instant confirmation.
+- Ensures the buyer receives what they paid for without delays.
+- Encourages further engagement through post-purchase navigation.
+
+# **Melody Upload Flow**
+
+Melody Collab allows all users (Free and PRO) to upload their original melodies to share with other producers and encourage collaboration. This feature is one of the core functionalities of the platform.
+
+**How It Works**
+
+When a user uploads a melody:
+
+- The user uploads a .wav file through a drag-and-drop interface or file selector.
+- The original .wav file is stored securely on the server. This is the version that will be available for other users to download later.
+- To ensure fast playback across the platform, the .wav file is automatically converted to a lighter .mp3 version using an internal audio converter already integrated into the platform.
+    - The .mp3 version is used for previews in the "Browse" section and other public views.
+    - This improves load speed and makes the experience smoother for all users.
+
+**Required Metadata**
+
+During the upload, the user must provide the following:
+
+- Melody title
+- BPM (beats per minute)
+- Musical key (e.g., C minor, A# major)
+- Genre(s)
+- Instrument(s) used
+- Artist Type (intended collaborator, e.g., beatmaker, composer)
+- Collaboration percentage (e.g., 50%) – this defines how royalties or credits should be split and is automatically added to the PDF license
+
+**Ownership Agreement**
+
+- The user must check a box confirming that the melody was created by them and that they hold all rights to it.
+- A disclaimer is displayed, stating that Melody Collab is not responsible for any legal issues caused by false ownership claims.
+
+**After Uploading**
+
+- The melody becomes publicly available in:
+    - The “Browse All Melodies” section
+    - The user’s public profile
+    - The feeds of followers
+- A waveform and preview player (using the .mp3) are generated automatically for playback.
+- The melody can now be downloaded by others with a license agreement in place (PDF generation on download).
+
+**Upload Limits**
+
+- Free users are limited to a certain number of melody uploads per month (e.g., 5).
+- PRO users can upload unlimited melodies without restrictions.
+
+This system makes it easy for producers to share their melodies with full transparency while protecting their ownership through licensing and metadata tracking.
+
+# **Sample Pack Upload Flow**
+
+PRO users on Melody Collab can upload and sell their own sample packs or digital products directly through the platform. This feature gives producers the opportunity to monetize their work and build a digital store inside their profile.
+
+> ⚠️ Note for Developers:
+> 
+> 
+> This upload flow is already available on the platform, but it will need to connect properly with the future shopping cart and download system once those are implemented.
+> 
+
+**How It Works**
+
+When a PRO user uploads a sample pack, they must complete a form with the following:
+
+1. **Product Title**
+    
+    The name of the sample pack or product.
+    
+2. **Price**
+    
+    Set in USD, with a minimum price of $0.99. Free products are not allowed.
+    
+3. **Cover Art**
+    
+    An image (JPG or PNG) that will visually represent the pack in the marketplace and product page.
+    
+4. **.ZIP File Upload**
+    
+    The actual sample pack file that contains the sounds, loops, or other content being sold. This is what buyers will download after completing their purchase.
+    
+5. **Audio Demo**
+    
+    A short .mp3 or .wav preview that lets users hear a sample of what’s inside the pack before buying.
+    
+6. **Promo Video (Optional)**
+    
+    A link to a YouTube or Vimeo video showing the content of the pack, how to use it, or who it’s for.
+    
+7. **Genres**
+    
+    Tags that define the musical styles the pack is suited for (e.g., Trap, Afrobeat, Lo-Fi).
+    
+8. **Description**
+    
+    A text field where the producer explains what the buyer will get (e.g., loops, one-shots, stems, folders, etc.).
+    
+9. **Ownership Confirmation**
+    
+    The producer must confirm they are the original creator and owner of the content in the pack.
+    
+
+**After Uploading**
+
+- The pack is saved in the database and made visible in:
+    - The **Marketplace**
+    - The **producer’s profile** under the Premium Packs section
+- The uploaded files are stored securely on the server (e.g., Cloudways)
+- The audio demo is used on the product page to allow users to preview before purchasing
+- When a user buys the product, they’ll be able to download the .zip file immediately
+
+**Access Control**
+
+- Only PRO users can upload and sell sample packs.
+- Free users can view, preview, and purchase products — but not upload or sell.
+
+# **Manage Account – User Settings Panel**
+
+The Manage Account page allows users to update their personal profile, manage their subscription, adjust security settings, and (for PRO users) link their PayPal account for marketplace payouts.
+
+**Sections Included**
+
+1. **Edit Your Profile**
+
+Users can customize their public profile by updating:
+
+- Display name and artist alias
+- Country or location
+- Social media links (BeatStars, Instagram, YouTube, TikTok)
+- Personal bio or description
+
+All updates are reflected instantly on the user's public profile page.
+
+1. **Password & Security**
+- Users can change their password by entering their current password and setting a new one.
+- This is handled securely through Firebase Authentication.
+1. **Subscription Management**
+
+This section displays:
+
+- The user's current plan (Free or PRO)
+- A summary of the benefits included in their plan
+- A “Manage Subscription” button that allows users to:
+    - Cancel or renew the subscription
+    - Switch the payment method (Stripe or PayPal)
+    - View upcoming billing dates
+
+When canceling, the subscription stays active until the end of the billing period. After that, the account is downgraded to Free, and access to PRO features is removed.
+
+1. **PayPal Settings (for PRO users)**
+- PRO users can link their PayPal account to receive payments from product sales in the marketplace.
+- Once linked, all future sales are automatically sent to the connected PayPal email.
+- Users can update or disconnect their PayPal account at any time.
+
+**Access**
+
+- All users (Free and PRO) can access the Manage Account page.
+- The PayPal settings and subscription tools are only visible to users who are currently PRO or eligible to upgrade.
+
+# **Subscription Panel & Cancellation Flow**
+
+The subscription management area allows PRO users to review and control everything related to their PRO membership — including billing details, payment methods, and cancellation.
+
+**Where It's Found**
+
+- This section is part of the **Manage Account** page.
+- It’s only visible to users with an active PRO membership or those currently in their 7-day free trial.
+
+**What the User Can See**
+
+- **Plan Name**: e.g. PRO Plan – $9.99/month
+- **Plan Status**: Trialing, Active, Canceled, or Expired
+- **Next Billing Date**: When the next charge will happen
+- **List of Benefits**: A reminder of what’s included in the PRO membership
+
+**Payment Method**
+
+- The panel shows the last 4 digits of the card on file (if using Stripe) or a confirmation of a connected PayPal account.
+- Users can change their payment method at any time.
+- A note is displayed confirming that payment information is encrypted and handled securely.
+
+**Billing History**
+
+- This section will eventually include a full history of payments made (e.g. date, amount, payment method, status).
+- At the moment, this is not yet implemented and will be part of a future update.
+
+**Canceling the Subscription**
+
+When a user chooses to cancel:
+
+- A button labeled **Cancel Subscription** is shown.
+- Once clicked, the system:
+    - Confirms that the current PRO access will remain active until the end of the billing cycle.
+    - Turns off auto-renewal.
+    - Sends a confirmation email.
+    - Updates the user's subscription status in the database.
+
+**Reactivating**
+
+- If the user re-subscribes before the current cycle ends, PRO access continues without interruption.
+- If they wait until after expiration, they must re-purchase the plan from the beginning.

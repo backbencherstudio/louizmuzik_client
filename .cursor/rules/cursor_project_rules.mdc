@@ -1,0 +1,103 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+## Project Overview
+
+*   **Type:** Music Collaboration Platform (Digital Marketplace & Collaboration)
+*   **Description:** A platform for music producers to upload, collaborate on, and sell music-related digital products such as sample packs and melodies. The system supports user roles including Admin, Free User, and PRO User with distinct privileges, integrates robust authentication (Email/Password & Google Sign-In via Firebase), and includes dynamic PDF generation for collaboration details based on an HTML template.
+*   **Primary Goal:** Enable seamless music collaboration and commerce by providing producers with a comprehensive platform that integrates file uploads, real-time analytics, secure payment processing, and efficient admin management.
+
+## Project Structure
+
+### Framework-Specific Routing
+
+*   **Directory Rules:**
+
+    *   [Next.js 14 (App Router)]: Utilizes the `app/[route]/page.tsx` conventions to structure nested routes and support server actions. Example routes include authentication, dashboard, and marketplace flows.
+    *   Example 1: "Next.js 14 (App Router)" → `app/auth/login/page.tsx` for user authentication flows.
+    *   Example 2: "Next.js (Pages Router)" → Not applicable in this project.
+    *   Example 3: "React Router 6" → Not used as the primary frontend routing solution.
+
+### Core Directories
+
+*   **Versioned Structure:**
+
+    *   [app/api]: Utilized for Next.js 14 API routes with built-in route handlers to manage backend interactions such as file uploads and payment processing.
+    *   [app/views]: Houses client-side components built with React, ensuring UI consistency with the Emerald Green and Dark Zinc design theme.
+
+### Key Files
+
+*   **Stack-Versioned Patterns:**
+
+    *   [app/dashboard/layout.tsx]: Implements the root layout for protected admin and PRO user pages.
+    *   [app/[user]/profile/page.tsx]: Provides dynamic routing for user profiles and account management.
+
+## Tech Stack Rules
+
+*   **Version Enforcement:**
+
+    *   next@14: App Router requirement enforced—no use of `getInitialProps`; nested route folders within the `app/` directory are mandatory.
+    *   express@4: Maintain RESTful API conventions with proper middleware and routing patterns.
+    *   firebase@[current]: Utilize Firebase for secure authentication and real-time database interactions.
+    *   stripe@[current]: Implement the latest Stripe API for subscription management and payment processing.
+    *   paypal@[current]: Integrate with current PayPal APIs for marketplace transactions, ensuring commission calculation (3% fee) is enforced.
+
+## PRD Compliance
+
+*   **Non-Negotiable:**
+
+    *   "Users can upload melodies with metadata and automatically generate a PDF with collaboration details." : Server-side PDF generation must be implemented using the provided HTML template.
+    *   "PRO dashboard must update in real-time or every 30 minutes." : Analytics must be optimized to reflect real-time data or scheduled refresh intervals.
+    *   "Marketplace commission is fixed at 3%." : Payment flows should automatically calculate and deduct a 3% commission from each sale.
+
+## App Flow Integration
+
+*   **Stack-Aligned Flow:**
+
+    *   Next.js 14 Auth Flow → `app/auth/login/page.tsx` should utilize server actions and integrate Firebase for authentication.
+    *   Melody Upload Flow → `app/melodies/upload/page.tsx` should manage file uploads, metadata collection, and trigger PDF generation for collaboration details.
+    *   Marketplace Checkout → `app/marketplace/checkout/page.tsx` must seamlessly integrate Stripe/PayPal payment processing.
+
+## Best Practices
+
+*   React/Next.js
+
+    *   Maintain state management with hooks and context where appropriate, leveraging Server Components for performance gains.
+    *   Adhere to modular component design, ensuring reusability and clear separation of concerns.
+    *   Prioritize accessibility, responsiveness, and consistency with the Emerald Green and Dark Zinc theme.
+
+*   Express.js
+
+    *   Implement robust error handling through middleware and logging mechanisms.
+    *   Utilize async/await patterns for proper promise handling and improved code readability.
+    *   Structure controllers and services separately to enforce clean, maintainable code.
+
+*   Firebase
+
+    *   Use secure authentication practices and enforce Firestore/Realtime Database security rules rigorously.
+    *   Manage tokens and user sessions with best practices in mind to protect sensitive data.
+    *   Regularly audit and update authentication flows to prevent vulnerabilities.
+
+*   Payment Integrations (Stripe/PayPal)
+
+    *   Validate and sanitize all incoming payment data to prevent fraud and ensure accuracy.
+    *   Integrate webhooks to monitor transaction statuses in real-time and handle asynchronous events.
+    *   Adhere to PCI compliance guidelines and secure all payment data transmissions.
+
+*   PDF Generation
+
+    *   Utilize server-side libraries to generate PDFs from HTML templates, ensuring that styling and layout match provided specifications.
+    *   Cache generated PDFs when appropriate to optimize performance and reduce server load.
+    *   Validate PDF content and styling for consistency across different devices and platforms.
+
+## Rules
+
+*   Derive folder/file patterns directly from techStackDoc versions.
+*   If Next.js 14 App Router: Enforce the `app/` directory with nested route folders.
+*   If Pages Router: Use `pages/*.tsx` flat structure (not applicable to this project).
+*   Mirror this logic for React Router, SvelteKit, etc. where applicable.
+*   Never mix version patterns (e.g., do not use `pages/` in App Router projects).
