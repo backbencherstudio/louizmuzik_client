@@ -58,6 +58,7 @@ export default function CheckoutPage() {
       // Redirect to success page or show success message
     }, 2000);
   };
+  const userId = "686378d1394a32f019c80030";
 
   return (
     <Layout>
@@ -210,6 +211,7 @@ export default function CheckoutPage() {
                             "http://localhost:5000/create-order",
                             {
                               amount,
+                              userId
                             }
                           );
                           return res.data.id;
