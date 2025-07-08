@@ -14,10 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Layout from "@/components/layout";
 import axios from "axios";
-import {
-  PayPalScriptProvider,
-  PayPalButtons,
-} from "@paypal/react-paypal-js";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 // Sample cart items data
 const cartItems = [
@@ -46,7 +43,7 @@ export default function CheckoutPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState("5");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,13 +199,34 @@ export default function CheckoutPage() {
 
                     <PayPalScriptProvider
                       options={{
-                        "client-id": "AVswCL11GjsPViCr50ojjbD8MR5rA-c9aJe_Z2gqKbe9wftYSC_soMsITBccidloPD-aCYR9e7g4kwS7",
+                        "client-id":
+                          "AVswCL11GjsPViCr50ojjbD8MR5rA-c9aJe_Z2gqKbe9wftYSC_soMsITBccidloPD-aCYR9e7g4kwS7",
                       }}
                     >
                       <PayPalButtons
                         createOrder={async () => {
                           const res = await axios.post(
-                            "http://localhost:5000/create-order",
+                            "http://localhost:5000/api/v1/payment/create-order",
+                            { amount, userId }
+                          );
+                          return res.data.data.id; 
+                        }}
+                        onApprove={async (data) => {
+                          const res = await axios.post(
+                            `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
+                          );
+                          alert("Payment successful!");
+                          console.log("✅", res.data);
+                        }}
+                        onError={(err) => {
+                          console.error("❌ PayPal Error", err);
+                          alert("Something went wrong");
+                        }}
+                      />
+                      {/* <PayPalButtons
+                        createOrder={async () => {
+                          const res = await axios.post(
+                            "http://localhost:5000/api/v1/payment/create-order",
                             {
                               amount,
                               userId
@@ -218,7 +236,7 @@ export default function CheckoutPage() {
                         }}
                         onApprove={async (data, actions) => {
                           const res = await axios.post(
-                            `http://localhost:5000/capture-order/${data.orderID}`
+                            `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
                           );
                           alert("Payment successful!");
                           console.log(222, res.data);
@@ -227,7 +245,7 @@ export default function CheckoutPage() {
                           console.error("PayPal Checkout onError", err);
                           alert("Something went wrong");
                         }}
-                      />
+                      /> */}
                     </PayPalScriptProvider>
                   </div>
                 </form>
