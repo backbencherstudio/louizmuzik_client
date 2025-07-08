@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
-  const [amount, setAmount] = useState("5");
+  const [amount, setAmount] = useState("14");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +55,24 @@ export default function CheckoutPage() {
       // Redirect to success page or show success message
     }, 2000);
   };
-  const userId = "686378d1394a32f019c80030";
+
+  const selectedData = [
+    {
+      packId: "686cdc0253d31046dcb179be",
+      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
+      price: 5,
+    },
+    // {
+    //   packId: "686cde0353d31046dcb179ce",
+    //   selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
+    //   price: 7,
+    // },
+    {
+      packId: "686cdc6853d31046dcb179c0",
+      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
+      price: 9,
+    },
+  ];
 
   return (
     <Layout>
@@ -207,9 +224,9 @@ export default function CheckoutPage() {
                         createOrder={async () => {
                           const res = await axios.post(
                             "http://localhost:5000/api/v1/payment/create-order",
-                            { amount, userId }
+                            { amount, selectedData }
                           );
-                          return res.data.data.id; 
+                          return res.data.data.id;
                         }}
                         onApprove={async (data) => {
                           const res = await axios.post(
