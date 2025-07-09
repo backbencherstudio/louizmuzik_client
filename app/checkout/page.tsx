@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
@@ -43,7 +44,7 @@ export default function CheckoutPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
-  const [amount, setAmount] = useState("14");
+  const [amount, setAmount] = useState("100");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,23 +57,49 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-  const selectedData = [
-    {
-      packId: "686cdc0253d31046dcb179be",
-      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-      price: 5,
-    },
+  const selectedData = [   // this data send to paypal  ( when a user select pack then create 2 array at a time)
     // {
-    //   packId: "686cde0353d31046dcb179ce",
-    //   selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
-    //   price: 7,
+    //   selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
+    //   price: 5,
     // },
     {
-      packId: "686cdc6853d31046dcb179c0",
+      selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
+      price: 50,
+    },
+    {
       selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-      price: 9,
+      price: 50,
     },
   ];
+
+  const selectedPackData = [   // this data send to database  ( when a user select pack then create 2 array at a time)
+    {
+      userId: "686dfc892603236db91b7857", //current user id
+      packId: "686cde0353d31046dcb179ce",
+      selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
+      price: 50,
+    },
+    {
+      userId: "686dfc892603236db91b7857", //current user id
+      packId: "686cdc6853d31046dcb179c0",
+      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
+      price: 50,
+    },
+  ];
+
+  const successFunction = async (data: any) => {
+    console.log("hitt");
+    console.log(81, data?.data?.id);
+    console.log(82, data?.data?.status); 
+
+    if (data.data.id && data?.data?.status === "COMPLETED") {
+      console.log(selectedPackData);
+      // ================================= after successful payment call here ( packPurchase post api ) and send the selected data 
+
+
+    }
+
+  };
 
   return (
     <Layout>
@@ -232,8 +259,10 @@ export default function CheckoutPage() {
                           const res = await axios.post(
                             `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
                           );
+
                           alert("Payment successful!");
                           console.log("✅", res.data);
+                          successFunction(res.data);
                         }}
                         onError={(err) => {
                           console.error("❌ PayPal Error", err);
