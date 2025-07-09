@@ -88,7 +88,6 @@ export default function CheckoutPage() {
   ];
 
   const successFunction = async (data: any) => {
-    console.log("hitt");
     console.log(81, data?.data?.id);
     console.log(82, data?.data?.status); 
 
@@ -261,8 +260,7 @@ export default function CheckoutPage() {
                           );
 
                           alert("Payment successful!");
-                          console.log("✅", res.data);
-                          successFunction(res.data);
+                          await successFunction(res.data);
                         }}
                         onError={(err) => {
                           console.error("❌ PayPal Error", err);
