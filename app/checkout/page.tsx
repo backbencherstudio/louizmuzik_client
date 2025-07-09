@@ -57,7 +57,8 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-  const selectedData = [   // this data send to paypal  ( when a user select pack then create 2 array at a time)
+  const selectedData = [
+    // this data send to paypal  ( when a user select pack then create 2 array at a time)
     // {
     //   selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
     //   price: 5,
@@ -72,7 +73,8 @@ export default function CheckoutPage() {
     },
   ];
 
-  const selectedPackData = [   // this data send to database  ( when a user select pack then create 2 array at a time)
+  const selectedPackData = [
+    // this data send to database  ( when a user select pack then create 2 array at a time)
     {
       userId: "686dfc892603236db91b7857", //current user id
       packId: "686cde0353d31046dcb179ce",
@@ -89,15 +91,12 @@ export default function CheckoutPage() {
 
   const successFunction = async (data: any) => {
     console.log(81, data?.data?.id);
-    console.log(82, data?.data?.status); 
+    console.log(82, data?.data?.status);
 
     if (data.data.id && data?.data?.status === "COMPLETED") {
       console.log(selectedPackData);
-      // ================================= after successful payment call here ( packPurchase post api ) and send the selected data 
-
-
+      // ================================= after successful payment call here ( packPurchase post api ) and send the selected data
     }
-
   };
 
   return (
@@ -250,6 +249,44 @@ export default function CheckoutPage() {
                         createOrder={async () => {
                           const res = await axios.post(
                             "http://localhost:5000/api/v1/payment/create-order",
+                            {
+                              amount,
+                              selectedData,
+                            }
+                          );
+                          return res.data.data.id;
+                        }}
+                        onApprove={async (data) => {
+                          try {
+                            const res = await axios.post(
+                              `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
+                            );
+
+                            alert("✅ Payment successful!");
+                            await successFunction(res.data);
+                          } catch (err: any) {
+                            const message =
+                              err?.response?.data?.message ||
+                              "❌ Payment failed due to an unknown error.";
+                            alert(`❌ Payment Failed: ${message}`);
+                            console.error(
+                              "💥 Detailed PayPal Error:",
+                              err?.response?.data
+                            );
+                          }
+                        }}
+                        onError={(err) => {
+                          console.error("❌ PayPal JS SDK Error:", err);
+                          alert(
+                            "❌ Something went wrong with PayPal integration. Try again later."
+                          );
+                        }}
+                      />
+
+                      {/* <PayPalButtons
+                        createOrder={async () => {
+                          const res = await axios.post(
+                            "http://localhost:5000/api/v1/payment/create-order",
                             { amount, selectedData }
                           );
                           return res.data.data.id;
@@ -266,7 +303,12 @@ export default function CheckoutPage() {
                           console.error("❌ PayPal Error", err);
                           alert("Something went wrong");
                         }}
-                      />
+                      /> */}
+
+                      {/* ===================================== */}
+                      {/* ===================================== */}
+                      {/* ===================================== */}
+
                       {/* <PayPalButtons
                         createOrder={async () => {
                           const res = await axios.post(
