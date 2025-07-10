@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Layout from '@/components/layout';
+import SubscribeForm from '../SubscribeForm/page';
 
 export default function ProPage() {
     return (
@@ -102,7 +103,9 @@ export default function ProPage() {
                                         </div>
                                     </div>
 
-                                    <Card className="border-0 bg-zinc-900/50 p-6">
+
+
+                                    {/* <Card className="border-0 bg-zinc-900/50 p-6">
                                         <form className="space-y-4">
                                             <div className="space-y-2">
                                                 <Label
@@ -162,7 +165,13 @@ export default function ProPage() {
                                                 Start Pro Trial
                                             </Button>
                                         </form>
-                                    </Card>
+                                    </Card> */}
+
+                                    <SubscribeForm amount={29.99} />
+
+                                    
+
+
                                 </div>
                             </div>
                         </div>
