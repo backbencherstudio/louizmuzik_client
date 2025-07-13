@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       userId: "686dfc892603236db91b7857", //current user id
       packId: "686cdc6853d31046dcb179c0",
       selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-      price: 50,
+      price: 45,
     },
   ];
 
