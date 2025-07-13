@@ -12,17 +12,30 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function ProPage() {
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState("15");
   const [loading, setLoading] = useState(false);
+
+  const paypalEmail = "sb-how9132896174@personal.example.com"
+  // const paypalEmail = "sb-veqyw44525281@personal.example.com"
 
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/subscribe", {
-        amount,
-      });
-      window.location.href = res.data.url; // Redirect to PayPal approval
+      const res = await axios.post(
+        "http://localhost:5000/api/v1/payment/paypalSubscription",
+        {
+          amount,
+          paypalEmail
+        }
+      );
+      console.log(res);
+      console.log(res?.data?.data);
+      console.log(res?.data?.data?.url);
+
+      window.location.href = res?.data?.data?.url; // Redirect to PayPal approval
     } catch (err) {
+      console.log(26, err);
+
       alert("Error creating subscription");
       console.error(err.response?.data || err.message);
     } finally {
