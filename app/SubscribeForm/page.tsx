@@ -65,7 +65,7 @@ const CheckoutForm = ({ amount }) => {
 
   return (
     <form onSubmit={handleSubmit} style={{ width: 400, margin: "auto" }}>
-      <h2>Subscribe - ${amount}/month</h2>
+      <h2>Subscribe = ${amount}/month</h2>
       <input
         type="email"
         placeholder="Enter your email"
