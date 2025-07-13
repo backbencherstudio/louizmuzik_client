@@ -12,11 +12,12 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function ProPage() {
-  const [amount, setAmount] = useState("15");
+  const [amount, setAmount] = useState("20");
   const [loading, setLoading] = useState(false);
 
-  const paypalEmail = "sb-how9132896174@personal.example.com"
-  // const paypalEmail = "sb-veqyw44525281@personal.example.com"
+  const paypalEmail = "sb-zusn732879516@personal.example.com"  // nafiz
+  // const paypalEmail = "sb-how9132896174@personal.example.com" // fozle rabbi
+  // const paypalEmail = "sb-veqyw44525281@personal.example.com" // shuvo
 
   const handleSubscribe = async () => {
     setLoading(true);
