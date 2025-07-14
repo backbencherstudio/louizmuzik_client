@@ -20,10 +20,13 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useSignupMutation } from '../store/api/authApis/authApi';
 
 export default function SignUpPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [country, setCountry] = useState('');
+
+    const [signup, { isLoading: isSigningUp }] = useSignupMutation();
 
     const countries = [
         'United States',
@@ -42,10 +45,22 @@ export default function SignUpPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        // TODO: Implement signup logic here
-        // This is a placeholder for the developer to implement MongoDB authentication
+        const formData = new FormData(e.target as HTMLFormElement);
+        
+        if (country) {
+            formData.append('country', country);
+        }
+        
+        const data = Object.fromEntries(formData);
 
-        setIsLoading(false);
+        try {
+            const response = await signup(data).unwrap();
+            console.log(response);
+        } catch (error) {
+            console.error('Signup failed:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -87,7 +102,7 @@ export default function SignUpPage() {
                             </Label>
                             <Input
                                 id="producerName"
-                                name="producerName"
+                                name="producer_name"
                                 type="text"
                                 placeholder="Enter your producer name"
                                 className="mt-1 bg-black/50 border-zinc-800 text-white placeholder:text-zinc-400 focus:border-emerald-500/50"
