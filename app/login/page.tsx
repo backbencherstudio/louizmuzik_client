@@ -13,17 +13,24 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useLoginMutation } from '../store/api/authApis/authApi';
 
 export default function LoginPage() {
-    const [isLoading, setIsLoading] = useState(false);
+
+    const [login, { isLoading: isLoggingIn }] = useLoginMutation();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsLoading(true);
+        const formData = new FormData(e.target as HTMLFormElement);
+        const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
 
-        // TODO: Implement MongoDB authentication here
-
-        setIsLoading(false);
+        try {
+            const response = await login({ email, password }).unwrap();
+            console.log('Login successful:', response);
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
     };
 
     return (
@@ -97,10 +104,10 @@ export default function LoginPage() {
 
                     <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoggingIn}
                         className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
                     >
-                        {isLoading ? 'Signing in...' : 'Sign in'}
+                        {isLoggingIn ? 'Signing in...' : 'Sign in'}
                     </Button>
 
                     <div className="relative">
