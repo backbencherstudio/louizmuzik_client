@@ -15,8 +15,8 @@ export default function ProPage() {
   const [amount, setAmount] = useState("20");
   const [loading, setLoading] = useState(false);
 
-  const paypalEmail = "sb-zusn732879516@personal.example.com"  // nafiz
-  // const paypalEmail = "sb-how9132896174@personal.example.com" // fozle rabbi
+  // const paypalEmail = "sb-zusn732879516@personal.example.com"  // nafiz
+  const paypalEmail = "sb-how9132896174@personal.example.com"; // fozle rabbi
   // const paypalEmail = "sb-veqyw44525281@personal.example.com" // shuvo
 
   const handleSubscribe = async () => {
@@ -26,7 +26,7 @@ export default function ProPage() {
         "http://localhost:5000/api/v1/payment/paypalSubscription",
         {
           amount,
-          paypalEmail
+          paypalEmail,
         }
       );
       console.log(res);
@@ -41,6 +41,18 @@ export default function ProPage() {
       console.error(err.response?.data || err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const paypalSubscriptionId = "I-N51GGNP5XHHS"
+
+  const handleCancelSubscription = async () => {
+    try {
+      const res = await axios.post(`http://localhost:5000/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`);
+      console.log("Subscription cancelled successfully");
+      alert("Subscription cancelled successfully");
+    } catch (err) {
+      console.error("Failed to cancel subscription", err);
     }
   };
 
@@ -212,6 +224,15 @@ export default function ProPage() {
 
                   {/* subscribtion with stripe  */}
                   <SubscribeForm amount={29.99} />
+                </div>
+
+                <div>
+                  <button onClick={handleCancelSubscription}
+                  className="border border-red-500 mt-4 rounded-xl p-4"
+                  >
+                    {" "}
+                    paypal subscription cansel{" "}
+                  </button>
                 </div>
               </div>
             </div>
