@@ -12,11 +12,11 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function ProPage() {
-  const [amount, setAmount] = useState("20");
+  const [amount, setAmount] = useState("15");
   const [loading, setLoading] = useState(false);
 
   // const paypalEmail = "sb-zusn732879516@personal.example.com"  // nafiz
-  const paypalEmail = "sb-how9132896174@personal.example.com"; // fozle rabbi
+  const email = "fozlerabbishuvo@gmail.com"; // fozle rabbi
   // const paypalEmail = "sb-veqyw44525281@personal.example.com" // shuvo
 
   const handleSubscribe = async () => {
@@ -26,7 +26,7 @@ export default function ProPage() {
         "http://localhost:5000/api/v1/payment/paypalSubscription",
         {
           amount,
-          paypalEmail,
+          email,
         }
       );
       console.log(res);
@@ -44,7 +44,7 @@ export default function ProPage() {
     }
   };
 
-  const paypalSubscriptionId = "I-N51GGNP5XHHS"
+  const paypalSubscriptionId = "I-1PJAFMCDFXK1"
 
   const handleCancelSubscription = async () => {
     try {
