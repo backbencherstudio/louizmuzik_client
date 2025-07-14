@@ -27,6 +27,10 @@ export default function LoginPage() {
 
         try {
             const response = await login({ email, password }).unwrap();
+
+            if (response.success) {
+                localStorage.setItem('token', response.data?.accessToken);
+            }
             console.log('Login successful:', response);
         } catch (error) {
             console.error('Login failed:', error);
