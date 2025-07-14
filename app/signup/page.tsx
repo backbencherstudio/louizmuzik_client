@@ -21,10 +21,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useSignupMutation } from '../store/api/authApis/authApi';
+import OtpVerification from '@/components/otp-verification';
 
 export default function SignUpPage() {
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [country, setCountry] = useState('');
+    const [showOtpVerification, setShowOtpVerification] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
 
     const [signup, { isLoading: isSigningUp }] = useSignupMutation();
 
@@ -43,7 +46,7 @@ export default function SignUpPage() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsLoading(true);
+        // setIsLoading(true);
 
         const formData = new FormData(e.target as HTMLFormElement);
         
@@ -55,13 +58,37 @@ export default function SignUpPage() {
 
         try {
             const response = await signup(data).unwrap();
-            console.log(response);
+            console.log('Signup successful:', response);
+            
+            // Store email and show OTP verification
+            setUserEmail(data.email as string);
+            setShowOtpVerification(true);
         } catch (error) {
             console.error('Signup failed:', error);
         } finally {
-            setIsLoading(false);
+            // setIsLoading(false);
         }
     };
+
+    const handleOtpVerificationSuccess = () => {
+        window.location.href = '/dashboard';
+    };
+
+    const handleBackToSignup = () => {
+        setShowOtpVerification(false);
+        setUserEmail('');
+    };
+
+    // Show OTP verification if signup was successful
+    if (showOtpVerification) {
+        return (
+            <OtpVerification
+                email={userEmail}
+                onVerificationSuccess={handleOtpVerificationSuccess}
+                onBack={handleBackToSignup}
+            />
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-black to-[#0f0f0f] relative overflow-hidden">
@@ -180,10 +207,10 @@ export default function SignUpPage() {
 
                     <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isSigningUp}
                         className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
                     >
-                        {isLoading ? 'Creating account...' : 'Create account'}
+                        {isSigningUp ? 'Creating account...' : 'Create account'}
                     </Button>
 
                     <div className="relative">
