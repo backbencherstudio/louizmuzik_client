@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
 import { useLoginMutation } from '../store/api/authApis/authApi';
 import { useRouter } from 'next/navigation';
 
@@ -30,10 +29,8 @@ export default function LoginPage() {
 
             if (response.success) {
                 localStorage.setItem('token', response.data?.accessToken);
-                console.log("user", response.data);
                 router.push('/');
             }
-            console.log('Login successful:', response.data);
         } catch (error) {
             console.error('Login failed:', error);
         }
