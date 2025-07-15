@@ -61,8 +61,8 @@ const CheckoutForm = ({ totalPrice }) => {
             });
             
             
-            if (response?.data?.customer_id) {
-                alert("Subscription created successfully!, check your email")
+            if (response?.data?.customerId) {
+                alert("Subscription created successfully!")
             }
         } catch (error) {
             console.error('Error creating subscription:', error);
