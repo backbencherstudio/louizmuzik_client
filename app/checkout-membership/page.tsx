@@ -222,7 +222,7 @@ export default function ProPage() {
                                     </Card> */}
 
                   {/* subscribtion with stripe  */}
-                  <SubscribeForm amount={29.99} />
+                  <SubscribeForm amount={10} />
                 </div>
 
                 <div>
