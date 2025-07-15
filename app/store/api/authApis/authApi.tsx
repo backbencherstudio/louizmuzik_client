@@ -73,7 +73,7 @@ export const authApi = baseApi.injectEndpoints({
       extraOptions: {
         skipToken: true,
       },
-      // keepUnusedDataFor: 3600,
+      keepUnusedDataFor: 3600,
     }),
   }),
 });
