@@ -19,7 +19,7 @@ export const baseApi = createApi({
   }),
   endpoints: () => ({}),
   tagTypes: [
-    "Users",
+    "User",
   ],
 });
 

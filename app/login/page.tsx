@@ -14,24 +14,26 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useLoginMutation } from '../store/api/authApis/authApi';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
 
     const [login, { isLoading: isLoggingIn }] = useLoginMutation();
-
+    const router = useRouter();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
-
         try {
             const response = await login({ email, password }).unwrap();
 
             if (response.success) {
                 localStorage.setItem('token', response.data?.accessToken);
+                console.log("user", response.data);
+                router.push('/');
             }
-            console.log('Login successful:', response);
+            console.log('Login successful:', response.data);
         } catch (error) {
             console.error('Login failed:', error);
         }

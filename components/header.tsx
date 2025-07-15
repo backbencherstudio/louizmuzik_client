@@ -6,11 +6,13 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useLoggedInUserQuery } from '@/app/store/api/authApis/authApi';
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isMobile = useMediaQuery('(max-width: 768px)');
-
+    const { data: user, error, isLoading } = useLoggedInUserQuery(null);
+    console.log("user data", user);
     return (
         <header className="w-full py-4 px-4 md:px-8 bg-black">
             <div className="container mx-auto flex items-center justify-between">
@@ -98,7 +100,13 @@ export function Header() {
                                 variant="outline"
                                 className="border-primary text-white hover:bg-primary hover:text-black"
                             >
-                                <Link href="/login">Log In</Link>
+                                {
+                                    user ? (
+                                        <Link href="/dashboard">Dashboard</Link>
+                                    ) : (
+                                        <Link href="/login">Log In</Link>
+                                    )
+                                }
                             </Button>
                             <Button
                                 asChild
