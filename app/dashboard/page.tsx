@@ -18,6 +18,7 @@ import {
     YAxis,
 } from 'recharts';
 import Layout from '@/components/layout';
+import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
 
 // Temporary mock user data
 const mockUser = {
@@ -30,6 +31,8 @@ export default function DashboardPage() {
     const [selectedTimeRange, setSelectedTimeRange] = useState('7days');
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(mockUser);
+    const { data: userData, error, isLoading: isLoadingUser } = useLoggedInUserQuery(null);
+    console.log("user data dashboard", userData);
 
     useEffect(() => {
         // Simulate loading dashboard data

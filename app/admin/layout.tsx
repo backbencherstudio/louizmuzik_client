@@ -10,6 +10,7 @@ import {
     Filter,
     LayoutDashboard,
 } from 'lucide-react';
+import ProtectedRoute from '@/Private/ProtectedRoute';
 
 interface SidebarItemProps {
     href: string;
@@ -97,7 +98,9 @@ export default function AdminLayout({
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto">{children}</main>
+            <main className="flex-1 overflow-auto">
+                <ProtectedRoute role="admin">{children}</ProtectedRoute>
+            </main>
         </div>
     );
 }

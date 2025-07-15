@@ -101,11 +101,7 @@ export function Header() {
                                 className="border-primary text-white hover:bg-primary hover:text-black"
                             >
                                 {
-                                    user ? (
-                                        <Link href="/dashboard">Dashboard</Link>
-                                    ) : (
-                                        <Link href="/login">Log In</Link>
-                                    )
+                                    user ? <Link href="/dashboard">Dashboard</Link> : <Link href="/login">Log In</Link>
                                 }
                             </Button>
                             <Button
