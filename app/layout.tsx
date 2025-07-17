@@ -4,6 +4,7 @@ import { inter } from "./fonts";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ReduxProvider } from "./reduxProvider";
+import ProtectedRoute from "@/Private/ProtectedRoute";
 
 export const metadata: Metadata = {
   title: "MelodyCollab - Collaborate with Top Music Producers",
@@ -23,7 +24,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`} suppressHydrationWarning>
         <ReduxProvider>
+        <ProtectedRoute role="user">
           <Providers>{children}</Providers>
+        </ProtectedRoute>
         </ReduxProvider>
       </body>
     </html>
