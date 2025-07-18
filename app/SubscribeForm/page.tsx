@@ -17,6 +17,7 @@ const CheckoutForm = ({ totalPrice }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [email, setEmail] = useState("fozlerabbishuvo@gmail.com");
+    const [customername, setCustomerName] = useState("Fozle Rabbi");
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
    
@@ -56,8 +57,10 @@ const CheckoutForm = ({ totalPrice }) => {
 
             const response = await axios.post('http://localhost:5000/api/v1/payment/stripeSubscription', {
                 email,
+                name : customername,
                 amount: totalPrice.toString(),
                 paymentMethodId: paymentMethod.id,
+                userId : "686378d1394a32f019c80030",
             });
             
             
