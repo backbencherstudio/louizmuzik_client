@@ -18,6 +18,14 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    resetPassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/sendOtpForResetPassword",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
 
     login: builder.mutation({
       query: (data) => ({
