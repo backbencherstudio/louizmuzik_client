@@ -127,7 +127,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-transparent">
       {/* Sidebar - Hidden on mobile */}
       <nav className="fixed left-0 top-0 hidden h-screen w-64 bg-zinc-950/80 backdrop-blur-md p-6 lg:block">
-        <div className="mb-8">
+        <Link href="/" className="mb-8">
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Melody%20Collab%20Final-01-wJ6u6o1bnpgNgz28mdTurjWFCWIgGe.png"
             alt="Melody Collab Logo"
@@ -136,7 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             priority
             className="mb-8 w-[70%]"
           />
-        </div>
+        </Link>
         <div className="mt-16 space-y-6">
           <NavLinks />
         </div>

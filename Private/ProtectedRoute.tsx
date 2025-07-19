@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       const userRole = userData?.data?.role;
       
       if (userRole !== "admin" && pathname.startsWith("/admin")) {
-        router.push("/dashboard");
+        router.push("/");
         return;
       }
     }
