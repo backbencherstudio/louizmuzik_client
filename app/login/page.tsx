@@ -14,6 +14,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLoginMutation } from '../store/api/authApis/authApi';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
 
@@ -30,9 +31,13 @@ export default function LoginPage() {
             if (response.success) {
                 localStorage.setItem('token', response.data?.accessToken);
                 router.push('/');
+            }else{
+                toast.error(response?.message);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Login failed:', error);
+            const errorMessage = error?.data?.message || error?.message || 'Failed to login';
+            toast.error(errorMessage);
         }
     };
 
