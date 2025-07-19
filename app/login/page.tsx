@@ -46,7 +46,7 @@ export default function LoginPage() {
 
             <div className="w-full max-w-md p-8 space-y-8 bg-gradient-to-br from-[#0f0f0f]/90 to-black/90 backdrop-blur-sm rounded-2xl border border-zinc-800 shadow-2xl relative z-10">
                 <div className="text-center">
-                    <div className="flex justify-center mb-4">
+                    <Link href="/" className="flex justify-center mb-4">
                         <Image
                             src="/isotype.png"
                             alt="MelodyCollab"
@@ -55,7 +55,7 @@ export default function LoginPage() {
                             className="h-8 w-8"
                             priority
                         />
-                    </div>
+                    </Link>
                     <h2 className="text-3xl font-bold text-white">
                         Welcome back
                     </h2>

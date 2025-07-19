@@ -1,5 +1,6 @@
 import { baseApi } from "../baseApi";
 import { jwtDecode } from "jwt-decode";
+import { useState, useEffect } from "react";
 
 // Extend JwtPayload to include custom properties
 interface CustomJwtPayload {
@@ -53,7 +54,11 @@ export const authApi = baseApi.injectEndpoints({
         const token = localStorage.getItem("token");
 
         if (!token) {
-          throw new Error("Token not found in localStorage");
+          // Return a special response instead of throwing an error
+          return {
+            url: "/auth/no-token", // This endpoint should return a 401 or handle no token case
+            method: "GET",
+          };
         }
 
         try {
@@ -90,3 +95,18 @@ export const {
   useResetPasswordMutation,
   useLoggedInUserQuery,
 } = authApi;
+
+// Custom hook to safely get logged in user
+export const useLoggedInUser = () => {
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token"));
+    }
+  }, []);
+
+  return useLoggedInUserQuery(undefined, {
+    skip: !token
+  });
+};

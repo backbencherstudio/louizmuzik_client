@@ -25,7 +25,7 @@ import {
   Activity,
   User,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -39,8 +39,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/components/cart-context";
 import ProtectedRoute from "@/Private/ProtectedRoute";
+import { toast } from "sonner";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+    toast.success("Logged out successfully");
+  };
   const pathname = usePathname();
   const { cartItems, removeFromCart } = useCart();
 
@@ -399,13 +406,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   asChild
                   className="hover:bg-transparent focus:bg-transparent"
                 >
-                  <Link
-                    href="/signout"
+                  <button
+                    onClick={logout}
                     className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
-                  </Link>
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -640,13 +647,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 asChild
                 className="hover:bg-transparent focus:bg-transparent"
               >
-                <Link
-                  href="/signout"
+                <button
+                  onClick={logout}
                   className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
-                </Link>
+                </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
