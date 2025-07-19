@@ -51,7 +51,7 @@
 }
 
 .smooth-zebra {
-  background: linear-gradient(45deg, #b6fcb6 25%, #a0e8a0 25%, #a0e8a0 50%, #b6fcb6 50%, #b6fcb6 75%, #a0e8a0 75%, #a0e8a0 100%);
+  background: linear-gradient(45deg, #12eb12 25%, #a0e8a0 25%, #a0e8a0 50%, #b6fcb6 50%, #b6fcb6 75%, #a0e8a0 75%, #a0e8a0 100%);
   background-size: 20px 20px;
   animation: zebra-move 1.5s linear infinite;
 }
@@ -61,7 +61,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  /* text-fill-color: transparent; */
 }
 
 .text-primary {

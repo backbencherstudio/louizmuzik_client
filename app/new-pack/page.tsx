@@ -534,7 +534,7 @@ export default function NewPackPage() {
               <div className="relative">
                 <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-emerald-500 text-white text-center rounded-full h-full relative transition-all duration-300 ease-out"
+                    className="bg-green-500 text-white text-center rounded-full h-full relative transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   >
                     {/* Zebra stripes */}
@@ -542,23 +542,25 @@ export default function NewPackPage() {
                   </div>
                 </div>
 
-                <div className="text-emerald-400 text-sm font-medium mt-2 text-center">
+                <div className="text-emerald-100 text-sm font-medium mt-2 text-center">
                   {Math.round(uploadProgress)}% Uploading...
                 </div>
               </div>
             )}
             {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={!agreedToTerms || isLoading}
-              className="w-full bg-emerald-500 py-6 text-black hover:bg-emerald-600 disabled:opacity-50"
-            >
-              {isLoading
-                ? "Saving..."
-                : editId
-                ? "Save Changes"
-                : "Upload This Pack"}
-            </Button>
+            {uploadProgress === 0 && (
+              <Button
+                type="submit"
+                disabled={!agreedToTerms || isLoading}
+                className="w-full bg-emerald-500 py-6 text-black hover:bg-emerald-600 disabled:opacity-50"
+              >
+                {isLoading
+                  ? "Saving..."
+                  : editId
+                  ? "Save Changes"
+                  : "Upload This Pack"}
+              </Button>
+            )}
           </form>
         </div>
       </div>
