@@ -44,12 +44,9 @@ export function Header() {
 
                         {/* Right - Login and Try Now buttons */}
                         <div className="flex items-center gap-3">
-                            <Link
-                                href="/login"
-                                className="text-gray-300 text-sm hover:text-white transition-colors"
-                            >
-                                Login
-                            </Link>
+                            {
+                                user ? <Link href="/dashboard">Dashboard</Link> : <Link href="/login">Log In</Link>
+                            }
                             <Button
                                 asChild
                                 className="bg-white text-black hover:bg-gray-100 rounded-full px-4 py-1 h-auto text-sm"
