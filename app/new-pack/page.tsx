@@ -554,11 +554,7 @@ export default function NewPackPage() {
                 disabled={!agreedToTerms || isLoading}
                 className="w-full bg-emerald-500 py-6 text-black hover:bg-emerald-600 disabled:opacity-50"
               >
-                {isLoading
-                  ? "Saving..."
-                  : editId
-                  ? "Save Changes"
-                  : "Upload This Pack"}
+                Upload This Pack
               </Button>
             )}
           </form>
