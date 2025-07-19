@@ -179,14 +179,14 @@ export default function NewPackPage() {
       }
 
       const formData = new FormData();
-      formData.append("userId", user.data._id);
+      formData.append("userId", user.data?._id);
       formData.append("title", packData.title);
       formData.append("description", packData.included);
       formData.append("price", packData.price);
       formData.append("video_path", packData.videoUrl);
       formData.append("included", packData.included);
       formData.append("genre", JSON.stringify(selectedGenres));
-      formData.append("producer", user.data.producer_name);
+      formData.append("producer", user.data?.producer_name);
 
       if (thumbnailFile) {
         formData.append("thumbnail_image", thumbnailFile);
