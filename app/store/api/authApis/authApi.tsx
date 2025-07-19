@@ -15,6 +15,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"],
     }),
 
     otp: builder.mutation({
@@ -23,14 +24,16 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"],
     }),
 
     resetPassword: builder.mutation({
       query: (data) => ({
         url: "/auth/sendOtpForResetPassword",
-        method: "POST",
+        method: "PATCH",
         body: data,
       }),
+      invalidatesTags: ["User"],
     }),
 
     login: builder.mutation({
@@ -39,6 +42,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"],
     }),
 
     loggedInUser: builder.query({
@@ -76,11 +80,13 @@ export const authApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 3600,
     }),
   }),
+  overrideExisting: true, // This ensures that the query is not overridden by a new one
 });
 
 export const {
   useSignupMutation,
   useLoginMutation,
   useOtpMutation,
+  useResetPasswordMutation,
   useLoggedInUserQuery,
 } = authApi;

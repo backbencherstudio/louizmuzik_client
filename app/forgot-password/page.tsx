@@ -6,22 +6,29 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useResetPasswordMutation } from '../store/api/authApis/authApi';
 
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailSent, setIsEmailSent] = useState(false);
+    const [resetPassword, { isLoading: isResetPasswordLoading }] = useResetPasswordMutation();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
 
-        // TODO: Implement password reset email logic here
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get('email') as string;
 
-        // Simulate email sent for now
-        setTimeout(() => {
+        try {
+            const response = await resetPassword({ email: email }).unwrap();
+            console.log(response);
             setIsEmailSent(true);
+        } catch (error) {
+            console.error('Error resetting password:', error);
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (
