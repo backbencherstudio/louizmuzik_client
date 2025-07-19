@@ -45,6 +45,17 @@
   }
 }
 
+@keyframes zebra-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+.smooth-zebra {
+  background: linear-gradient(45deg, #b6fcb6 25%, #a0e8a0 25%, #a0e8a0 50%, #b6fcb6 50%, #b6fcb6 75%, #a0e8a0 75%, #a0e8a0 100%);
+  background-size: 20px 20px;
+  animation: zebra-move 1.5s linear infinite;
+}
+
 .gradient-text {
   background: linear-gradient(to right, #10b981, #0aeeb9);
   -webkit-background-clip: text;
