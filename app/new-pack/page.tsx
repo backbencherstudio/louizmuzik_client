@@ -26,6 +26,9 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import Layout from '@/components/layout';
+import { useCreatePackMutation } from '../store/api/packApis/packApis';
+import { toast } from 'sonner';
+import { useLoggedInUser } from '../store/api/authApis/authApi';
 
 // Lista predeterminada de géneros
 const AVAILABLE_GENRES = [
@@ -65,6 +68,9 @@ export default function NewPackPage() {
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
     const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [createPack, {isLoading: isCreatingPack}] = useCreatePackMutation();
+    const {data: user} = useLoggedInUser();
+    console.log(user?.data?._id);
 
     useEffect(() => {
         const fetchPackData = async () => {
@@ -145,30 +151,70 @@ export default function NewPackPage() {
         setIsLoading(true);
 
         try {
+            // Check if user is logged in
+            if (!user?.data?._id) {
+                toast.error('User not authenticated');
+                return;
+            }
+
+            // Validate required fields
+            if (!packData.title.trim()) {
+                toast.error('Pack title is required');
+                return;
+            }
+            if (!packData.price || parseFloat(packData.price) < 0.99) {
+                toast.error('Price must be at least $0.99');
+                return;
+            }
+            if (!thumbnailFile) {
+                toast.error('Thumbnail image is required');
+                return;
+            }
+            if (!samplePackFile) {
+                toast.error('Sample pack file is required');
+                return;
+            }
+            if (!audioFile) {
+                toast.error('Audio demo is required');
+                return;
+            }
+            if (selectedGenres.length === 0) {
+                toast.error('At least one genre must be selected');
+                return;
+            }
+
             const formData = new FormData();
+            formData.append('userId', user.data._id);
             formData.append('title', packData.title);
-            formData.append('description', packData.description);
+            formData.append('description', packData.included);
             formData.append('price', packData.price);
-            formData.append('videoUrl', packData.videoUrl);
+            formData.append('video_path', packData.videoUrl);
             formData.append('included', packData.included);
-            formData.append('genres', JSON.stringify(selectedGenres));
+            formData.append('genre', JSON.stringify(selectedGenres));
+            formData.append('producer', user.data.producer_name);
 
             if (thumbnailFile) {
-                formData.append('thumbnail', thumbnailFile);
+                formData.append('thumbnail_image', thumbnailFile);
             }
             if (samplePackFile) {
-                formData.append('samplePack', samplePackFile);
+                formData.append('zip_path', samplePackFile);
             }
             if (audioFile) {
-                formData.append('audio', audioFile);
+                formData.append('audio_path', audioFile);
             }
 
             // TODO: Implementar llamada a la API para crear/actualizar el pack
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simular delay
+            const response = await createPack(formData).unwrap();
+            if(response?.success){
+                toast.success('Pack created successfully');
+                router.push('/items');
+            }else{
+                toast.error(response?.message);
+            }
 
-            router.push('/items');
         } catch (error) {
             console.error('Error saving pack:', error);
+            toast.error('Failed to create pack');
         } finally {
             setIsLoading(false);
         }
@@ -297,26 +343,23 @@ export default function NewPackPage() {
                                                 </p>
                                             )}
                                         </div>
-                                        <label htmlFor="pack-upload">
-                                            <input
-                                                id="pack-upload"
-                                                type="file"
-                                                accept=".zip"
-                                                className="hidden"
-                                                onChange={
-                                                    handleSamplePackUpload
-                                                }
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="border-emerald-500 bg-transparent text-emerald-500 hover:bg-emerald-500/10"
-                                            >
-                                                {samplePackFile
-                                                    ? 'Change file'
-                                                    : 'Browse files'}
-                                            </Button>
-                                        </label>
+                                        <input
+                                            id="pack-upload"
+                                            type="file"
+                                            accept=".zip"
+                                            className="hidden"
+                                            onChange={handleSamplePackUpload}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="border-emerald-500 bg-transparent text-emerald-500 hover:bg-emerald-500/10 cursor-pointer"
+                                            onClick={() => document.getElementById('pack-upload')?.click()}
+                                        >
+                                            {samplePackFile
+                                                ? 'Change file'
+                                                : 'Browse files'}
+                                        </Button>
                                     </div>
                                 </Card>
                             </div>
@@ -343,24 +386,23 @@ export default function NewPackPage() {
                                             </p>
                                         )}
                                     </div>
-                                    <label htmlFor="audio-upload">
-                                        <input
-                                            id="audio-upload"
-                                            type="file"
-                                            accept=".mp3,.wav"
-                                            className="hidden"
-                                            onChange={handleAudioUpload}
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            className="border-emerald-500 bg-transparent text-emerald-500 hover:bg-emerald-500/10"
-                                        >
-                                            {audioFile
-                                                ? 'Change file'
-                                                : 'Browse files'}
-                                        </Button>
-                                    </label>
+                                    <input
+                                        id="audio-upload"
+                                        type="file"
+                                        accept=".mp3,.wav"
+                                        className="hidden"
+                                        onChange={handleAudioUpload}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="border-emerald-500 bg-transparent text-emerald-500 hover:bg-emerald-500/10 cursor-pointer"
+                                        onClick={() => document.getElementById('audio-upload')?.click()}
+                                    >
+                                        {audioFile
+                                            ? 'Change file'
+                                            : 'Browse files'}
+                                    </Button>
                                 </div>
                             </Card>
                             <p className="mt-2 text-sm text-zinc-500">
