@@ -22,6 +22,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useSignupMutation } from '../store/api/authApis/authApi';
 import OtpVerification from '@/components/otp-verification';
+import { toast } from 'sonner';
 
 export default function SignUpPage() {
     // const [isLoading, setIsLoading] = useState(false);
@@ -58,15 +59,16 @@ export default function SignUpPage() {
 
         try {
             const response = await signup(data).unwrap();
-            console.log('Signup successful:', response);
-            
-            // Store email and show OTP verification
-            setUserEmail(data.email as string);
-            setShowOtpVerification(true);
-        } catch (error) {
+            if(response?.success){
+                setUserEmail(data.email as string);
+                setShowOtpVerification(true);
+            }else{
+                toast.error(response?.message);
+            }
+        } catch (error: any) {
             console.error('Signup failed:', error);
-        } finally {
-            // setIsLoading(false);
+            const errorMessage = error?.data?.message || error?.message || 'Failed to signup';
+            toast.error(errorMessage);
         }
     };
 
