@@ -29,12 +29,20 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     resetPassword: builder.mutation({
+      query: (formData: FormData) => ({
+        url: "/auth/resetPassword",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    OtpForResetPassword: builder.mutation({
       query: (data) => ({
         url: "/auth/sendOtpForResetPassword",
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["User"],
     }),
 
     login: builder.mutation({
@@ -94,6 +102,7 @@ export const {
   useOtpMutation,
   useResetPasswordMutation,
   useLoggedInUserQuery,
+  useOtpForResetPasswordMutation,
 } = authApi;
 
 // Custom hook to safely get logged in user
