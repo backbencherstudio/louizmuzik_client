@@ -4,6 +4,7 @@ import { inter } from "./fonts";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ReduxProvider } from "./reduxProvider";
+import { Toaster, toast } from 'sonner';
 
 export const metadata: Metadata = {
   title: "MelodyCollab - Collaborate with Top Music Producers",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <ReduxProvider>
           <Providers>{children}</Providers>
         </ReduxProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
