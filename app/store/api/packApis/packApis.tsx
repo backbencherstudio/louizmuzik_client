@@ -14,8 +14,8 @@ export const packApis = baseApi.injectEndpoints({
 
 
         getPack: builder.query({
-            query: () => ({
-                url: '/pack',
+            query: (id: string) => ({
+                url: `/pack/${id}`,
                 method: 'GET',
             }),
         }),

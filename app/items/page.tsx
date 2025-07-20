@@ -20,6 +20,8 @@ import { Input } from '@/components/ui/input';
 import { AudioPlayer } from '@/components/audio-player';
 import { WaveformDisplay } from '@/components/waveform-display';
 import Layout from '@/components/layout';
+import { useGetPackQuery } from '../store/api/packApis/packApis';
+import { useLoggedInUser } from '../store/api/authApis/authApi';
 
 // Sample data for producer's packs
 const producerPacks = [
@@ -90,6 +92,14 @@ export default function ItemsPage() {
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
     const [shareTooltip, setShareTooltip] = useState('');
+
+    const { data: user } = useLoggedInUser();
+    const userId = user?.data?._id
+    const { data: packData } = useGetPackQuery(userId);
+
+    console.log(packData);
+
+
 
     const handlePlayClick = (melody: any) => {
         if (currentPlayingMelody?.id === melody.id) {
@@ -172,20 +182,18 @@ export default function ItemsPage() {
                         Sample Packs
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {producerPacks.map((pack) => (
+                        {packData?.data?.map((pack: any) => (
                             <div
-                                key={pack.id}
+                                key={pack._id}
                                 className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                             >
                                 <Link
-                                    href={`/product/${pack.id}`}
+                                    href={`/product/${pack._id}`}
                                     className="block"
                                 >
                                     <div className="relative aspect-square">
                                         <Image
-                                            src={
-                                                pack.image || '/placeholder.svg'
-                                            }
+                                            src={pack?.thumbnail_image || '/placeholder.svg'}
                                             alt={pack.title}
                                             fill
                                             className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
@@ -200,7 +208,7 @@ export default function ItemsPage() {
                                                 className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
                                             >
                                                 {currentPlayingPack?.id ===
-                                                pack.id ? (
+                                                pack._id ? (
                                                     <Pause className="h-6 w-6" />
                                                 ) : (
                                                     <Play className="h-6 w-6" />
@@ -210,14 +218,14 @@ export default function ItemsPage() {
                                     </div>
                                     <div className="p-3 sm:p-4">
                                         <h3 className="mb-1 text-sm sm:text-base font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                                            {pack.title}
+                                            {pack?.title}
                                         </h3>
                                         <p className="text-xs sm:text-sm text-emerald-500">
-                                            {pack.producer}
+                                            {pack?.producer}
                                         </p>
                                         <div className="mt-2 flex items-center justify-between">
                                             <p className="text-sm sm:text-base font-bold text-white">
-                                                ${pack.price.toFixed(2)}
+                                                ${pack?.price.toFixed(2)}
                                             </p>
                                             <div className="flex gap-2">
                                                 <Button
@@ -434,6 +442,7 @@ export default function ItemsPage() {
                 {isAudioPlayerVisible &&
                     (currentPlayingMelody || currentPlayingPack) && (
                         <AudioPlayer
+                            isVisible={isAudioPlayerVisible}
                             melody={currentPlayingMelody || currentPlayingPack}
                             onClose={() => {
                                 setCurrentPlayingMelody(null);
