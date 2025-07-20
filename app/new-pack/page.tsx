@@ -60,6 +60,8 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
     price: "",
     videoUrl: "",
     included: "",
+    zip_path: "",
+    audio_path: "",
   });
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
@@ -86,6 +88,8 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
         price: pack.price?.toString() || "",
         videoUrl: pack.video_path || "",
         included: pack.included || "",
+        zip_path: pack.zip_path || "",
+        audio_path: pack.audio_path || "",
       });
       setThumbnailPreview(pack.thumbnail_image || "");
       setSelectedGenres(pack.genre || []);
