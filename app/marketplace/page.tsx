@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AudioPlayer } from '@/components/audio-player';
 import Layout from '@/components/layout';
+import { useAllPacksQuery } from '../store/api/packApis/packApis';
 
 // Sample featured packs data
 const featuredPacks = [
@@ -118,6 +119,9 @@ export default function MarketplacePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
+    const { data: allPacksData } = useAllPacksQuery(null);
+    const packs = allPacksData?.data;
+    console.log(packs);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % featuredPacks.length);
@@ -310,19 +314,19 @@ export default function MarketplacePage() {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {allPacks.map((pack) => (
+                        {packs?.map((pack: any) => (
                             <div
-                                key={pack.id}
+                                key={pack._id}
                                 className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                             >
                                 <Link
-                                    href={`/product/${pack.id}`}
+                                    href={`/product/${pack._id}`}
                                     className="block"
                                 >
                                     <div className="relative aspect-square">
                                         <Image
                                             src={
-                                                pack.image || '/placeholder.svg'
+                                                pack.thumbnail_image || '/placeholder.svg'
                                             }
                                             alt={pack.title}
                                             fill
