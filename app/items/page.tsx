@@ -21,7 +21,7 @@ import { AudioPlayer } from '@/components/audio-player';
 import { WaveformDisplay } from '@/components/waveform-display';
 import Layout from '@/components/layout';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
-import { useGetPackProducerQuery } from '../store/api/packApis/packApis';
+import { useGetProducerPackQuery } from '../store/api/packApis/packApis';
 
 
 // Sample data for producer's melodies
@@ -71,7 +71,7 @@ export default function ItemsPage() {
 
     const { data: user } = useLoggedInUser();
     const userId = user?.data?._id
-    const { data: packData } = useGetPackProducerQuery(userId);
+    const { data: packData } = useGetProducerPackQuery(userId);
 
     console.log(packData);
 
@@ -102,7 +102,7 @@ export default function ItemsPage() {
                 key: 'C Maj',
                 artistType: 'Producer',
             });
-            setIsAudioPlayerVisible(true);
+            setIsAudioPlayerVisible(true);  
         }
     };
 

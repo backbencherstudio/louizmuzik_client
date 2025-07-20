@@ -13,7 +13,7 @@ export const packApis = baseApi.injectEndpoints({
         }),
 
 
-        getPackProducer: builder.query({
+        getProducerPack: builder.query({
             query: (id: string) => ({
                 url: `/pack/${id}`,
                 method: 'GET',
@@ -34,4 +34,4 @@ export const packApis = baseApi.injectEndpoints({
     overrideExisting: true,
 });
 
-export const { useCreatePackMutation, useGetPackProducerQuery, useGetPackDetailsQuery } = packApis;
+export const { useCreatePackMutation, useGetProducerPackQuery, useGetPackDetailsQuery } = packApis;
