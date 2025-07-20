@@ -21,10 +21,19 @@ export const packApis = baseApi.injectEndpoints({
         }),
 
 
+
         getPackDetails: builder.query({
             query: (id: string) => ({
                 url: `/pack/single-pack/${id}`,
                 method: 'GET',
+            }),
+        }),
+
+
+        deletePack: builder.mutation({
+            query: (id: string) => ({
+                url: `/pack/${id}`,
+                method: 'DELETE',
             }),
         }),
 
@@ -34,4 +43,4 @@ export const packApis = baseApi.injectEndpoints({
     overrideExisting: true,
 });
 
-export const { useCreatePackMutation, useGetProducerPackQuery, useGetPackDetailsQuery } = packApis;
+export const { useCreatePackMutation, useGetProducerPackQuery, useGetPackDetailsQuery, useDeletePackMutation } = packApis;

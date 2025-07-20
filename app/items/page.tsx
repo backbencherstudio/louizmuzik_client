@@ -13,6 +13,9 @@ import {
     ArrowLeft,
     Pencil,
     Share2,
+    Trash,
+    Loader2,
+    X,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +24,8 @@ import { AudioPlayer } from '@/components/audio-player';
 import { WaveformDisplay } from '@/components/waveform-display';
 import Layout from '@/components/layout';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
-import { useGetProducerPackQuery } from '../store/api/packApis/packApis';
+import { useDeletePackMutation, useGetProducerPackQuery } from '../store/api/packApis/packApis';
+import { toast } from 'sonner';
 
 
 // Sample data for producer's melodies
@@ -68,14 +72,33 @@ export default function ItemsPage() {
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
     const [shareTooltip, setShareTooltip] = useState('');
-
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [packToDelete, setPackToDelete] = useState<any>(null);
     const { data: user } = useLoggedInUser();
     const userId = user?.data?._id
-    const { data: packData } = useGetProducerPackQuery(userId);
+    const { data: packData,refetch } = useGetProducerPackQuery(userId);
+    const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
 
     console.log(packData);
 
+    const handleDeletePack = async (packId: string) => {
 
+        try {
+            await deletePack(packId).unwrap();
+            toast.success('Pack deleted successfully');
+            refetch();
+            setDeleteModalOpen(false);
+            setPackToDelete(null);
+        } catch (error) {
+            toast.error('Failed to delete pack');
+        }
+    };
+
+    const handleDeleteConfirm = () => {
+        if (packToDelete) {
+            handleDeletePack(packToDelete._id);
+        }
+    };
 
     const handlePlayClick = (melody: any) => {
         if (currentPlayingMelody?.id === melody.id) {
@@ -213,7 +236,17 @@ export default function ItemsPage() {
                                                 >
                                                     Edit
                                                 </Button>
-                                            </div>
+                                                <Button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setDeleteModalOpen(true);
+                                                        setPackToDelete(pack);
+                                                    }}
+                                                >
+                                                    
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                                </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -428,6 +461,55 @@ export default function ItemsPage() {
                         />
                     )}
             </div>
+
+            {deleteModalOpen && packToDelete && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-zinc-900 p-6 rounded-lg max-w-md w-full mx-4">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-semibold text-white">
+                                Delete Sample Pack
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setDeleteModalOpen(false);
+                                    setPackToDelete(null);
+                                }}
+                                className="text-zinc-400 hover:text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-zinc-400 mb-6">
+                            Are you sure you want to delete &quot;
+                            {packToDelete.title}&quot;? This action cannot be
+                            undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="ghost"
+                                onClick={() => {
+                                    setDeleteModalOpen(false);
+                                    setPackToDelete(null);
+                                }}
+                                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDeleteConfirm}
+                                className="bg-red-500 hover:bg-red-600 text-white"
+                            >
+                                {isDeleting ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    'Delete'
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 }
