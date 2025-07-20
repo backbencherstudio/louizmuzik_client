@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Layout from "@/components/layout";
-import { useCreatePackMutation } from "../store/api/packApis/packApis";
+import { useCreatePackMutation, useUpdatePackMutation, useGetPackDetailsQuery } from "../store/api/packApis/packApis";
 import { toast } from "sonner";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 
@@ -49,7 +49,7 @@ const AVAILABLE_GENRES = [
   "Lo-Fi",
 ];
 
-export default function NewPackPage() {
+export default function NewPackPage({params}: {params: {edit: string}}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
@@ -68,40 +68,30 @@ export default function NewPackPage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); // For tracking progress
-  const [createPack, { isLoading: isCreatingPack }] = useCreatePackMutation();
+  const [uploadProgress, setUploadProgress] = useState(0); 
+  const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
   const { data: user } = useLoggedInUser();
-  console.log(user?.data?._id);
+  
+  // Fetch pack details when editing
+  const { data: packDetails, isLoading: isLoadingPack } = useGetPackDetailsQuery(editId || "", {
+    skip: !editId,
+  });
 
   useEffect(() => {
-    const fetchPackData = async () => {
-      if (!editId) return;
-
-      setIsLoading(true);
-      try {
-        const mockData = {
-          title: "Summer Vibes Pack",
-          description: "A collection of summer-inspired melodies and beats.",
-          price: "29.99",
-          videoUrl: "https://youtube.com/watch?v=example",
-          included: "- 50 drum samples\n- 20 melodies\n- 10 bass loops",
-          thumbnailUrl: "/placeholder.jpg",
-          genres: ["House", "Pop"],
-        };
-
-        setPackData(mockData);
-        setThumbnailPreview(mockData.thumbnailUrl);
-        setSelectedGenres(mockData.genres);
-        setAgreedToTerms(true);
-      } catch (error) {
-        console.error("Error fetching pack data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPackData();
-  }, [editId]);
+    if (packDetails?.data?.singlePackData && editId) {
+      const pack = packDetails.data.singlePackData;
+      setPackData({
+        title: pack.title || "",
+        description: pack.description || "",
+        price: pack.price?.toString() || "",
+        videoUrl: pack.video_path || "",
+        included: pack.included || "",
+      });
+      setThumbnailPreview(pack.thumbnail_image || "");
+      setSelectedGenres(pack.genre || []);
+      setAgreedToTerms(true);
+    }
+  }, [packDetails, editId]);
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -161,18 +151,23 @@ export default function NewPackPage() {
         toast.error("Price must be at least $0.99");
         return;
       }
-      if (!thumbnailFile) {
-        toast.error("Thumbnail image is required");
-        return;
+      
+      // For new packs, require all files
+      if (!editId) {
+        if (!thumbnailFile) {
+          toast.error("Thumbnail image is required");
+          return;
+        }
+        if (!samplePackFile) {
+          toast.error("Sample pack file is required");
+          return;
+        }
+        if (!audioFile) {
+          toast.error("Audio demo is required");
+          return;
+        }
       }
-      if (!samplePackFile) {
-        toast.error("Sample pack file is required");
-        return;
-      }
-      if (!audioFile) {
-        toast.error("Audio demo is required");
-        return;
-      }
+      
       if (selectedGenres.length === 0) {
         toast.error("At least one genre must be selected");
         return;
@@ -198,42 +193,68 @@ export default function NewPackPage() {
         formData.append("audio_path", audioFile);
       }
 
-      // Track upload progress
-      const xhr = new XMLHttpRequest();
-      xhr.open(
-        "POST",
-        `${process.env.NEXT_PUBLIC_API_URL}/pack/create-pack`,
-        true
-      );
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          toast.success("Pack created successfully");
+      if (editId) {
+        // Update existing pack
+        try {
+          await updatePack({ id: editId, formData }).unwrap();
+          toast.success("Pack updated successfully");
           router.push("/items");
-        } else {
-          toast.error("Failed to create pack");
+        } catch (error) {
+          console.error("Error updating pack:", error);
+          toast.error("Failed to update pack");
         }
-      };
+      } else {
+        // Create new pack
+        const xhr = new XMLHttpRequest();
+        xhr.open(
+          "POST",
+          `${process.env.NEXT_PUBLIC_API_URL}/pack/create-pack`,
+          true
+        );
 
-      xhr.onerror = () => {
-        toast.error("An error occurred during the upload");
-      };
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
+          }
+        };
 
-      xhr.send(formData);
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            toast.success("Pack created successfully");
+            router.push("/items");
+          } else {
+            toast.error("Failed to create pack");
+          }
+        };
+
+        xhr.onerror = () => {
+          toast.error("An error occurred during the upload");
+        };
+
+        xhr.send(formData);
+      }
     } catch (error) {
       console.error("Error saving pack:", error);
-      toast.error("Failed to create pack");
+      toast.error(editId ? "Failed to update pack" : "Failed to create pack");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoadingPack && editId) {
+    return (
+      <Layout>
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-white">Loading pack details...</div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -246,8 +267,6 @@ export default function NewPackPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* File Upload Progress */}
-
             {/* Basic Info */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -336,7 +355,9 @@ export default function NewPackPage() {
                       <p className="text-sm text-white">
                         {samplePackFile
                           ? samplePackFile.name
-                          : "Drag your .zip file to start uploading"}
+                          : editId 
+                            ? "Upload new file to replace existing one"
+                            : "Drag your .zip file to start uploading"}
                       </p>
                       {!samplePackFile && (
                         <p className="text-xs text-zinc-500">OR</p>
@@ -377,7 +398,9 @@ export default function NewPackPage() {
                     <p className="text-sm text-white">
                       {audioFile
                         ? audioFile.name
-                        : "Drag your .wav or .mp3 file to start uploading"}
+                        : editId 
+                          ? "Upload new file to replace existing one"
+                          : "Drag your .wav or .mp3 file to start uploading"}
                     </p>
                     {!audioFile && <p className="text-xs text-zinc-500">OR</p>}
                   </div>
@@ -530,6 +553,7 @@ export default function NewPackPage() {
                 to get everything clear to you.
               </Label>
             </div>
+            
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="relative">
                 <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
@@ -547,14 +571,18 @@ export default function NewPackPage() {
                 </div>
               </div>
             )}
+            
             {/* Submit Button */}
             {uploadProgress === 0 && (
               <Button
                 type="submit"
-                disabled={!agreedToTerms || isLoading}
+                disabled={!agreedToTerms || isLoading || isUpdatingPack}
                 className="w-full bg-emerald-500 py-6 text-black hover:bg-emerald-600 disabled:opacity-50"
               >
-                Upload This Pack
+                {isLoading || isUpdatingPack 
+                  ? (editId ? "Updating Pack..." : "Uploading Pack...") 
+                  : (editId ? "Update Pack" : "Upload This Pack")
+                }
               </Button>
             )}
           </form>

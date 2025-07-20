@@ -230,7 +230,7 @@ export default function ItemsPage() {
                                                 <Button
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        window.location.href = `/new-pack?edit=${pack.id}`;
+                                                        window.location.href = `/new-pack?edit=${pack._id}`;
                                                     }}
                                                     className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-600 hover:text-black transition-colors"
                                                 >
