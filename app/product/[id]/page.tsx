@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -69,7 +69,8 @@ const morePacks = [
   },
 ];
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -81,7 +82,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     data: packDetails,
     isLoading,
     error,
-  } = useGetPackDetailsQuery(params.id);
+  } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
   console.log(packDetails);
   const morePacks = packDetails?.data?.eachUserAllPack;
