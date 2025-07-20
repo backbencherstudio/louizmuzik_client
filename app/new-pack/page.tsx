@@ -137,6 +137,12 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
     );
   };
 
+  // Helper function to get file name from path
+  const getFileNameFromPath = (path: string) => {
+    if (!path) return "";
+    return path.split('/').pop() || path.split('\\').pop() || path;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -180,7 +186,7 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
       const formData = new FormData();
       formData.append("userId", user.data?._id);
       formData.append("title", packData.title);
-      formData.append("description", packData.included);
+      formData.append("description", packData.description); // Fixed: use description instead of included
       formData.append("price", packData.price);
       formData.append("video_path", packData.videoUrl);
       formData.append("included", packData.included);
@@ -359,9 +365,11 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
                       <p className="text-sm text-white">
                         {samplePackFile
                           ? samplePackFile.name
-                          : editId 
-                            ? "Upload new file to replace existing one"
-                            : "Drag your .zip file to start uploading"}
+                          : editId && packData.zip_path
+                            ? getFileNameFromPath(packData.zip_path)
+                            : editId 
+                              ? "Upload new file to replace existing one"
+                              : "Drag your .zip file to start uploading"}
                       </p>
                       {!samplePackFile && (
                         <p className="text-xs text-zinc-500">OR</p>
@@ -402,9 +410,11 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
                     <p className="text-sm text-white">
                       {audioFile
                         ? audioFile.name
-                        : editId 
-                          ? "Upload new file to replace existing one"
-                          : "Drag your .wav or .mp3 file to start uploading"}
+                        : editId && packData.audio_path
+                          ? getFileNameFromPath(packData.audio_path)
+                          : editId 
+                            ? "Upload new file to replace existing one"
+                            : "Drag your .wav or .mp3 file to start uploading"}
                     </p>
                     {!audioFile && <p className="text-xs text-zinc-500">OR</p>}
                   </div>
@@ -514,7 +524,6 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
                   </div>
                 </div>
               </div>
-
               <div>
                 <Label htmlFor="included" className="text-white">
                   What&apos;s included on this pack
