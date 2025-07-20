@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Heart, Play } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 interface SamplePackCardProps {
     title: string;
@@ -10,6 +11,7 @@ interface SamplePackCardProps {
     price: number;
     imageUrl: string;
     isFavorite: boolean;
+    id: string;
 }
 
 export function SamplePackCard({
@@ -18,7 +20,9 @@ export function SamplePackCard({
     price,
     imageUrl,
     isFavorite,
+    id,
 }: SamplePackCardProps) {
+    const router = useRouter();
     return (
         <Card className="overflow-hidden border-0 bg-[#0F0F0F]">
             <div className="relative aspect-square">
@@ -59,6 +63,7 @@ export function SamplePackCard({
                     <Button
                         size="sm"
                         className="hidden sm:block bg-emerald-500 text-black hover:bg-emerald-600"
+                        onClick={() => router.push(`/product/${id}`)}
                     >
                         View Details
                     </Button>

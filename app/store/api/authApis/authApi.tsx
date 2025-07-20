@@ -92,6 +92,16 @@ export const authApi = baseApi.injectEndpoints({
       },
       keepUnusedDataFor: 3600,
     }),
+
+    favoritePack: builder.query({
+      query: ({id}: { id: string}) => ({
+        url: `/auth/userManagement/favorites/${id}`,
+        method: "GET",
+      }),
+    }),
+
+
+
   }),
   overrideExisting: true, // This ensures that the query is not overridden by a new one
 });
@@ -103,6 +113,7 @@ export const {
   useResetPasswordMutation,
   useLoggedInUserQuery,
   useOtpForResetPasswordMutation,
+  useFavoritePackQuery,
 } = authApi;
 
 // Custom hook to safely get logged in user

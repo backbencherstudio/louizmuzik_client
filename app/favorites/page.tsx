@@ -5,27 +5,17 @@ import Layout from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { MelodiesTable } from '@/components/melodies-table';
 import { SamplePackCard } from '@/components/sample-pack-card';
+import { useFavoritePackQuery, useLoggedInUser } from '../store/api/authApis/authApi';
 
 export default function FavoritesPage() {
-    // Mock data for sample packs - Replace with real data later
-    const samplePacks = [
-        {
-            id: 1,
-            title: 'Trap Essentials Vol. 1',
-            producer: 'Thunder Beatz',
-            price: 29.99,
-            imageUrl: '/sample-packs/trap-essentials.jpg',
-            isFavorite: true,
-        },
-        {
-            id: 2,
-            title: 'Lo-Fi Dreams',
-            producer: 'Chill Master',
-            price: 19.99,
-            imageUrl: '/sample-packs/lofi-dreams.jpg',
-            isFavorite: true,
-        },
-    ];
+    const { data: user } = useLoggedInUser();
+    const userId = user?.data?._id;
+    const { data: favoritePack } = useFavoritePackQuery({ id: userId });
+
+    console.log(favoritePack);
+
+    const favouritePacks = favoritePack?.data?.packs;
+    console.log(favouritePacks);
 
     // Mock data for melodies - Replace with real data later
     const melodies = [
@@ -72,14 +62,15 @@ export default function FavoritesPage() {
                             Favorite Sample Packs
                         </h2>
                         <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {samplePacks.map((pack) => (
+                            {favouritePacks?.map((pack: any) => (
                                 <SamplePackCard
-                                    key={pack.id}
+                                    key={pack._id}
                                     title={pack.title}
                                     producer={pack.producer}
                                     price={pack.price}
-                                    imageUrl={pack.imageUrl}
+                                    imageUrl={pack.thumbnail_image}
                                     isFavorite={pack.isFavorite}
+                                    id={pack._id}
                                 />
                             ))}
                         </div>
