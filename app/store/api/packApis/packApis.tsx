@@ -46,6 +46,14 @@ export const packApis = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+
+    favoritePack: builder.mutation({
+      query: ({ id, userId }: { id: string; userId: string }) => ({
+        url: `/pack/${id}?userId=${userId}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -57,4 +65,5 @@ export const {
   useDeletePackMutation,
   useAllPacksQuery,
   useUpdatePackMutation,
+  useFavoritePackMutation,
 } = packApis;

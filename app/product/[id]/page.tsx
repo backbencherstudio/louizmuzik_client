@@ -9,71 +9,20 @@ import {
   Heart,
   ShoppingCart,
   ArrowLeft,
-  Star,
   PlaySquare,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout";
 import { useCart } from "@/components/cart-context";
-import { useGetPackDetailsQuery } from "@/app/store/api/packApis/packApis";
-
-// Default product data structure for fallback
-const defaultProduct = {
-  id: 1,
-  title: "Sample Pack",
-  producer: "Producer",
-  price: 0,
-  image: "/placeholder.svg?height=300&width=300",
-  description: "No description available",
-  audioDemo: {
-    name: "Audio Demo",
-    duration: "0:00",
-  },
-  videoPreview: null,
-  details: {
-    format: "N/A",
-    size: "N/A",
-    category: "Sample Pack",
-    genre: "N/A",
-  },
-};
-
-// More from producer
-const morePacks = [
-  {
-    id: 1,
-    title: "Galactic Music Pack",
-    price: 24.99,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg",
-  },
-  {
-    id: 2,
-    title: "Phonk Sample Pack",
-    price: 19.99,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png",
-  },
-  {
-    id: 3,
-    title: "Urban Drums Kit",
-    price: 29.99,
-    image: "/placeholder.svg?height=300&width=300",
-  },
-  {
-    id: 4,
-    title: "Melody Loops Vol. 1",
-    price: 34.99,
-    image: "/placeholder.svg?height=300&width=300",
-  },
-];
+import { useFavoritePackMutation, useGetPackDetailsQuery } from "@/app/store/api/packApis/packApis";
+import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  // const [isFavorite, setIsFavorite] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -85,6 +34,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
   console.log(packDetails);
+
+  const { data: user ,refetch} = useLoggedInUser();
+  console.log(user?.data);
+  const userId = user?.data?._id;
+  const [favoritePack, { isLoading: isFavoritePackLoading }] = useFavoritePackMutation();
+  const isFavorite = user?.data?.favourite_packs?.includes(id);
+
   const morePacks = packDetails?.data?.eachUserAllPack;
 
   // Create product object from pack data
@@ -109,7 +65,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             pack.genre && pack.genre.length > 0 ? pack.genre.join(", ") : "N/A",
         },
       }
-    : defaultProduct;
+    : null;
 
   useEffect(() => {
     if (pack?.audio_path) {
@@ -177,13 +133,21 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   };
 
   const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      title: product.title,
-      producer: product.producer,
-      price: product.price,
-      image: product.image,
-    });
+    if (product) {
+      addToCart({
+        id: product.id,
+        title: product.title,
+        producer: product.producer,
+        price: product.price,
+        image: product.image,
+      });
+    }
+  };
+
+  const handleFavoriteToggle = () => {
+    if (product && userId) {
+      favoritePack({ id: product.id, userId: userId });
+    }
   };
 
   if (isLoading) {
@@ -196,7 +160,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  if (error) {
+  if (error || !product) {
     return (
       <Layout>
         <div className="min-h-screen bg-black flex items-center justify-center">
@@ -245,34 +209,33 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               {/* Media Toggle */}
-              {product.videoPreview &&
-                product.videoPreview !== "Dolore id dolores o" && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant={!showVideo ? "default" : "outline"}
-                      className={`flex-1 ${
-                        !showVideo
-                          ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                          : "border-zinc-800"
-                      }`}
-                      onClick={() => setShowVideo(false)}
-                    >
-                      Cover
-                    </Button>
-                    <Button
-                      variant={showVideo ? "default" : "outline"}
-                      className={`flex-1 ${
-                        showVideo
-                          ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                          : "border-zinc-800"
-                      }`}
-                      onClick={() => setShowVideo(true)}
-                    >
-                      <PlaySquare className="w-4 h-4 mr-2" />
-                      Video Preview
-                    </Button>
-                  </div>
-                )}
+              {product.videoPreview && (
+                <div className="flex gap-2">
+                  <Button
+                    variant={!showVideo ? "default" : "outline"}
+                    className={`flex-1 ${
+                      !showVideo
+                        ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                        : "border-zinc-800"
+                    }`}
+                    onClick={() => setShowVideo(false)}
+                  >
+                    Cover
+                  </Button>
+                  <Button
+                    variant={showVideo ? "default" : "outline"}
+                    className={`flex-1 ${
+                      showVideo
+                        ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                        : "border-zinc-800"
+                    }`}
+                    onClick={() => setShowVideo(true)}
+                  >
+                    <PlaySquare className="w-4 h-4 mr-2" />
+                    Video Preview
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Right Column - Info */}
@@ -297,7 +260,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       ? "text-red-500 hover:text-red-600"
                       : "text-zinc-400 hover:text-white"
                   } transition-colors`}
-                  onClick={() => setIsFavorite(!isFavorite)}
+                  onClick={handleFavoriteToggle}
+                  disabled={isFavoritePackLoading}
                 >
                   <Heart
                     className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`}
@@ -306,51 +270,53 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               {/* Audio Demo */}
-              <div className="bg-zinc-900/50 rounded-xl p-4 mb-8">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all duration-200"
-                      onClick={togglePlay}
-                    >
-                      {isPlaying ? (
-                        <Pause className="h-6 w-6" />
-                      ) : (
-                        <Play className="h-6 w-6" />
-                      )}
-                    </Button>
-                    <div className="flex-1">
-                      <h3 className="text-white font-medium">
-                        {product.audioDemo.name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-zinc-400 text-sm">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>/</span>
-                        <span>{formatTime(duration)}</span>
+              {pack?.audio_path && (
+                <div className="bg-zinc-900/50 rounded-xl p-4 mb-8">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all duration-200"
+                        onClick={togglePlay}
+                      >
+                        {isPlaying ? (
+                          <Pause className="h-6 w-6" />
+                        ) : (
+                          <Play className="h-6 w-6" />
+                        )}
+                      </Button>
+                      <div className="flex-1">
+                        <h3 className="text-white font-medium">
+                          {product.audioDemo.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                          <span>{formatTime(currentTime)}</span>
+                          <span>/</span>
+                          <span>{formatTime(duration)}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration || 100}
-                      value={currentTime}
-                      onChange={handleSeek}
-                      className="w-full h-1.5 rounded-full appearance-none bg-zinc-800 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 hover:[&::-webkit-slider-thumb]:bg-emerald-400 transition-colors"
-                      style={{
-                        background: `linear-gradient(to right, #10b981 ${
-                          (currentTime / (duration || 100)) * 100
-                        }%, rgb(39 39 42) ${
-                          (currentTime / (duration || 100)) * 100
-                        }%)`,
-                      }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max={duration || 100}
+                        value={currentTime}
+                        onChange={handleSeek}
+                        className="w-full h-1.5 rounded-full appearance-none bg-zinc-800 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 hover:[&::-webkit-slider-thumb]:bg-emerald-400 transition-colors"
+                        style={{
+                          background: `linear-gradient(to right, #10b981 ${
+                            (currentTime / (duration || 100)) * 100
+                          }%, rgb(39 39 42) ${
+                            (currentTime / (duration || 100)) * 100
+                          }%)`,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Price & Buy */}
               <div className="flex items-center gap-4 mb-8">
@@ -387,40 +353,41 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
 
         {/* More from Producer */}
-        <div className="border-t border-zinc-800 mt-16">
-          <div className="mx-auto max-w-6xl px-4 py-12">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              More from {pack?.userId?.producer_name || product.producer}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {morePacks.slice(0, 20).map((item: any) => (
-                <Link
-                  key={item._id}
-                  href={`/product/${item._id}`}
-                  className="group block overflow-hidden rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 transition-all"
-                >
-                    
-                  <div className="relative aspect-square">
-                    <Image
-                      src={item.thumbnail_image}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-all duration-300 group-hover:scale-105 hover:brightness-75  "
-                    />
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-xs font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-xs font-bold text-emerald-500">
-                      ${item.price.toFixed(2)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+        {morePacks && morePacks.length > 0 && (
+          <div className="border-t border-zinc-800 mt-16">
+            <div className="mx-auto max-w-6xl px-4 py-12">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                More from {pack?.userId?.producer_name || product.producer}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {morePacks.slice(0, 20).map((item: any) => (
+                  <Link
+                    key={item._id}
+                    href={`/product/${item._id}`}
+                    className="group block overflow-hidden rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 transition-all"
+                  >
+                    <div className="relative aspect-square">
+                      <Image
+                        src={item.thumbnail_image}
+                        alt={item.title}
+                        fill
+                        className="object-cover transition-all duration-300 group-hover:scale-105 hover:brightness-75"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h3 className="text-xs font-medium text-white group-hover:text-emerald-500 line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1 text-xs font-bold text-emerald-500">
+                        ${item.price.toFixed(2)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </Layout>
   );
