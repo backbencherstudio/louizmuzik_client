@@ -399,14 +399,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   href={`/product/${item._id}`}
                   className="group block overflow-hidden rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 transition-all"
                 >
+                    
                   <div className="relative aspect-square">
                     <Image
                       src={item.thumbnail_image}
                       alt={item.title}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-all duration-300 group-hover:scale-105 hover:brightness-75  "
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-3">
                     <h3 className="text-xs font-medium text-white group-hover:text-emerald-500 line-clamp-1">
