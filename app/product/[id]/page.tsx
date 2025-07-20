@@ -16,26 +16,26 @@ import {
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/layout';
 import { useCart } from '@/components/cart-context';
+import { useGetPackDetailsQuery } from '@/app/store/api/packApis/packApis';
 
-// Sample product data - In a real app, this would come from an API/database
-const product = {
+// Default product data structure for fallback
+const defaultProduct = {
     id: 1,
-    title: 'Thunder Sample Pack Vol. 1',
-    producer: 'Thunder Beatz',
-    price: 29.99,
-    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-    description:
-        'Premium collection of hand-crafted samples for modern music production. Perfect for Hip-Hop, Trap, and R&B producers looking for unique sounds.',
+    title: 'Sample Pack',
+    producer: 'Producer',
+    price: 0,
+    image: '/placeholder.svg?height=300&width=300',
+    description: 'No description available',
     audioDemo: {
         name: 'Audio Demo',
-        duration: '1:30',
+        duration: '0:00',
     },
-    videoPreview: 'https://example.com/video-preview.mp4', // Optional video preview URL
+    videoPreview: null,
     details: {
-        format: '.zip File',
-        size: '1.2 GB',
+        format: 'N/A',
+        size: 'N/A',
         category: 'Sample Pack',
-        genre: 'Hip-Hop, Trap, R&B',
+        genre: 'N/A',
     },
 };
 
@@ -75,31 +75,56 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     const [duration, setDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const { addToCart } = useCart();
+    const { data: packDetails, isLoading, error } = useGetPackDetailsQuery(params.id);
+    const pack = packDetails?.data.singlePackData;
+    
+    // Create product object from pack data
+    const product = pack ? {
+        id: pack._id,
+        title: pack.title,
+        producer: pack.producer,
+        price: pack.price,
+        image: pack.thumbnail_image,
+        description: pack.description || 'No description available',
+        audioDemo: {
+            name: 'Audio Demo',
+            duration: '0:00',
+        },
+        videoPreview: pack.video_path || null,
+        details: {
+            format: pack.zip_path ? '.zip File' : 'Audio File',
+            size: 'N/A',
+            category: 'Pack',
+            genre: pack.genre && pack.genre.length > 0 ? pack.genre.join(', ') : 'N/A',
+        },
+    } : defaultProduct;
 
     useEffect(() => {
-        audioRef.current = new Audio('/pack-demo.mp3');
-        audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-        audioRef.current.addEventListener(
-            'loadedmetadata',
-            handleLoadedMetadata
-        );
-        audioRef.current.addEventListener('ended', handleEnded);
+        if (pack?.audio_path) {
+            audioRef.current = new Audio(pack.audio_path);
+            audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+            audioRef.current.addEventListener(
+                'loadedmetadata',
+                handleLoadedMetadata
+            );
+            audioRef.current.addEventListener('ended', handleEnded);
 
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.removeEventListener(
-                    'timeupdate',
-                    handleTimeUpdate
-                );
-                audioRef.current.removeEventListener(
-                    'loadedmetadata',
-                    handleLoadedMetadata
-                );
-                audioRef.current.removeEventListener('ended', handleEnded);
-                audioRef.current.pause();
-            }
-        };
-    }, []);
+            return () => {
+                if (audioRef.current) {
+                    audioRef.current.removeEventListener(
+                        'timeupdate',
+                        handleTimeUpdate
+                    );
+                    audioRef.current.removeEventListener(
+                        'loadedmetadata',
+                        handleLoadedMetadata
+                    );
+                    audioRef.current.removeEventListener('ended', handleEnded);
+                    audioRef.current.pause();
+                }
+            };
+        }
+    }, [pack?.audio_path]);
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
@@ -155,6 +180,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         });
     };
 
+    if (isLoading) {
+        return (
+            <Layout>
+                <div className="min-h-screen bg-black flex items-center justify-center">
+                    <div className="text-white text-xl">Loading...</div>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <div className="min-h-screen bg-black flex items-center justify-center">
+                    <div className="text-white text-xl">Error loading product</div>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
             <div className="min-h-screen bg-black">
@@ -194,7 +239,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                             </div>
 
                             {/* Media Toggle */}
-                            {product.videoPreview && (
+                            {product.videoPreview && product.videoPreview !== 'Dolore id dolores o' && (
                                 <div className="flex gap-2">
                                     <Button
                                         variant={
@@ -207,7 +252,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                                         }`}
                                         onClick={() => setShowVideo(false)}
                                     >
-                                        <Image className="w-4 h-4 mr-2" />
                                         Cover
                                     </Button>
                                     <Button
@@ -236,7 +280,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                                         {product.title}
                                     </h1>
                                     <Link
-                                        href="/profile/thunder-beatz"
+                                        href={`/profile/${pack?.userId?._id || 'unknown'}`}
                                         className="text-emerald-500 hover:text-emerald-400 transition-colors text-lg"
                                     >
                                         {product.producer}
@@ -359,7 +403,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <div className="border-t border-zinc-800 mt-16">
                     <div className="mx-auto max-w-6xl px-4 py-12">
                         <h2 className="text-2xl font-bold text-white mb-6">
-                            More from {product.producer}
+                            More from {pack?.userId?.producer_name || product.producer}
                         </h2>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {morePacks.slice(0, 4).map((pack) => (
