@@ -54,6 +54,14 @@ export const packApis = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
+
+    getFavoritePack: builder.query({
+        query: ({id}: { id: string}) => ({
+          url: `/auth/userManagement/favorites/${id}`,
+          method: "GET",
+        }),
+      }),
   }),
   overrideExisting: true,
 });
@@ -66,4 +74,5 @@ export const {
   useAllPacksQuery,
   useUpdatePackMutation,
   useFavoritePackMutation,
-} = packApis;
+  useGetFavoritePackQuery,
+    } = packApis;

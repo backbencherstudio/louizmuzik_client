@@ -5,12 +5,13 @@ import Layout from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { MelodiesTable } from '@/components/melodies-table';
 import { SamplePackCard } from '@/components/sample-pack-card';
-import { useFavoritePackQuery, useLoggedInUser } from '../store/api/authApis/authApi';
+import { useLoggedInUser } from '../store/api/authApis/authApi';
+import { useGetFavoritePackQuery } from '../store/api/packApis/packApis';
 
 export default function FavoritesPage() {
     const { data: user } = useLoggedInUser();
     const userId = user?.data?._id;
-    const { data: favoritePack } = useFavoritePackQuery({ id: userId });
+    const { data: favoritePack } = useGetFavoritePackQuery({ id: userId });
 
     console.log(favoritePack);
 
