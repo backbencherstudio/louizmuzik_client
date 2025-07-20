@@ -20,33 +20,9 @@ import { Input } from '@/components/ui/input';
 import { AudioPlayer } from '@/components/audio-player';
 import { WaveformDisplay } from '@/components/waveform-display';
 import Layout from '@/components/layout';
-import { useGetPackQuery } from '../store/api/packApis/packApis';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
+import { useGetPackProducerQuery } from '../store/api/packApis/packApis';
 
-// Sample data for producer's packs
-const producerPacks = [
-    {
-        id: 1,
-        title: 'Bumper Pack Vol.1',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        price: 35.0,
-    },
-    {
-        id: 2,
-        title: 'Radio Lotto Pack',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        price: 20.0,
-    },
-    {
-        id: 3,
-        title: 'Old School Pack',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        price: 19.0,
-    },
-];
 
 // Sample data for producer's melodies
 const producerMelodies = [
@@ -55,7 +31,7 @@ const producerMelodies = [
         name: 'Summer Vibes',
         producer: 'Thunder Beatz',
         image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/audio/melody-1.mp3',
+        audioUrl: '/sample-audio/sampleaudio.mp3',
         bpm: 128,
         key: 'C Maj',
         genre: 'Pop',
@@ -66,7 +42,7 @@ const producerMelodies = [
         name: 'Urban Flow',
         producer: 'Thunder Beatz',
         image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/audio/melody-2.mp3',
+        audioUrl: '/sample-audio/sampleaudio.mp3',
         bpm: 140,
         key: 'G Min',
         genre: 'Hip Hop',
@@ -77,7 +53,7 @@ const producerMelodies = [
         name: 'Midnight Jazz',
         producer: 'Thunder Beatz',
         image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/audio/melody-3.mp3',
+        audioUrl: '/sample-audio/sampleaudio.mp3',
         bpm: 95,
         key: 'D Min',
         genre: 'Jazz',
@@ -95,7 +71,7 @@ export default function ItemsPage() {
 
     const { data: user } = useLoggedInUser();
     const userId = user?.data?._id
-    const { data: packData } = useGetPackQuery(userId);
+    const { data: packData } = useGetPackProducerQuery(userId);
 
     console.log(packData);
 
@@ -121,7 +97,7 @@ export default function ItemsPage() {
                 name: pack.title,
                 producer: pack.producer,
                 image: pack.image,
-                waveform: '▂▃▅▂▇▂▅▃▂',
+                audio: pack.audio_path || pack.audio,
                 bpm: 120,
                 key: 'C Maj',
                 artistType: 'Producer',
@@ -233,7 +209,7 @@ export default function ItemsPage() {
                                                         e.preventDefault();
                                                         window.location.href = `/new-pack?edit=${pack.id}`;
                                                     }}
-                                                    className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-colors"
+                                                    className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-600 hover:text-black transition-colors"
                                                 >
                                                     Edit
                                                 </Button>

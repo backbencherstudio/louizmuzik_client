@@ -47,6 +47,7 @@ export function AudioPlayer({
     const [isMuted, setIsMuted] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
+    console.log(melody);
 
     useEffect(() => {
         // Reset player state when melody changes
@@ -249,6 +250,7 @@ export function AudioPlayer({
                                 <Download className="h-5 w-5" />
                             </Button>
                         </div>
+
                     </div>
                 </div>
 
@@ -275,3 +277,4 @@ export function AudioPlayer({
 }
 
 export default AudioPlayer;
+

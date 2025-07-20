@@ -42,7 +42,6 @@ export function WaveformDisplay({
             barRadius: 2,
             height: height,
             normalize: true,
-            responsive: true,
             interact: true,
             mediaControls: false,
             hideScrollbar: true,
