@@ -52,7 +52,7 @@ export const packApis = baseApi.injectEndpoints({
         url: `/pack/${id}?userId=${userId}`,
         method: "PATCH",
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "Pack"],
     }),
 
 
@@ -61,6 +61,7 @@ export const packApis = baseApi.injectEndpoints({
           url: `/auth/userManagement/favorites/${id}`,
           method: "GET",
         }),
+        providesTags: ["Pack"],
       }),
   }),
   overrideExisting: true,

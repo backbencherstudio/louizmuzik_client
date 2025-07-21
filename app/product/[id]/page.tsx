@@ -33,10 +33,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     error,
   } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
-  console.log(packDetails);
-
   const { data: user ,refetch} = useLoggedInUser();
-  console.log(user?.data);
   const userId = user?.data?._id;
   const [favoritePack, { isLoading: isFavoritePackLoading }] = useFavoritePackMutation();
   const isFavorite = user?.data?.favourite_packs?.includes(id);
@@ -147,6 +144,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const handleFavoriteToggle = () => {
     if (product && userId) {
       favoritePack({ id: product.id, userId: userId });
+      refetch();
     }
   };
 

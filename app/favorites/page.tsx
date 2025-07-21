@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "@/components/layout";
 import { Card } from "@/components/ui/card";
 import { MelodiesTable } from "@/components/melodies-table";
@@ -12,26 +12,37 @@ import {
 } from "../store/api/packApis/packApis";
 
 export default function FavoritesPage() {
-  const { data: user } = useLoggedInUser();
+  const { data: user, refetch: refetchUser } = useLoggedInUser();
   const userId = user?.data?._id;
-  const { data: favoritePack, refetch } = useGetFavoritePackQuery({ id: userId });
+  const { data: favoritePack, refetch: refetchFavorites } = useGetFavoritePackQuery(
+    { id: userId },
+    { skip: !userId }
+  );
 
-  const [favorite] = useFavoritePackMutation();
+  const [favorite, { isLoading: isFavoritePackLoading }] =
+    useFavoritePackMutation();
 
   const favouritePacks = favoritePack?.data?.packs || [];
 
   const handleFavoriteClick = async (packId: string) => {
     try {
       await favorite({ id: packId, userId: userId });
-      refetch();
+      // Refetch both user data and favorites to ensure consistency
+      await Promise.all([refetchUser(), refetchFavorites()]);
     } catch (error) {
       console.error("Error toggling favorite:", error);
     }
   };
-
   const isPackFavorite = (packId: string) => {
     return user?.data?.favourite_packs?.includes(packId) || false;
   };
+  
+  // Refetch data when user changes
+  useEffect(() => {
+    if (userId) {
+      refetchFavorites();
+    }
+  }, [userId, refetchFavorites]);
 
   // Mock data for melodies - Replace with real data later
   const melodies = [
