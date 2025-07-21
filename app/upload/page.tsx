@@ -64,7 +64,17 @@ const artistTypeOptions = [
 ];
 
 // Mock data for existing melodies - In a real app, this would come from your API
-const mockMelodies = {
+const mockMelodies: Record<string, {
+    id: string;
+    name: string;
+    bpm: number;
+    key: string;
+    splitPercentage: number;
+    genres: string[];
+    instruments: string[];
+    artistTypes: string[];
+    audioUrl: string;
+}> = {
     '1': {
         id: '1',
         name: 'Summer Vibes',
@@ -223,7 +233,6 @@ export default function UploadPage() {
                 barRadius: 3,
                 height: 60,
                 normalize: true,
-                responsive: true,
             });
 
             // Load audio file
@@ -302,9 +311,10 @@ export default function UploadPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
         const formData = {
             name: melodyName,
-            bpm: document.getElementById('bpm')?.value,
+            bpm: bpmInput?.value,
             key: selectedKey,
             splitPercentage,
             genres: selectedGenres,
