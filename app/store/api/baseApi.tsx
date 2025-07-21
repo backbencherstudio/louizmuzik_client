@@ -21,6 +21,7 @@ export const baseApi = createApi({
   tagTypes: [
     "User",
     "Pack",
+    "Melody",
   ],
 });
 
