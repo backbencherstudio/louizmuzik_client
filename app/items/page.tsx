@@ -242,6 +242,7 @@ export default function ItemsPage() {
                                                         setDeleteModalOpen(true);
                                                         setPackToDelete(pack);
                                                     }}
+                                                    className='bg-red-500 text-white'
                                                 >
                                                     
                                                     <Trash className="h-4 w-4" />
