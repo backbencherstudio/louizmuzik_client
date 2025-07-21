@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Music, Upload, X, Check, Play, Pause } from 'lucide-react';
+import { Music, Upload, X, Check, Play, Pause, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -24,6 +24,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { KeySelector } from '@/components/key-selector';
 import WaveSurfer from 'wavesurfer.js';
 import { useSearchParams } from 'next/navigation';
+import { useCreateMelodyMutation } from '../store/api/melodyApis/melodyApis';
+import { toast } from 'sonner';
+import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
 
 // Predefined options for different fields
 const genreOptions = [
@@ -196,6 +199,13 @@ export default function UploadPage() {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [splitPercentage, setSplitPercentage] = useState<number>(50);
     const [melodyName, setMelodyName] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+
+    const { data: user } = useLoggedInUserQuery(null)
+    const userData = user?.data
+    console.log(userData);
+
+    const [createMelody, { isLoading: isCreatingMelody }] = useCreateMelodyMutation()
 
     // Load existing melody data if in edit mode
     useEffect(() => {
@@ -308,20 +318,38 @@ export default function UploadPage() {
         }
     };
 
+    const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.type.startsWith('image/')) {
+                setImageFile(file);
+            }
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const bpmInput = document.getElementById('bpm') as HTMLInputElement;
-        const formData = {
-            name: melodyName,
-            bpm: bpmInput?.value,
-            key: selectedKey,
-            splitPercentage,
-            genres: selectedGenres,
-            instruments: selectedInstruments,
-            artistTypes: selectedArtistTypes,
-            audioFile: file,
-        };
+        const formData = new FormData();
+        formData.append('userId', userData?._id);
+        formData.append("producer",userData?.name),
+        formData.append('name', melodyName);
+        formData.append('bpm', bpmInput?.value || '');
+        formData.append('key', selectedKey);
+        formData.append('splitPercentage', String(splitPercentage));
+        formData.append('genre', JSON.stringify(selectedGenres));
+        formData.append('instruments', JSON.stringify(selectedInstruments));
+        formData.append('artistType', JSON.stringify(selectedArtistTypes));
+        if (file) formData.append('audioUrl', file);
+        if (imageFile) formData.append('image', imageFile);
+
+        const response = await createMelody(formData).unwrap();
+        if (response.success) {
+            toast.success('Melody created successfully')
+        } else {
+            toast.error('Failed to create melody')
+        }
 
         if (isEditMode) {
             // In a real app, you would update the existing melody
@@ -371,6 +399,34 @@ export default function UploadPage() {
 
                     <Card className="border-0 bg-black p-4 md:p-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Image Upload Area */}
+                            <div
+                                className={`relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 mb-4`}
+                                onClick={() => document.getElementById('image-input')?.click()}
+                            >
+                                <input
+                                    id="image-input"
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageInput}
+                                />
+                                <div className="flex flex-col items-center gap-2 text-center">
+                                    {imageFile ? (
+                                        <>
+                                            <Music className="h-8 w-8 text-emerald-500" />
+                                            <p className="text-base font-medium text-white">{imageFile.name}</p>
+                                            <p className="text-xs text-zinc-400">Click to change image</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="h-8 w-8 text-zinc-400" />
+                                            <p className="text-base font-medium text-white">Upload Cover Image</p>
+                                            <p className="text-xs text-zinc-400 px-2">(JPG, PNG, etc.)</p>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                             {/* Drag & Drop Area */}
                             <div
                                 className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors ${
@@ -652,9 +708,7 @@ export default function UploadPage() {
                                         type="submit"
                                         className="bg-emerald-500 text-white hover:bg-emerald-600"
                                     >
-                                        {isEditMode
-                                            ? 'Save Changes'
-                                            : 'Upload Melody'}
+                                        {isCreatingMelody ? <Loader2 className="h-4 w-4 animate-spin" /> : isEditMode ? 'Save Changes' : 'Upload Melody'}
                                     </Button>
                                 </div>
                             </div>
