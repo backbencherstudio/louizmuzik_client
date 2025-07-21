@@ -19,7 +19,7 @@ export default function FavoritesPage() {
     { skip: !userId }
   );
 
-  const [favorite, { isLoading: isFavoritePackLoading }] =
+  const [favorite] =
     useFavoritePackMutation();
 
   const favouritePacks = favoritePack?.data?.packs || [];
@@ -36,7 +36,7 @@ export default function FavoritesPage() {
   const isPackFavorite = (packId: string) => {
     return user?.data?.favourite_packs?.includes(packId) || false;
   };
-  
+
   // Refetch data when user changes
   useEffect(() => {
     if (userId) {
