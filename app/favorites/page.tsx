@@ -27,7 +27,6 @@ export default function FavoritesPage() {
   const handleFavoriteClick = async (packId: string) => {
     try {
       await favorite({ id: packId, userId: userId });
-      // Refetch both user data and favorites to ensure consistency
       await Promise.all([refetchUser(), refetchFavorites()]);
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -37,7 +36,6 @@ export default function FavoritesPage() {
     return user?.data?.favourite_packs?.includes(packId) || false;
   };
 
-  // Refetch data when user changes
   useEffect(() => {
     if (userId) {
       refetchFavorites();
