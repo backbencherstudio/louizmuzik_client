@@ -12,6 +12,7 @@ interface SamplePackCardProps {
     imageUrl: string;
     isFavorite: boolean;
     id: string;
+    handleFavoriteClick: () => void;
 }
 
 export function SamplePackCard({
@@ -21,6 +22,7 @@ export function SamplePackCard({
     imageUrl,
     isFavorite,
     id,
+    handleFavoriteClick,
 }: SamplePackCardProps) {
     const router = useRouter();
     return (
@@ -36,6 +38,7 @@ export function SamplePackCard({
                     size="icon"
                     variant="ghost"
                     className="absolute right-2 top-2 text-white hover:bg-black/50"
+                    onClick={handleFavoriteClick}
                 >
                     <Heart
                         className={`h-5 w-5 ${
