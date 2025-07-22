@@ -36,6 +36,7 @@ export default function ItemsPage() {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [packToDelete, setPackToDelete] = useState<any>(null);
     const { data: user } = useLoggedInUser();
+    const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
     const userId = user?.data?._id
     const { data: packData,refetch } = useGetProducerPackQuery(userId);
     const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
@@ -44,7 +45,6 @@ export default function ItemsPage() {
     const melodies = melodiesData?.data
 
     const handleDeletePack = async (packId: string) => {
-
         try {
             await deletePack(packId).unwrap();
             toast.success('Pack deleted successfully');
@@ -63,36 +63,60 @@ export default function ItemsPage() {
     };
 
     const handlePlayClick = (melody: any) => {
-        if (currentPlayingMelody?.id === melody.id) {
+        if (currentPlayingMelody?._id === melody._id) {
             setCurrentPlayingMelody(null);
+            setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(false);
+            setShouldAutoPlay(false);
         } else {
-            setCurrentPlayingMelody(melody);
+            const melodyToPlay = {
+                id: melody._id,
+                _id: melody._id,
+                name: melody.name,
+                producer: melody.producer,
+                image: melody.image,
+                audio: melody.audio_path || melody.audio || melody.audioUrl,
+                audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+                bpm: melody.bpm || 120,
+                key: melody.key || 'C Maj',
+                genre: melody.genre || 'Unknown',
+                artistType: melody.artistType || 'Producer',
+            };
+            
+            console.log('Playing melody:', melodyToPlay); 
+            setCurrentPlayingMelody(melodyToPlay);
+            setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(true);
+            setShouldAutoPlay(true); // <-- set to true on user click
         }
     };
 
     const handlePackPlayClick = (pack: any) => {
-        if (currentPlayingPack?.id === pack.id) {
+        if (currentPlayingPack?._id === pack._id) {
             setCurrentPlayingPack(null);
+            setCurrentPlayingMelody(null);
             setIsAudioPlayerVisible(false);
         } else {
-            setCurrentPlayingPack({
-                id: pack.id,
+            const packToPlay = {
+                id: pack._id,
+                _id: pack._id,
                 name: pack.title,
                 producer: pack.producer,
-                image: pack.image,
+                image: pack.thumbnail_image,
                 audio: pack.audio_path || pack.audio,
-                bpm: 120,
-                key: 'C Maj',
+                audioUrl: pack.audio_path || pack.audio,
+                bpm: pack.bpm || 120,
+                key: pack.key || 'C Maj',
+                genre: pack.genre || 'Unknown',
                 artistType: 'Producer',
-            });
+            };
+            
+            console.log('Playing pack:', packToPlay); 
+            setCurrentPlayingPack(packToPlay);
+            setCurrentPlayingMelody(null);
             setIsAudioPlayerVisible(true);  
         }
     };
-
- 
-
 
     return (
         <Layout>
@@ -141,12 +165,12 @@ export default function ItemsPage() {
                                             <Button
                                                 onClick={(e) => {
                                                     e.preventDefault();
+                                                    e.stopPropagation();
                                                     handlePackPlayClick(pack);
                                                 }}
                                                 className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
                                             >
-                                                {currentPlayingPack?.id ===
-                                                pack._id ? (
+                                                {currentPlayingPack?._id === pack._id ? (
                                                     <Pause className="h-6 w-6" />
                                                 ) : (
                                                     <Play className="h-6 w-6" />
@@ -169,6 +193,7 @@ export default function ItemsPage() {
                                                 <Button
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         window.location.href = `/new-pack?edit=${pack._id}`;
                                                     }}
                                                     className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-600 hover:text-black transition-colors"
@@ -178,15 +203,15 @@ export default function ItemsPage() {
                                                 <Button
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         setDeleteModalOpen(true);
                                                         setPackToDelete(pack);
                                                     }}
                                                     className='bg-red-500 text-white'
                                                 >
-                                                    
                                                     <Trash className="h-4 w-4" />
                                                 </Button>
-                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -257,8 +282,7 @@ export default function ItemsPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className={`h-8 w-8 rounded-full ${
-                                                    currentPlayingMelody?.id ===
-                                                    melody?._id
+                                                    currentPlayingMelody?._id === melody?._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
@@ -266,8 +290,7 @@ export default function ItemsPage() {
                                                     handlePlayClick(melody)
                                                 }
                                             >
-                                                {currentPlayingMelody?.id ===
-                                                melody?._id ? (
+                                                {currentPlayingMelody?._id === melody?._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
                                                     <Play className="h-4 w-4" />
@@ -302,10 +325,10 @@ export default function ItemsPage() {
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <WaveformDisplay
-                                                audioUrl={melody?.audioUrl}
+                                                key={melody.audioUrl || melody.id}
+                                                audioUrl={melody?.audio_path || melody?.audio || melody?.audioUrl}
                                                 isPlaying={
-                                                    currentPlayingMelody?.id ===
-                                                    melody.id
+                                                    currentPlayingMelody?._id === melody._id
                                                 }
                                                 onPlayPause={() =>
                                                     handlePlayClick(melody)
@@ -363,12 +386,15 @@ export default function ItemsPage() {
                 {isAudioPlayerVisible &&
                     (currentPlayingMelody || currentPlayingPack) && (
                         <AudioPlayer
+                            key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
                             isVisible={isAudioPlayerVisible}
                             melody={currentPlayingMelody || currentPlayingPack}
+                            shouldAutoPlay={shouldAutoPlay}
                             onClose={() => {
                                 setCurrentPlayingMelody(null);
                                 setCurrentPlayingPack(null);
                                 setIsAudioPlayerVisible(false);
+                                setShouldAutoPlay(false);
                             }}
                         />
                     )}

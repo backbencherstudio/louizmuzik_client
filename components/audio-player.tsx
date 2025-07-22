@@ -31,6 +31,7 @@ interface AudioPlayerProps {
     onClose: () => void;
     isFavorite?: boolean;
     onFavoriteClick?: (melodyId: number) => void;
+    shouldAutoPlay?: boolean; // <-- add this prop
 }
 
 export function AudioPlayer({
@@ -39,6 +40,7 @@ export function AudioPlayer({
     onClose,
     isFavorite = false,
     onFavoriteClick,
+    shouldAutoPlay = false,
 }: AudioPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -60,6 +62,15 @@ export function AudioPlayer({
             setDuration(fakeDuration);
         }
     }, [melody]);
+
+    useEffect(() => {
+        // When melody or shouldAutoPlay changes, set isPlaying accordingly
+        if (shouldAutoPlay && melody) {
+            setIsPlaying(true);
+        } else {
+            setIsPlaying(false);
+        }
+    }, [melody, shouldAutoPlay]);
 
     useEffect(() => {
         // Handle play/pause
