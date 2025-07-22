@@ -49,7 +49,7 @@ export function AudioPlayer({
     const [isMuted, setIsMuted] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
-    console.log(melody);
+    // console.log(melody);
 
     useEffect(() => {
         // Reset player state when melody changes

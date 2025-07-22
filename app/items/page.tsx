@@ -144,7 +144,7 @@ export default function ItemsPage() {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
+            <div className={`min-h-screen bg-gradient-to-b from-black to-zinc-900/50 ${isAudioPlayerVisible ? 'pb-12' : ''}`}>
                 {/* Back Button */}
                 <div className="mx-auto max-w-7xl px-4 py-8">
                     <Button
