@@ -43,7 +43,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useGetMelodiesQuery } from '../store/api/melodyApis/melodyApis';
+import { useGetMelodiesQuery, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -76,6 +76,7 @@ export default function BrowsePage() {
     const { data: melodiesData } = useGetMelodiesQuery(null);
     console.log("melodiesData",melodiesData);
         const melodies = melodiesData?.data;
+    const [melodyPlayCounter] = useMelodyPlayMutation();
 
     const genres = Array.from(new Set(melodies?.map((m:any) => m.genre)));
     const artistTypes = Array.from(new Set(melodies?.map((m:any) => m.artistType)));
@@ -93,13 +94,21 @@ export default function BrowsePage() {
         setIsCollabModalOpen(true);
     };
 
-    const handlePlayClick = (melody: any) => {
+    const handlePlayClick =  async (melody: any) => {
         if (currentPlayingMelody?._id === melody._id) {
             setCurrentPlayingMelody(null);
             setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(false);
             setShouldAutoPlay(false);
+            
+            
         } else {
+             try {
+                const response = await melodyPlayCounter(melody._id).unwrap();
+                console.log("melodyPlayCounter",response);
+             } catch (error) {
+                console.log("error",error);
+             }
             const melodyToPlay = {
                 _id: melody._id, 
                 name: melody.name,

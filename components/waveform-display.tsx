@@ -24,7 +24,7 @@ export function WaveformDisplay({
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
 
-    console.log('audioUrl', audioUrl);
+    // console.log('audioUrl', audioUrl);
 
     useEffect(() => {
         // Clean up previous instance if it exists
@@ -38,7 +38,7 @@ export function WaveformDisplay({
             return;
         }
 
-        console.log('Creating WaveSurfer for URL:', audioUrl);
+        // console.log('Creating WaveSurfer for URL:', audioUrl);
         setIsLoading(true);
         setError(null);
         setIsReady(false);
