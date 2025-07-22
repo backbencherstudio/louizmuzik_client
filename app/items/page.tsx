@@ -336,6 +336,10 @@ export default function ItemsPage() {
                                                 height={30}
                                                 width="200px"
                                             />
+                                            {/* <audio
+                                                src={melody?.audio_path || melody?.audio || melody?.audioUrl}
+                                                controls
+                                            /> */}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             {melody.bpm}
