@@ -69,6 +69,8 @@ export default function BrowsePage() {
         min?: number;
         max?: number;
     } | null>(null);
+    const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+    const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
 
 
     const { data: melodiesData } = useGetMelodiesQuery(null);
@@ -92,14 +94,29 @@ export default function BrowsePage() {
     };
 
     const handlePlayClick = (melody: any) => {
-        if (currentPlayingMelody?.id === melody.id) {
-            // Si la melodía actual está sonando, la pausamos
+        if (currentPlayingMelody?._id === melody._id) {
             setCurrentPlayingMelody(null);
+            setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(false);
+            setShouldAutoPlay(false);
         } else {
-            // Si es una nueva melodía o está pausada, la reproducimos
-            setCurrentPlayingMelody(melody);
+            const melodyToPlay = {
+                _id: melody._id, 
+                name: melody.name,
+                producer: melody.producer,
+                image: melody.image,
+                audio: melody.audio_path || melody.audio || melody.audioUrl,
+                audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+                bpm: melody.bpm || 120,
+                key: melody.key || 'C Maj',
+                genre: melody.genre || 'Unknown',
+                artistType: melody.artistType || 'Producer',
+            };
+            
+            setCurrentPlayingMelody(melodyToPlay);
+            setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(true);
+            setShouldAutoPlay(true);
         }
     };
 
@@ -173,7 +190,7 @@ export default function BrowsePage() {
         setBpmFilter(null);
     };
 
-    const filteredAndSortedMelodies = [...melodies]
+    const filteredAndSortedMelodies = [...(melodies || [])]
         .filter((melody) => {
             if (
                 searchQuery &&
@@ -256,31 +273,31 @@ export default function BrowsePage() {
                 : bValue.localeCompare(aValue);
         });
 
-    const playNextMelody = () => {
-        if (!currentPlayingMelody) return;
-
-        const currentIndex = filteredAndSortedMelodies.findIndex(
-            (melody) => melody.id === currentPlayingMelody.id
-        );
-
-        if (currentIndex < filteredAndSortedMelodies.length - 1) {
-            const nextMelody = filteredAndSortedMelodies[currentIndex + 1];
-            handlePlayClick(nextMelody);
-        }
-    };
-
-    const playPreviousMelody = () => {
-        if (!currentPlayingMelody) return;
-
-        const currentIndex = filteredAndSortedMelodies.findIndex(
-            (melody) => melody.id === currentPlayingMelody.id
-        );
-
-        if (currentIndex > 0) {
-            const previousMelody = filteredAndSortedMelodies[currentIndex - 1];
-            handlePlayClick(previousMelody);
-        }
-    };
+        const playNextMelody = () => {
+            if (!currentPlayingMelody) return;
+        
+            const currentIndex = filteredAndSortedMelodies.findIndex(
+                (melody) => melody._id === currentPlayingMelody._id
+            );
+        
+            if (currentIndex < filteredAndSortedMelodies.length - 1) {
+                const nextMelody = filteredAndSortedMelodies[currentIndex + 1];
+                handlePlayClick(nextMelody);
+            }
+        };
+        
+        const playPreviousMelody = () => {
+            if (!currentPlayingMelody) return;
+        
+            const currentIndex = filteredAndSortedMelodies.findIndex(
+                (melody) => melody._id === currentPlayingMelody._id
+            );
+        
+            if (currentIndex > 0) {
+                const previousMelody = filteredAndSortedMelodies[currentIndex - 1];
+                handlePlayClick(previousMelody);
+            }
+        };
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -662,7 +679,7 @@ export default function BrowsePage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className={`h-8 w-8 rounded-full ${
-                                                    currentPlayingMelody?.id ===
+                                                    currentPlayingMelody?._id ===
                                                     melody.id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
@@ -671,8 +688,8 @@ export default function BrowsePage() {
                                                     handlePlayClick(melody)
                                                 }
                                             >
-                                                {currentPlayingMelody?.id ===
-                                                melody.id ? (
+                                                {currentPlayingMelody?._id ===
+                                                melody._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
                                                     <Play className="h-4 w-4" />
@@ -925,17 +942,29 @@ export default function BrowsePage() {
                         </Button>
                     </div>
                 </div>
-                <AudioPlayer
-                    isVisible={isAudioPlayerVisible}
-                    melody={currentPlayingMelody}
-                    onClose={() => setIsAudioPlayerVisible(false)}
-                    isFavorite={
-                        currentPlayingMelody
-                            ? favoriteMelodies.includes(currentPlayingMelody.id)
-                            : false
-                    }
-                    onFavoriteClick={handleFavoriteClick}
-                />
+                {isAudioPlayerVisible &&
+                    (currentPlayingMelody || currentPlayingPack) && (
+                        <AudioPlayer
+                            key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
+                            isVisible={isAudioPlayerVisible}
+                            melody={currentPlayingMelody || currentPlayingPack}
+                            shouldAutoPlay={shouldAutoPlay}
+                            onClose={() => {
+                                setCurrentPlayingMelody(null);
+                                setCurrentPlayingPack(null);
+                                setIsAudioPlayerVisible(false);
+                                setShouldAutoPlay(false);
+                            }}
+                            isFavorite={
+                                currentPlayingMelody
+                                    ? favoriteMelodies.includes(currentPlayingMelody.id)
+                                    : false
+                            }
+                            onFavoriteClick={handleFavoriteClick}
+                            playNextMelody={playNextMelody}
+                            playPreviousMelody={playPreviousMelody}
+                        />
+                    )}
                 {selectedMelody && (
                     <CollabModal
                         isOpen={isCollabModalOpen}

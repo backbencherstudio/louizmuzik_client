@@ -32,6 +32,8 @@ interface AudioPlayerProps {
     isFavorite?: boolean;
     onFavoriteClick?: (melodyId: number) => void;
     shouldAutoPlay?: boolean; // <-- add this prop
+    playNextMelody?: () => void;
+    playPreviousMelody?: () => void;
 }
 
 export function AudioPlayer({
@@ -41,6 +43,8 @@ export function AudioPlayer({
     isFavorite = false,
     onFavoriteClick,
     shouldAutoPlay = false,
+    playNextMelody,
+    playPreviousMelody,
 }: AudioPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -163,7 +167,7 @@ export function AudioPlayer({
                                 variant="ghost"
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-9 w-9"
-                                onClick={() => console.log('Previous track')}
+                                onClick={playPreviousMelody}
                             >
                                 <SkipBack className="h-5 w-5" />
                             </Button>
@@ -183,7 +187,7 @@ export function AudioPlayer({
                                 variant="ghost"
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-9 w-9"
-                                onClick={() => console.log('Next track')}
+                                onClick={playNextMelody}
                             >
                                 <SkipForward className="h-5 w-5" />
                             </Button>
