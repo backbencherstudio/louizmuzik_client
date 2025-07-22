@@ -963,6 +963,7 @@ export default function BrowsePage() {
                             onFavoriteClick={handleFavoriteClick}
                             playNextMelody={playNextMelody}
                             playPreviousMelody={playPreviousMelody}
+                            onEnded={playNextMelody}
                         />
                     )}
                 {selectedMelody && (

@@ -34,6 +34,7 @@ interface AudioPlayerProps {
     shouldAutoPlay?: boolean; // <-- add this prop
     playNextMelody?: () => void;
     playPreviousMelody?: () => void;
+    onEnded?: () => void;
 }
 
 export function AudioPlayer({
@@ -45,6 +46,7 @@ export function AudioPlayer({
     shouldAutoPlay = false,
     playNextMelody,
     playPreviousMelody,
+    onEnded,
 }: AudioPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -283,7 +285,8 @@ export function AudioPlayer({
                 <audio
                     ref={audioRef}
                     onTimeUpdate={handleTimeUpdate}
-                    onEnded={() => setIsPlaying(false)}
+                    // onEnded={() => setIsPlaying(false)}
+                    onEnded={onEnded}
                     onLoadedMetadata={(e) => {
                         if (audioRef.current) {
                             setDuration(audioRef.current.duration);
