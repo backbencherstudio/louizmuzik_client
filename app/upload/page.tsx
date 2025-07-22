@@ -204,7 +204,7 @@ export default function UploadPage() {
 
     const { data: user } = useLoggedInUserQuery(null)
     const userData = user?.data
-    console.log(userData);
+    console.log("userData",userData);
 
     const [createMelody, { isLoading: isCreatingMelody , reset}] = useCreateMelodyMutation()
 
@@ -391,7 +391,7 @@ export default function UploadPage() {
         const bpmInput = document.getElementById('bpm') as HTMLInputElement;
         const formData = new FormData();
         formData.append('userId', userData?._id);
-        formData.append("producer",userData?.name),
+        formData.append("producer",userData?.producer_name),
         formData.append('name', melodyName);
         formData.append('bpm', bpmInput?.value || '');
         formData.append('key', selectedKey);

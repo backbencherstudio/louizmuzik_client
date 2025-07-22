@@ -26,7 +26,8 @@ import Layout from '@/components/layout';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
 import { useDeletePackMutation, useGetProducerPackQuery } from '../store/api/packApis/packApis';
 import { toast } from 'sonner';
-import { useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
+import { useDeleteMelodyMutation, useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
+import DeleteModal from '@/components/Modals/DeleteModal';
 
 export default function ItemsPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -35,14 +36,18 @@ export default function ItemsPage() {
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [packToDelete, setPackToDelete] = useState<any>(null);
+    const [melodyToDelete, setMelodyToDelete] = useState<any>(null);
     const { data: user } = useLoggedInUser();
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
-    const userId = user?.data?._id
+    const userId = user?.data?._id;
+    
     const { data: packData,refetch } = useGetProducerPackQuery(userId);
     const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
+
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
-    console.log(melodiesData);
     const melodies = melodiesData?.data
+    console.log("melodies",melodies);
+    const [deleteMelody, { isLoading: isDeletingMelody }] = useDeleteMelodyMutation();
 
     const handleDeletePack = async (packId: string) => {
         try {
@@ -61,6 +66,25 @@ export default function ItemsPage() {
             handleDeletePack(packToDelete._id);
         }
     };
+
+    const handleDeleteMelody = async (melodyId: string) => {
+        try {
+            await deleteMelody({id:melodyId , userId:userId}).unwrap();
+            toast.success('Melody deleted successfully');
+            refetchMelodies();
+            setDeleteModalOpen(false);
+            setMelodyToDelete(null);
+        } catch (error) {
+            toast.error('Failed to delete melody');
+        }
+    }
+    const handleDeleteConfirmMelody = () => {
+        if (melodyToDelete) {
+            handleDeleteMelody(melodyToDelete._id);
+        }
+    };
+
+    // Play functions
 
     const handlePlayClick = (melody: any) => {
         if (currentPlayingMelody?._id === melody._id) {
@@ -371,8 +395,8 @@ export default function ItemsPage() {
                                                     size="icon"
                                                     className="h-8 w-8 text-zinc-400 hover:text-red-500"
                                                     onClick={() => {
-                                                        // TODO: Implement melody delete functionality
-                                                        toast.info('Delete melody feature coming soon!');
+                                                        setMelodyToDelete(melody);
+                                                        setDeleteModalOpen(true);
                                                     }}
                                                 >
                                                     <Trash className="h-4 w-4" />
@@ -404,54 +428,23 @@ export default function ItemsPage() {
                     )}
             </div>
 
-            {deleteModalOpen && packToDelete && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-zinc-900 p-6 rounded-lg max-w-md w-full mx-4">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-semibold text-white">
-                                Delete Sample Pack
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setDeleteModalOpen(false);
-                                    setPackToDelete(null);
-                                }}
-                                className="text-zinc-400 hover:text-white"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <p className="text-zinc-400 mb-6">
-                            Are you sure you want to delete &quot;
-                            {packToDelete.title}&quot;? This action cannot be
-                            undone.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <Button
-                                variant="ghost"
-                                onClick={() => {
-                                    setDeleteModalOpen(false);
-                                    setPackToDelete(null);
-                                }}
-                                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={handleDeleteConfirm}
-                                className="bg-red-500 hover:bg-red-600 text-white"
-                            >
-                                {isDeleting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    'Delete'
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </Layout>
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                itemToDelete={packToDelete || melodyToDelete}
+                isDeleting={isDeleting || isDeletingMelody}
+                onCancel={() => {
+                    setDeleteModalOpen(false);
+                    setPackToDelete(null);
+                    setMelodyToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (packToDelete) {
+                        handleDeleteConfirm();
+                    } else if (melodyToDelete) {
+                        handleDeleteConfirmMelody();
+                    }
+                }}
+            />
+            </Layout>
     );
 }
