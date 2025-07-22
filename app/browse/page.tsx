@@ -43,142 +43,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-// Sample melodies data with added genre and artist type
-const melodies = [
-    {
-        id: 1,
-        name: 'Summer Vibes',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'Thunder Beatz',
-        audioUrl: '/sample-audio/sampleaudio.mp3',
-        bpm: 120,
-        key: 'C Maj',
-        genre: 'Trap',
-        artistType: 'Producer',
-        plays: 1250,
-        uploadDate: '2024-03-15T10:00:00Z',
-    },
-    {
-        id: 2,
-        name: 'Midnight Dreams',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'IQBAL',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 95,
-        key: 'G Min',
-        genre: 'R&B',
-        artistType: 'Beatmaker',
-        plays: 850,
-        uploadDate: '2024-03-14T15:30:00Z',
-    },
-    {
-        id: 3,
-        name: 'Urban Flow',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        producer: 'Bijoy',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 140,
-        key: 'D Min',
-        genre: 'Hip Hop',
-        artistType: 'DJ',
-        plays: 2100,
-        uploadDate: '2024-03-16T08:45:00Z',
-    },
-    {
-        id: 4,
-        name: 'Chill Wave',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Thunder Beatz',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 85,
-        key: 'A Min',
-        genre: 'Lo-Fi',
-        artistType: 'Composer',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 5,
-        name: 'Street Anthem',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'DJ Snake',
-        waveform: '▅▃▇▂▅▃▂▅▃',
-        bpm: 130,
-        key: 'F Maj',
-        genre: 'Drill',
-        artistType: 'Producer',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 6,
-        name: 'Neon Lights',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Melody Master',
-        waveform: '▃▅▂▇▃▂▅▂▃',
-        bpm: 110,
-        key: 'E Min',
-        genre: 'Electronic',
-        artistType: 'Producer',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 7,
-        name: 'Desert Storm',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Beat Wizard',
-        waveform: '▂▅▃▂▇▃▅▂▃',
-        bpm: 90,
-        key: 'B Min',
-        genre: 'Ambient',
-        artistType: 'Composer',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 8,
-        name: 'City Lights',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Urban Legend',
-        waveform: '▅▃▂▅▃▇▂▃▅',
-        bpm: 125,
-        key: 'A Maj',
-        genre: 'Pop',
-        artistType: 'Beatmaker',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 9,
-        name: 'Ocean Waves',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Thunder Beatz',
-        waveform: '▂▃▂▅▃▂▇▃▂',
-        bpm: 75,
-        key: 'D Maj',
-        genre: 'Chill',
-        artistType: 'Producer',
-        plays: 0,
-        uploadDate: '',
-    },
-    {
-        id: 10,
-        userId : "",
-        name: 'Midnight Run',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Night Rider',
-        waveform: '▃▇▂▅▃▂▅▃▂',
-        bpm: 145,
-        key: 'F# Min',
-        genre: 'Techno',
-        artistType: 'DJ',
-        plays: 0,
-        uploadDate: '',
-        downloadCouter : ''
-    },
-];
+import { useGetMelodiesQuery } from '../store/api/melodyApis/melodyApis';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -205,8 +70,13 @@ export default function BrowsePage() {
         max?: number;
     } | null>(null);
 
-    const genres = Array.from(new Set(melodies.map((m) => m.genre)));
-    const artistTypes = Array.from(new Set(melodies.map((m) => m.artistType)));
+
+    const { data: melodiesData } = useGetMelodiesQuery(null);
+    console.log("melodiesData",melodiesData);
+        const melodies = melodiesData?.data;
+
+    const genres = Array.from(new Set(melodies?.map((m:any) => m.genre)));
+    const artistTypes = Array.from(new Set(melodies?.map((m:any) => m.artistType)));
 
     const handleDownloadClick = (melody: any) => {
         setSelectedMelody({
@@ -530,9 +400,9 @@ export default function BrowsePage() {
                                     <CommandGroup>
                                         {genres.map((genre) => (
                                             <CommandItem
-                                                key={genre}
+                                                key={genre as string}
                                                 onSelect={() =>
-                                                    handleGenreSelect(genre)
+                                                    handleGenreSelect(genre as string)
                                                 }
                                                 className="flex items-center gap-2 cursor-pointer"
                                             >
@@ -543,7 +413,7 @@ export default function BrowsePage() {
                                                             : 'text-white'
                                                     }`}
                                                 >
-                                                    {genre}
+                                                    {genre as string}
                                                 </div>
                                                 {selectedGenre === genre && (
                                                     <Check className="h-4 w-4 text-emerald-500" />
@@ -598,9 +468,9 @@ export default function BrowsePage() {
                                     <CommandGroup>
                                         {artistTypes.map((type) => (
                                             <CommandItem
-                                                key={type}
+                                                key={type as string}
                                                 onSelect={() =>
-                                                    handleArtistTypeSelect(type)
+                                                    handleArtistTypeSelect(type as string)
                                                 }
                                                 className="flex items-center gap-2 cursor-pointer"
                                             >
@@ -612,7 +482,7 @@ export default function BrowsePage() {
                                                             : 'text-white'
                                                     }`}
                                                 >
-                                                    {type}
+                                                    {type as string}
                                                 </div>
                                                 {selectedArtistType ===
                                                     type && (
