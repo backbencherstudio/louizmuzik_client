@@ -26,60 +26,22 @@ import Layout from '@/components/layout';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
 import { useDeletePackMutation, useGetProducerPackQuery } from '../store/api/packApis/packApis';
 import { toast } from 'sonner';
-
-
-// Sample data for producer's melodies
-const producerMelodies = [
-    {
-        id: 1,
-        name: 'Summer Vibes',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/sample-audio/sampleaudio.mp3',
-        bpm: 128,
-        key: 'C Maj',
-        genre: 'Pop',
-        artistType: 'Producer',
-    },
-    {
-        id: 2,
-        name: 'Urban Flow',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/sample-audio/sampleaudio.mp3',
-        bpm: 140,
-        key: 'G Min',
-        genre: 'Hip Hop',
-        artistType: 'Beatmaker',
-    },
-    {
-        id: 3,
-        name: 'Midnight Jazz',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        audioUrl: '/sample-audio/sampleaudio.mp3',
-        bpm: 95,
-        key: 'D Min',
-        genre: 'Jazz',
-        artistType: 'Composer',
-    },
-];
+import { useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
 
 export default function ItemsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
-    const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
-    const [shareTooltip, setShareTooltip] = useState('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [packToDelete, setPackToDelete] = useState<any>(null);
     const { data: user } = useLoggedInUser();
     const userId = user?.data?._id
     const { data: packData,refetch } = useGetProducerPackQuery(userId);
     const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
-
-    console.log(packData);
+    const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
+    console.log(melodiesData);
+    const melodies = melodiesData?.data
 
     const handleDeletePack = async (packId: string) => {
 
@@ -129,31 +91,8 @@ export default function ItemsPage() {
         }
     };
 
-    const handleFavoriteClick = (melodyId: number) => {
-        setFavoriteMelodies((prev) => {
-            if (prev.includes(melodyId)) {
-                return prev.filter((id) => id !== melodyId);
-            }
-            return [...prev, melodyId];
-        });
-    };
+ 
 
-    const handleShare = async (melody: any) => {
-        const url = `${window.location.origin}/melody/${melody.id}`;
-        try {
-            await navigator.clipboard.writeText(url);
-            setShareTooltip('Link copied!');
-            setTimeout(() => setShareTooltip(''), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
-            setShareTooltip('Failed to copy link');
-            setTimeout(() => setShareTooltip(''), 2000);
-        }
-    };
-
-    const filteredMelodies = producerMelodies.filter((melody) =>
-        melody.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
     return (
         <Layout>
@@ -308,9 +247,9 @@ export default function ItemsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredMelodies.map((melody) => (
+                                {melodies?.map((melody: any) => (
                                     <tr
-                                        key={melody.id}
+                                        key={melody?._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                     >
                                         <td className="whitespace-nowrap px-4 py-3 text-center">
@@ -319,7 +258,7 @@ export default function ItemsPage() {
                                                 size="icon"
                                                 className={`h-8 w-8 rounded-full ${
                                                     currentPlayingMelody?.id ===
-                                                    melody.id
+                                                    melody?._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
@@ -328,7 +267,7 @@ export default function ItemsPage() {
                                                 }
                                             >
                                                 {currentPlayingMelody?.id ===
-                                                melody.id ? (
+                                                melody?._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
                                                     <Play className="h-4 w-4" />
@@ -339,31 +278,31 @@ export default function ItemsPage() {
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                                 <Image
                                                     src={
-                                                        melody.image ||
+                                                        melody?.image ||
                                                         '/placeholder.svg'
                                                     }
-                                                    alt={melody.name}
+                                                    alt={melody?.name}
                                                     fill
                                                     className="object-cover"
                                                 />
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                                            {melody.name}
+                                            {melody?.name}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             <Link
-                                                href={`/producer/${melody.producer
+                                                href={`/producer/${melody?.producer
                                                     .toLowerCase()
                                                     .replace(/\s+/g, '-')}`}
                                                 className="hover:text-emerald-500 transition-colors"
                                             >
-                                                {melody.producer}
+                                                {melody?.producer}
                                             </Link>
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <WaveformDisplay
-                                                audioUrl={melody.audioUrl}
+                                                audioUrl={melody?.audioUrl}
                                                 isPlaying={
                                                     currentPlayingMelody?.id ===
                                                     melody.id
@@ -392,53 +331,25 @@ export default function ItemsPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                                        favoriteMelodies.includes(
-                                                            melody.id
-                                                        )
-                                                            ? 'text-red-500'
-                                                            : ''
-                                                    }`}
-                                                    onClick={() =>
-                                                        handleFavoriteClick(
-                                                            melody.id
-                                                        )
-                                                    }
+                                                    className="h-8 w-8 text-zinc-400 hover:text-emerald-500"
+                                                    onClick={() => {
+                                                        // TODO: Implement melody update/edit functionality
+                                                        toast.info('Edit melody feature coming soon!');
+                                                    }}
                                                 >
-                                                    <Heart
-                                                        className={`h-4 w-4 ${
-                                                            favoriteMelodies.includes(
-                                                                melody.id
-                                                            )
-                                                                ? 'fill-current'
-                                                                : ''
-                                                        }`}
-                                                    />
+                                                    <Pencil className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-zinc-400 hover:text-white"
+                                                    className="h-8 w-8 text-zinc-400 hover:text-red-500"
+                                                    onClick={() => {
+                                                        // TODO: Implement melody delete functionality
+                                                        toast.info('Delete melody feature coming soon!');
+                                                    }}
                                                 >
-                                                    <Download className="h-4 w-4" />
+                                                    <Trash className="h-4 w-4" />
                                                 </Button>
-                                                <div className="relative">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-zinc-400 hover:text-emerald-500"
-                                                        onClick={() =>
-                                                            handleShare(melody)
-                                                        }
-                                                    >
-                                                        <Share2 className="h-4 w-4" />
-                                                    </Button>
-                                                    {shareTooltip && (
-                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 text-white text-xs rounded whitespace-nowrap">
-                                                            {shareTooltip}
-                                                        </div>
-                                                    )}
-                                                </div>
                                             </div>
                                         </td>
                                     </tr>
