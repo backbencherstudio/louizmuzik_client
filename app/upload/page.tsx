@@ -200,12 +200,29 @@ export default function UploadPage() {
     const [splitPercentage, setSplitPercentage] = useState<number>(50);
     const [melodyName, setMelodyName] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
     const { data: user } = useLoggedInUserQuery(null)
     const userData = user?.data
     console.log(userData);
 
-    const [createMelody, { isLoading: isCreatingMelody }] = useCreateMelodyMutation()
+    const [createMelody, { isLoading: isCreatingMelody , reset}] = useCreateMelodyMutation()
+
+    const clearForm = () => {
+        setFile(null);
+        setImageFile(null);
+        setMelodyName('');
+        setSplitPercentage(50);
+        setSelectedKey('');
+        setSelectedGenres([]);
+        setSelectedInstruments([]);
+        setSelectedArtistTypes([]);
+        setAgreedToTerms(false);
+        setFormErrors({});
+        // If you have a BPM input, clear its value too:
+        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
+        if (bpmInput) bpmInput.value = '';
+    };
 
     // Load existing melody data if in edit mode
     useEffect(() => {
@@ -327,8 +344,49 @@ export default function UploadPage() {
         }
     };
 
+    const validateForm = () => {
+        const errors: { [key: string]: string } = {};
+        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
+        const bpmValue = bpmInput?.value.trim();
+
+        if (!melodyName.trim()) {
+            errors.melodyName = 'Melody name is required.';
+        }
+        if (!bpmValue || isNaN(Number(bpmValue)) || Number(bpmValue) <= 0) {
+            errors.bpm = 'Valid BPM is required.';
+        }
+        if (!selectedKey) {
+            errors.key = 'Key is required.';
+        }
+        if (selectedGenres.length === 0) {
+            errors.genres = 'At least one genre is required.';
+        }
+        if (selectedInstruments.length === 0) {
+            errors.instruments = 'At least one instrument is required.';
+        }
+        if (selectedArtistTypes.length === 0) {
+            errors.artistTypes = 'At least one artist type is required.';
+        }
+        if (!file) {
+            errors.audio = 'Audio file is required.';
+        }
+        if (!imageFile) {
+            errors.image = 'Cover image is required.';
+        }
+        if (!agreedToTerms) {
+            errors.terms = 'You must agree to the terms.';
+        }
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            toast.error('Fill all the fields correctly');
+            return;
+        }
 
         const bpmInput = document.getElementById('bpm') as HTMLInputElement;
         const formData = new FormData();
@@ -346,16 +404,16 @@ export default function UploadPage() {
 
         const response = await createMelody(formData).unwrap();
         if (response.success) {
-            toast.success('Melody created successfully')
+            toast.success('Melody created successfully');
+            reset();
+            clearForm(); 
         } else {
-            toast.error('Failed to create melody')
+            toast.error(response.error.message);
         }
 
         if (isEditMode) {
-            // In a real app, you would update the existing melody
             console.log('Updating melody:', melodyId, formData);
         } else {
-            // In a real app, you would create a new melody
             console.log('Creating new melody:', formData);
         }
     };
@@ -401,7 +459,7 @@ export default function UploadPage() {
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Image Upload Area */}
                             <div
-                                className={`relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 mb-4`}
+                                className={`relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 mb-4 ${formErrors.image ? 'border-red-500' : ''}`}
                                 onClick={() => document.getElementById('image-input')?.click()}
                             >
                                 <input
@@ -426,6 +484,9 @@ export default function UploadPage() {
                                         </>
                                     )}
                                 </div>
+                                {formErrors.image && (
+                                    <p className="mt-2 text-xs text-red-500">{formErrors.image}</p>
+                                )}
                             </div>
                             {/* Drag & Drop Area */}
                             <div
@@ -433,7 +494,7 @@ export default function UploadPage() {
                                     dragActive
                                         ? 'border-emerald-500 bg-emerald-500/10'
                                         : 'border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800'
-                                }`}
+                                } ${formErrors.audio ? 'border-red-500' : ''}`}
                                 onDragEnter={handleDrag}
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}
@@ -476,6 +537,9 @@ export default function UploadPage() {
                                         </>
                                     )}
                                 </div>
+                                {formErrors.audio && (
+                                    <p className="mt-2 text-xs text-red-500">{formErrors.audio}</p>
+                                )}
                             </div>
 
                             {/* Audio Player */}
@@ -529,8 +593,11 @@ export default function UploadPage() {
                                             setMelodyName(e.target.value)
                                         }
                                         placeholder="Enter the name of your melody"
-                                        className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
+                                        className={`border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 ${formErrors.melodyName ? 'border-red-500' : ''}`}
                                     />
+                                    {formErrors.melodyName && (
+                                        <p className="mt-1 text-xs text-red-500">{formErrors.melodyName}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid gap-6 md:grid-cols-2">
@@ -548,8 +615,11 @@ export default function UploadPage() {
                                                 type="number"
                                                 min="0"
                                                 placeholder="e.g. 120"
-                                                className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 [appearance:textfield]"
+                                                className={`border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 [appearance:textfield] ${formErrors.bpm ? 'border-red-500' : ''}`}
                                             />
+                                            {formErrors.bpm && (
+                                                <p className="mt-1 text-xs text-red-500">{formErrors.bpm}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -564,7 +634,7 @@ export default function UploadPage() {
                                                     <Button
                                                         variant="outline"
                                                         role="combobox"
-                                                        className="w-full justify-between border-zinc-800 bg-zinc-900 text-left font-normal text-white hover:bg-zinc-800"
+                                                        className={`w-full justify-between border-zinc-800 bg-zinc-900 text-left font-normal text-white hover:bg-zinc-800 ${formErrors.key ? 'border-red-500' : ''}`}
                                                     >
                                                         {selectedKey ||
                                                             'Select a key'}
@@ -582,6 +652,9 @@ export default function UploadPage() {
                                                     />
                                                 </PopoverContent>
                                             </Popover>
+                                            {formErrors.key && (
+                                                <p className="mt-1 text-xs text-red-500">{formErrors.key}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -629,6 +702,9 @@ export default function UploadPage() {
                                                 )
                                             }
                                         />
+                                        {formErrors.genres && (
+                                            <p className="mt-1 text-xs text-red-500">{formErrors.genres}</p>
+                                        )}
 
                                         <TagInput
                                             label="Instruments"
@@ -650,6 +726,9 @@ export default function UploadPage() {
                                                 )
                                             }
                                         />
+                                        {formErrors.instruments && (
+                                            <p className="mt-1 text-xs text-red-500">{formErrors.instruments}</p>
+                                        )}
 
                                         <TagInput
                                             label="Artist Type"
@@ -671,6 +750,9 @@ export default function UploadPage() {
                                                 )
                                             }
                                         />
+                                        {formErrors.artistTypes && (
+                                            <p className="mt-1 text-xs text-red-500">{formErrors.artistTypes}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -702,11 +784,14 @@ export default function UploadPage() {
                                         to get everything clear to you.
                                     </Label>
                                 </div>
+                                {formErrors.terms && (
+                                    <p className="mt-1 text-xs text-red-500">{formErrors.terms}</p>
+                                )}
 
                                 <div className="flex justify-end pt-6">
                                     <Button
                                         type="submit"
-                                        className="bg-emerald-500 text-white hover:bg-emerald-600"
+                                        className="bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-300"
                                     >
                                         {isCreatingMelody ? <Loader2 className="h-4 w-4 animate-spin" /> : isEditMode ? 'Save Changes' : 'Upload Melody'}
                                     </Button>
