@@ -43,8 +43,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
+import { useFavoriteMelodyMutation, useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
 import { toast } from 'sonner';
+import { useLoggedInUser } from '../store/api/authApis/authApi';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -73,6 +74,9 @@ export default function BrowsePage() {
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
 
+    // Get user
+    const { data: user ,refetch: refetchUser} = useLoggedInUser();
+    const userId = user?.data?._id;
     // Get melodies
     const { data: melodiesData } = useGetMelodiesQuery(null);
     const melodies = melodiesData?.data;
@@ -81,6 +85,16 @@ export default function BrowsePage() {
     // Mutations
     const [melodyPlayCounter] = useMelodyPlayMutation();
     const [melodyDownloadCounter] = useMelodyDownloadMutation();
+
+    const [favoriteMelody] = useFavoriteMelodyMutation();
+    const isFavorite = melodies?.favorites?.includes(melodies?._id);
+
+    const toogleFavorite = (melody: any) => {
+        if(melody && userId){
+            favoriteMelody({id:melody._id, userId: userId});
+            refetchUser();
+        }
+    }
 
     const genres = Array.from(new Set(melodies?.map((m:any) => m.genre)));
     const artistTypes = Array.from(new Set(melodies?.map((m:any) => m.artistType)));
@@ -779,11 +793,7 @@ export default function BrowsePage() {
                                                             ? 'text-red-500'
                                                             : ''
                                                     }`}
-                                                    onClick={() =>
-                                                        handleFavoriteClick(
-                                                            melody.id
-                                                        )
-                                                    }
+                                                    onClick={toogleFavorite}
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${
