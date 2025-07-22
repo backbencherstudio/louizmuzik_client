@@ -680,7 +680,7 @@ export default function BrowsePage() {
                             <tbody>
                                 {filteredAndSortedMelodies.map((melody) => (
                                     <tr
-                                        key={melody.id}
+                                        key={melody._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                     >
                                         <td className="whitespace-nowrap px-4 py-3 text-center">
@@ -810,7 +810,7 @@ export default function BrowsePage() {
                             <tbody>
                                 {filteredAndSortedMelodies.map((melody) => (
                                     <tr
-                                        key={melody.id}
+                                        key={melody._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                     >
                                         <td className="px-4 py-3 flex items-center gap-3">
