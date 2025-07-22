@@ -43,7 +43,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useGetMelodiesQuery, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
+import { useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
+import { toast } from 'sonner';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -72,26 +73,35 @@ export default function BrowsePage() {
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
 
-
+    // Get melodies
     const { data: melodiesData } = useGetMelodiesQuery(null);
-    console.log("melodiesData",melodiesData);
-        const melodies = melodiesData?.data;
+    const melodies = melodiesData?.data;
+    console.log("melodies",melodies);
+
+    // Mutations
     const [melodyPlayCounter] = useMelodyPlayMutation();
+    const [melodyDownloadCounter] = useMelodyDownloadMutation();
 
     const genres = Array.from(new Set(melodies?.map((m:any) => m.genre)));
     const artistTypes = Array.from(new Set(melodies?.map((m:any) => m.artistType)));
 
-    const handleDownloadClick = (melody: any) => {
-        setSelectedMelody({
-            name: melody.name,
-            splitPercentage: '50%',
-            producerName: melody.producer,
-            beatstarsUsername: 'gorillabeatz',
-            soundeeUsername: '',
-            instagramUsername: 'Ronaldo',
-            youtubeChannel: 'veguzzi',
-        });
-        setIsCollabModalOpen(true);
+    const handleDownloadClick = async (melody: any) => {
+        try {
+            const response = await melodyDownloadCounter(melody._id).unwrap();
+            console.log("melodyDownloadCounter", response);
+            
+            const audioUrl = melody.audioUrl;  
+            if (audioUrl) {
+                const link = document.createElement('a');
+                link.href = audioUrl;
+                link.download = audioUrl.split('/').pop(); 
+                link.click();
+            } else {
+                toast.error("No audio URL found!");
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
     };
 
     const handlePlayClick =  async (melody: any) => {
