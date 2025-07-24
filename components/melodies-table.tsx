@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Play, Download } from "lucide-react";
 import {
   useFavoriteMelodyMutation,
+  useGetFavoriteMelodyQuery,
   useMelodyDownloadMutation,
 } from "@/app/store/api/melodyApis/melodyApis";
 import { toast } from "sonner";
@@ -35,12 +36,14 @@ interface MelodiesTableProps {
 export function MelodiesTable({ melodies }: MelodiesTableProps) {
   const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
   const userId = user?.data?._id;
-  console.log("userId", userId);
-  console.log("melodies", melodies);
+  
+  useEffect(() => {
+    refetchUser();
+  }, [refetchUser]);
 
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
   const [favoriteMelody, { isLoading: isFavoriteLoading }] = useFavoriteMelodyMutation();
-
+  const { refetch: refetchMelodies } = useGetFavoriteMelodyQuery(userId || "");
   const handleDownloadClick = async (melody: any) => {
     try {
       const response = await melodyDownloadCounter(melody._id).unwrap();
@@ -66,15 +69,13 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
   };
 
   const toggleFavorite = async (melodyId: string) => {
-    if (!userId) {
-      toast.error("Please log in to add favorites");
-      return;
-    }
     try {
       const response = await favoriteMelody({ 
         id: melodyId, 
         userId: userId 
       }).unwrap();
+      await Promise.all([refetchUser(), refetchMelodies()]);
+      toast.info(response?.message);
     } catch (error: any) {
       console.log("favorite error", error);
       toast.error(error?.data?.message || "Failed to update favorite");

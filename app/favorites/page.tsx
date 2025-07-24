@@ -45,29 +45,6 @@ export default function FavoritesPage() {
     }
   }, [userId, refetchFavorites]);
 
-  // Mock data for melodies - Replace with real data later
-  const melodies = [
-    {
-      id: 1,
-      title: "Summer Vibes",
-      producer: "Thunder Beatz",
-      bpm: 140,
-      key: "C minor",
-      genre: "Trap",
-      instrument: "Piano",
-      isFavorite: true,
-    },
-    {
-      id: 2,
-      title: "Night Sky",
-      producer: "Chill Master",
-      bpm: 95,
-      key: "G major",
-      genre: "Lo-Fi",
-      instrument: "Guitar",
-      isFavorite: true,
-    },
-  ];
 
   return (
     <Layout>

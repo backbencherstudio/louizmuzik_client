@@ -79,12 +79,10 @@ export default function BrowsePage() {
 
     // Get user
     const { data: user ,refetch: refetchUser} = useLoggedInUser();
-    console.log("user",user);
     const userId = user?.data?._id;
     // Get melodies
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodiesQuery(null);
     const melodies = melodiesData?.data;
-    console.log("melodies",melodies);
 
     // Mutations
     const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -98,8 +96,7 @@ export default function BrowsePage() {
     const toogleFavorite = async (melody: any) => {
         if(melody && userId){
             await favoriteMelody({ id: melody, userId: userId}).unwrap();
-            refetchUser();
-            refetchMelodies();
+            await Promise.all([refetchUser(), refetchMelodies()]);
         }
     }
 
