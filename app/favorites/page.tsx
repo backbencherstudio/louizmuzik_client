@@ -10,19 +10,22 @@ import {
   useFavoritePackMutation,
   useGetFavoritePackQuery,
 } from "../store/api/packApis/packApis";
+import { useGetFavoriteMelodyQuery } from "../store/api/melodyApis/melodyApis";
 
 export default function FavoritesPage() {
   const { data: user, refetch: refetchUser } = useLoggedInUser();
   const userId = user?.data?._id;
-  const { data: favoritePack, refetch: refetchFavorites } = useGetFavoritePackQuery(
-    { id: userId },
-    { skip: !userId }
-  );
+  const { data: favoritePack, refetch: refetchFavorites } =
+    useGetFavoritePackQuery({ id: userId }, { skip: !userId });
 
-  const [favorite] =
-    useFavoritePackMutation();
+  const [favorite] = useFavoritePackMutation();
+  const { data: favoriteMelody, refetch: refetchFavoriteMelody } =
+    useGetFavoriteMelodyQuery(userId);
+
 
   const favouritePacks = favoritePack?.data?.packs || [];
+  const favouriteMelodies = favoriteMelody?.data?.melodies || [];
+  console.log("favouriteMelodies",favouriteMelodies);
 
   const handleFavoriteClick = async (packId: string) => {
     try {
@@ -111,7 +114,7 @@ export default function FavoritesPage() {
               Favorite Melodies
             </h2>
             <Card className="border-0 bg-[#0F0F0F] overflow-hidden">
-              <MelodiesTable melodies={melodies} />
+              <MelodiesTable melodies={favouriteMelodies} />
             </Card>
           </div>
         </div>

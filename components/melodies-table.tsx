@@ -12,7 +12,7 @@ import { Heart, Play, Download } from 'lucide-react';
 
 interface Melody {
     id: number;
-    title: string;
+    name: string;
     producer: string;
     bpm: number;
     key: string;
@@ -24,6 +24,8 @@ interface Melody {
 interface MelodiesTableProps {
     melodies: Melody[];
 }
+
+
 
 export function MelodiesTable({ melodies }: MelodiesTableProps) {
     return (
@@ -39,9 +41,6 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
                         <TableHead className="text-zinc-400">BPM</TableHead>
                         <TableHead className="text-zinc-400">Key</TableHead>
                         <TableHead className="text-zinc-400">Genre</TableHead>
-                        <TableHead className="text-zinc-400">
-                            Instrument
-                        </TableHead>
                         <TableHead className="text-zinc-400 w-[100px]"></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -74,7 +73,7 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
                                 </Button>
                             </TableCell>
                             <TableCell className="font-medium text-white">
-                                {melody.title}
+                                {melody.name}
                             </TableCell>
                             <TableCell className="text-zinc-400">
                                 {melody.producer}
@@ -87,9 +86,6 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
                             </TableCell>
                             <TableCell className="text-zinc-400">
                                 {melody.genre}
-                            </TableCell>
-                            <TableCell className="text-zinc-400">
-                                {melody.instrument}
                             </TableCell>
                             <TableCell>
                                 <Button

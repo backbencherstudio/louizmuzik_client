@@ -73,6 +73,14 @@ export const melodyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Melody"],
     }),
 
+    getFavoriteMelody: build.query({
+      query: (id) => ({
+        url: `/auth/userManagement/favorites/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Melody"],
+    }),
+
   }),
   overrideExisting: true,
 });
@@ -87,4 +95,5 @@ export const {
   useFavoriteMelodyMutation,
   useMelodyDownloadMutation,
   useMelodyPlayMutation,
-} = melodyApi;
+  useGetFavoriteMelodyQuery,
+  } = melodyApi;
