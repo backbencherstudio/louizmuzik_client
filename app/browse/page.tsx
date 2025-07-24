@@ -43,6 +43,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Pagination } from '@/components/ui/pagination';
 import { useFavoriteMelodyMutation, useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
 import { toast } from 'sonner';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
@@ -54,6 +55,8 @@ export default function BrowsePage() {
     const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const [selectedKey, setSelectedKey] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const [sortConfig, setSortConfig] = useState<{
         key: string;
@@ -160,6 +163,7 @@ export default function BrowsePage() {
     const handleSearch = () => {
         // Handle search functionality
         console.log('Searching for:', searchQuery);
+        setCurrentPage(1); // Reset to first page when searching
     };
 
     const handleSort = (field: string) => {
@@ -180,6 +184,7 @@ export default function BrowsePage() {
                 type: 'default',
             };
         });
+        setCurrentPage(1); // Reset to first page when sort changes
     };
 
     const handleSortByType = (type: 'popular' | 'recent' | 'random') => {
@@ -188,6 +193,7 @@ export default function BrowsePage() {
             direction: 'desc',
             type,
         });
+        setCurrentPage(1); // Reset to first page when sort changes
     };
 
 
@@ -198,6 +204,7 @@ export default function BrowsePage() {
         max?: number;
     }) => {
         setBpmFilter(values);
+        setCurrentPage(1); // Reset to first page when filter changes
     };
 
     const handleBpmFilterClear = () => {
@@ -206,10 +213,12 @@ export default function BrowsePage() {
 
     const handleGenreSelect = (genre: string) => {
         setSelectedGenre(genre === selectedGenre ? '' : genre);
+        setCurrentPage(1); // Reset to first page when filter changes
     };
 
     const handleArtistTypeSelect = (type: string) => {
         setSelectedArtistType(type === selectedArtistType ? '' : type);
+        setCurrentPage(1); // Reset to first page when filter changes
     };
 
     const handleClearAllFilters = () => {
@@ -218,6 +227,7 @@ export default function BrowsePage() {
         setSelectedGenre('');
         setSelectedArtistType('');
         setBpmFilter(null);
+        setCurrentPage(1); // Reset to first page when clearing filters
     };
 
     const filteredAndSortedMelodies = [...(melodies || [])]
@@ -303,6 +313,17 @@ export default function BrowsePage() {
                 : bValue.localeCompare(aValue);
         });
 
+    // Pagination 
+    const totalItems = filteredAndSortedMelodies.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentMelodies = filteredAndSortedMelodies.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
         const playNextMelody = () => {
             if (!currentPlayingMelody) return;
         
@@ -350,6 +371,8 @@ export default function BrowsePage() {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [currentPlayingMelody, isAudioPlayerVisible]);
+
+
 
     return (
         <Layout>
@@ -491,7 +514,10 @@ export default function BrowsePage() {
                         <PopoverContent className="p-0" align="center">
                             <KeySelector
                                 value={selectedKey}
-                                onChange={setSelectedKey}
+                                onChange={(key) => {
+                                    setSelectedKey(key);
+                                    setCurrentPage(1); // Reset to first page when key changes
+                                }}
                             />
                         </PopoverContent>
                     </Popover>
@@ -699,7 +725,7 @@ export default function BrowsePage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredAndSortedMelodies.map((melody) => (
+                                {currentMelodies.map((melody) => (
                                     <tr
                                         key={melody._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
@@ -816,7 +842,7 @@ export default function BrowsePage() {
                         {/* Mobile Table */}
                         <table className="w-full md:hidden">
                             <tbody>
-                                {filteredAndSortedMelodies.map((melody) => (
+                                {currentMelodies.map((melody) => (
                                     <tr
                                         key={melody._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
@@ -912,44 +938,14 @@ export default function BrowsePage() {
                         </table>
                     </div>
                 </div>
-                <div className="mt-6 mb-24 flex justify-center">
-                    <div className="flex gap-1">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            <ChevronDown className="h-4 w-4 rotate-90" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 bg-emerald-500 text-black hover:bg-emerald-600"
-                        >
-                            1
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            2
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            3
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            <ChevronDown className="h-4 w-4 -rotate-90" />
-                        </Button>
-                    </div>
+                <div className="mt-6 mb-24">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                    />
                 </div>
                 {isAudioPlayerVisible &&
                     (currentPlayingMelody || currentPlayingPack) && (

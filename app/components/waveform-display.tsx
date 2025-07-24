@@ -9,6 +9,8 @@ interface WaveformDisplayProps {
     onPlayPause?: () => void;
     height?: number;
     width?: string;
+    currentTime?: number;
+    duration?: number;
 }
 
 export function WaveformDisplay({
@@ -17,6 +19,8 @@ export function WaveformDisplay({
     onPlayPause,
     height = 40,
     width = '100%',
+    currentTime = 0,
+    duration = 0,
 }: WaveformDisplayProps) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -34,7 +38,7 @@ export function WaveformDisplay({
                 height: height,
                 normalize: true,
                 responsive: true,
-                interact: false, // Disable user interaction if needed
+                interact: false, // Disable user interaction to prevent conflicts
             });
 
             wavesurfer.load(audioUrl);
@@ -46,22 +50,23 @@ export function WaveformDisplay({
         }
     }, [audioUrl, height]);
 
+    // Update progress based on external audio player
     useEffect(() => {
         const wavesurfer = wavesurferRef.current;
-        if (wavesurfer) {
-            if (isPlaying) {
-                wavesurfer.play();
-            } else {
-                wavesurfer.pause();
+        if (wavesurfer && duration > 0) {
+            try {
+                wavesurfer.setTime(currentTime);
+            } catch (err) {
+                console.error('Error updating waveform progress:', err);
             }
         }
-    }, [isPlaying]);
+    }, [currentTime, duration]);
 
     return (
         <div
             ref={waveformRef}
             style={{ width }}
-            className="rounded bg-zinc-900/50"
+            className="rounded bg-zinc-900/50 cursor-pointer"
             onClick={onPlayPause}
         />
     );
