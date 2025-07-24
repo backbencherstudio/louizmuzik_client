@@ -969,6 +969,7 @@ export default function BrowsePage() {
                             playNextMelody={playNextMelody}
                             playPreviousMelody={playPreviousMelody}
                             onEnded={playNextMelody}
+                            handleDownloadClick={handleDownloadClick}
                         />
                     )}
                 {selectedMelody && (

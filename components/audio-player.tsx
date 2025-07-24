@@ -19,7 +19,7 @@ import { WaveformDisplay } from './waveform-display';
 interface AudioPlayerProps {
     isVisible: boolean;
     melody: {
-        id: number;
+        _id: string;
         name: string;
         producer: string;
         image: string;
@@ -30,11 +30,12 @@ interface AudioPlayerProps {
     } | null;
     onClose: () => void;
     isFavorite?: boolean;
-    onFavoriteClick?: (melodyId: number) => void;
+    onFavoriteClick?: (melodyId: string) => void;
     shouldAutoPlay?: boolean; // <-- add this prop
     playNextMelody?: () => void;
     playPreviousMelody?: () => void;
     onEnded?: () => void;
+    handleDownloadClick?: (melody: any) => void;
 }
 
 export function AudioPlayer({
@@ -47,6 +48,7 @@ export function AudioPlayer({
     playNextMelody,
     playPreviousMelody,
     onEnded,
+    handleDownloadClick,
 }: AudioPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -260,7 +262,7 @@ export function AudioPlayer({
                                     isFavorite ? 'text-red-500' : ''
                                 }`}
                                 onClick={() =>
-                                    melody && onFavoriteClick?.(melody.id)
+                                    melody && onFavoriteClick?.(melody._id)
                                 }
                             >
                                 <Heart
@@ -273,6 +275,7 @@ export function AudioPlayer({
                                 variant="ghost"
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-9 w-9"
+                                onClick={() => handleDownloadClick?.(melody)}
                             >
                                 <Download className="h-5 w-5" />
                             </Button>
