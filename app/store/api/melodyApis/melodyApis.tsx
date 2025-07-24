@@ -25,6 +25,22 @@ export const melodyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Melody"],
     }),
 
+    getMelodyById: build.query({
+      query: (id) => ({
+        url: `/melody/single-melody/${id}`, 
+      }),
+      providesTags: ["Melody"],
+    }),
+
+    updateMelody: build.mutation({
+      query: ({id,formData}) => ({
+        url: `/melody/update-melody/${id}`,
+        method: "PATCH",
+        body: formData,
+      }),
+      invalidatesTags: ["Melody"],
+    }),
+
     deleteMelody: build.mutation({
       query: ({ id, userId }) => ({
         url: `/melody/${id}?userId=${userId}`,
@@ -64,7 +80,9 @@ export const melodyApi = baseApi.injectEndpoints({
 export const {
   useGetMelodiesQuery,
   useGetMelodyByUserIdQuery,
+  useGetMelodyByIdQuery,
   useCreateMelodyMutation,
+  useUpdateMelodyMutation,
   useDeleteMelodyMutation,
   useFavoriteMelodyMutation,
   useMelodyDownloadMutation,

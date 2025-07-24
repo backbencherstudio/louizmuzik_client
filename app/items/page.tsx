@@ -28,8 +28,10 @@ import { useDeletePackMutation, useGetProducerPackQuery } from '../store/api/pac
 import { toast } from 'sonner';
 import { useDeleteMelodyMutation, useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
 import DeleteModal from '@/components/Modals/DeleteModal';
+import { useRouter } from 'next/navigation';
 
 export default function ItemsPage() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
@@ -384,8 +386,7 @@ export default function ItemsPage() {
                                                     size="icon"
                                                     className="h-8 w-8 text-zinc-400 hover:text-emerald-500"
                                                     onClick={() => {
-                                                        // TODO: Implement melody update/edit functionality
-                                                        toast.info('Edit melody feature coming soon!');
+                                                        router.push(`/upload?edit=${melody._id}`);
                                                     }}
                                                 >
                                                     <Pencil className="h-4 w-4" />

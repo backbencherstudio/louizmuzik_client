@@ -24,7 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { KeySelector } from '@/components/key-selector';
 import WaveSurfer from 'wavesurfer.js';
 import { useSearchParams } from 'next/navigation';
-import { useCreateMelodyMutation } from '../store/api/melodyApis/melodyApis';
+import { useCreateMelodyMutation, useGetMelodyByIdQuery, useUpdateMelodyMutation } from '../store/api/melodyApis/melodyApis';
 import { toast } from 'sonner';
 import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
 
@@ -66,31 +66,6 @@ const artistTypeOptions = [
     'Band',
 ];
 
-// Mock data for existing melodies - In a real app, this would come from your API
-const mockMelodies: Record<string, {
-    id: string;
-    name: string;
-    bpm: number;
-    key: string;
-    splitPercentage: number;
-    genres: string[];
-    instruments: string[];
-    artistTypes: string[];
-    audioUrl: string;
-}> = {
-    '1': {
-        id: '1',
-        name: 'Summer Vibes',
-        bpm: 128,
-        key: 'C Major',
-        splitPercentage: 50,
-        genres: ['Pop', 'Dance'],
-        instruments: ['Piano', 'Synth'],
-        artistTypes: ['Producer', 'Beatmaker'],
-        audioUrl: '/path/to/audio.mp3', // In a real app, this would be a real URL
-    },
-};
-
 interface TagInputProps {
     label: string;
     placeholder: string;
@@ -98,6 +73,7 @@ interface TagInputProps {
     onRemoveTag: (tag: string) => void;
     options: string[];
     onSelect: (value: string) => void;
+    error?: string;
 }
 
 function TagInput({
@@ -107,6 +83,7 @@ function TagInput({
     onRemoveTag,
     options,
     onSelect,
+    error,
 }: TagInputProps) {
     const [inputValue, setInputValue] = useState('');
 
@@ -126,7 +103,7 @@ function TagInput({
             <Label className="text-white">{label}</Label>
             <Popover open={inputValue.length > 0}>
                 <PopoverTrigger asChild>
-                    <div className="relative flex min-h-10 flex-wrap items-center gap-1.5 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-white">
+                    <div className={`relative flex min-h-10 flex-wrap items-center gap-1.5 rounded-md border bg-zinc-900 px-3 py-2 text-white ${error ? 'border-red-500' : 'border-zinc-800'}`}>
                         {tags.map((tag) => (
                             <span
                                 key={tag}
@@ -171,13 +148,16 @@ function TagInput({
                     </Command>
                 </PopoverContent>
             </Popover>
+            {error && (
+                <p className="mt-1 text-xs text-red-500">{error}</p>
+            )}
         </div>
     );
 }
 
 export default function UploadPage() {
     const searchParams = useSearchParams();
-    const melodyId = searchParams.get('id');
+    const melodyId = searchParams.get('edit');
     const isEditMode = Boolean(melodyId);
 
     const [dragActive, setDragActive] = useState(false);
@@ -185,33 +165,36 @@ export default function UploadPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [bpm, setBpm] = useState('');
     const waveformRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
-    const audioUrl = file ? URL.createObjectURL(file) : null;
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-    const [selectedInstruments, setSelectedInstruments] = useState<string[]>(
-        []
-    );
-    const [selectedArtistTypes, setSelectedArtistTypes] = useState<string[]>(
-        []
-    );
+    const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+    const [selectedArtistTypes, setSelectedArtistTypes] = useState<string[]>([]);
     const [selectedKey, setSelectedKey] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [splitPercentage, setSplitPercentage] = useState<number>(50);
     const [melodyName, setMelodyName] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+    const [existingAudioUrl, setExistingAudioUrl] = useState<string>('');
+    const [existingImageUrl, setExistingImageUrl] = useState<string>('');
 
-    const { data: user } = useLoggedInUserQuery(null)
-    const userData = user?.data
-    console.log("userData",userData);
+    const { data: user } = useLoggedInUserQuery(null);
+    const userData = user?.data;
 
-    const [createMelody, { isLoading: isCreatingMelody , reset}] = useCreateMelodyMutation()
+    const [createMelody, { isLoading: isCreatingMelody, reset: resetCreate }] = useCreateMelodyMutation();
+    const [updateMelody, { isLoading: isUpdatingMelody, reset: resetUpdate }] = useUpdateMelodyMutation();
+
+    const { data: melodyData, isLoading: isMelodyLoading, error: melodyError } = useGetMelodyByIdQuery(melodyId, { 
+        skip: !isEditMode 
+    });
 
     const clearForm = () => {
         setFile(null);
         setImageFile(null);
         setMelodyName('');
+        setBpm('');
         setSplitPercentage(50);
         setSelectedKey('');
         setSelectedGenres([]);
@@ -219,31 +202,72 @@ export default function UploadPage() {
         setSelectedArtistTypes([]);
         setAgreedToTerms(false);
         setFormErrors({});
-        // If you have a BPM input, clear its value too:
-        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
-        if (bpmInput) bpmInput.value = '';
+        setExistingAudioUrl('');
+        setExistingImageUrl('');
     };
 
     // Load existing melody data if in edit mode
     useEffect(() => {
-        if (isEditMode && melodyId && mockMelodies[melodyId]) {
-            const melody = mockMelodies[melodyId];
-            setMelodyName(melody.name);
-            setSplitPercentage(melody.splitPercentage);
-            setSelectedKey(melody.key);
-            setSelectedGenres(melody.genres);
-            setSelectedInstruments(melody.instruments);
-            setSelectedArtistTypes(melody.artistTypes);
-
-            // In a real app, you would fetch and set the audio file here
-            // For now, we'll just simulate it with a console log
-            console.log('Would load audio file from:', melody.audioUrl);
+        if (isEditMode && melodyData?.success && melodyData?.data) {
+            const melody = melodyData.data;
+            
+            setMelodyName(melody.name || '');
+            setBpm(melody.bpm ? String(melody.bpm) : '');
+            setSplitPercentage(melody.splitPercentage || 50);
+            setSelectedKey(melody.key || '');
+            
+            // Handle genres - parse if it's a string, otherwise use as array
+            if (melody.genre) {
+                try {
+                    const genres = typeof melody.genre === 'string' 
+                        ? JSON.parse(melody.genre) 
+                        : melody.genre;
+                    setSelectedGenres(Array.isArray(genres) ? genres : []);
+                } catch (e) {
+                    setSelectedGenres([]);
+                }
+            }
+            
+            // Handle instruments - parse if it's a string, otherwise use as array
+            if (melody.instruments) {
+                try {
+                    const instruments = typeof melody.instruments === 'string' 
+                        ? JSON.parse(melody.instruments) 
+                        : melody.instruments;
+                    setSelectedInstruments(Array.isArray(instruments) ? instruments : []);
+                } catch (e) {
+                    setSelectedInstruments([]);
+                }
+            }
+            
+            // Handle artist types - parse if it's a string, otherwise use as array
+            if (melody.artistType) {
+                try {
+                    const artistTypes = typeof melody.artistType === 'string' 
+                        ? JSON.parse(melody.artistType) 
+                        : melody.artistType;
+                    setSelectedArtistTypes(Array.isArray(artistTypes) ? artistTypes : []);
+                } catch (e) {
+                    setSelectedArtistTypes([]);
+                }
+            }
+            
+            // Set existing file URLs
+            if (melody.audioUrl) {
+                setExistingAudioUrl(melody.audioUrl);
+            }
+            if (melody.image) {
+                setExistingImageUrl(melody.image);
+            }
+            
+            // Auto-agree to terms for existing melodies
+            setAgreedToTerms(true);
         }
-    }, [isEditMode, melodyId]);
+    }, [isEditMode, melodyData]);
 
-    // Initialize WaveSurfer
+    // Initialize WaveSurfer for uploaded file or existing audio
     useEffect(() => {
-        if (waveformRef.current && file) {
+        if (waveformRef.current && (file || existingAudioUrl)) {
             // Destroy previous instance if it exists
             if (wavesurferRef.current) {
                 wavesurferRef.current.destroy();
@@ -262,8 +286,12 @@ export default function UploadPage() {
                 normalize: true,
             });
 
-            // Load audio file
-            wavesurfer.loadBlob(file);
+            // Load audio file or URL
+            if (file) {
+                wavesurfer.loadBlob(file);
+            } else if (existingAudioUrl) {
+                wavesurfer.load(existingAudioUrl);
+            }
 
             // Add event listeners
             wavesurfer.on('ready', () => {
@@ -284,7 +312,7 @@ export default function UploadPage() {
                 wavesurfer.destroy();
             };
         }
-    }, [file]);
+    }, [file, existingAudioUrl]);
 
     const handlePlayPause = () => {
         if (wavesurferRef.current) {
@@ -322,6 +350,7 @@ export default function UploadPage() {
             const file = e.dataTransfer.files[0];
             if (file.type.startsWith('audio/')) {
                 setFile(file);
+                setExistingAudioUrl(''); // Clear existing audio when new file is uploaded
             }
         }
     };
@@ -331,6 +360,7 @@ export default function UploadPage() {
             const file = e.target.files[0];
             if (file.type.startsWith('audio/')) {
                 setFile(file);
+                setExistingAudioUrl(''); // Clear existing audio when new file is uploaded
             }
         }
     };
@@ -340,19 +370,18 @@ export default function UploadPage() {
             const file = e.target.files[0];
             if (file.type.startsWith('image/')) {
                 setImageFile(file);
+                setExistingImageUrl(''); // Clear existing image when new file is uploaded
             }
         }
     };
 
     const validateForm = () => {
         const errors: { [key: string]: string } = {};
-        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
-        const bpmValue = bpmInput?.value.trim();
 
         if (!melodyName.trim()) {
             errors.melodyName = 'Melody name is required.';
         }
-        if (!bpmValue || isNaN(Number(bpmValue)) || Number(bpmValue) <= 0) {
+        if (!bpm.trim() || isNaN(Number(bpm)) || Number(bpm) <= 0) {
             errors.bpm = 'Valid BPM is required.';
         }
         if (!selectedKey) {
@@ -367,15 +396,16 @@ export default function UploadPage() {
         if (selectedArtistTypes.length === 0) {
             errors.artistTypes = 'At least one artist type is required.';
         }
-        if (!file) {
+        if (!file && !existingAudioUrl) {
             errors.audio = 'Audio file is required.';
         }
-        if (!imageFile) {
+        if (!imageFile && !existingImageUrl) {
             errors.image = 'Cover image is required.';
         }
         if (!agreedToTerms) {
             errors.terms = 'You must agree to the terms.';
         }
+        
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -388,35 +418,78 @@ export default function UploadPage() {
             return;
         }
 
-        const bpmInput = document.getElementById('bpm') as HTMLInputElement;
-        const formData = new FormData();
-        formData.append('userId', userData?._id);
-        formData.append("producer",userData?.producer_name),
-        formData.append('name', melodyName);
-        formData.append('bpm', bpmInput?.value || '');
-        formData.append('key', selectedKey);
-        formData.append('splitPercentage', String(splitPercentage));
-        formData.append('genre', JSON.stringify(selectedGenres));
-        formData.append('instruments', JSON.stringify(selectedInstruments));
-        formData.append('artistType', JSON.stringify(selectedArtistTypes));
-        if (file) formData.append('audioUrl', file);
-        if (imageFile) formData.append('image', imageFile);
+        try {
+            const formData = new FormData();
+            formData.append('userId', userData?._id || '');
+            formData.append('producer', userData?.producer_name || '');
+            formData.append('name', melodyName);
+            formData.append('bpm', bpm);
+            formData.append('key', selectedKey);
+            formData.append('splitPercentage', String(splitPercentage));
+            formData.append('genre', JSON.stringify(selectedGenres));
+            formData.append('instruments', JSON.stringify(selectedInstruments));
+            formData.append('artistType', JSON.stringify(selectedArtistTypes));
+            
+            // Only append files if new ones are selected
+            if (file) formData.append('audioUrl', file);
+            if (imageFile) formData.append('image', imageFile);
 
-        const response = await createMelody(formData).unwrap();
-        if (response.success) {
-            toast.success('Melody created successfully');
-            reset();
-            clearForm(); 
-        } else {
-            toast.error(response.error.message);
-        }
-
-        if (isEditMode) {
-            console.log('Updating melody:', melodyId, formData);
-        } else {
-            console.log('Creating new melody:', formData);
+            let response;
+            if (isEditMode) {
+                // Update existing melody
+                response = await updateMelody({ id: melodyId, formData }).unwrap();
+                if (response.success) {
+                    toast.success('Melody updated successfully');
+                    resetUpdate();
+                } else {
+                    toast.error(response.message || 'Failed to update melody');
+                }
+            } else {
+                // Create new melody
+                response = await createMelody(formData).unwrap();
+                if (response.success) {
+                    toast.success('Melody created successfully');
+                    resetCreate();
+                    clearForm();
+                } else {
+                    toast.error(response.message || 'Failed to create melody');
+                }
+            }
+        } catch (error: any) {
+            toast.error(error?.data?.message || error?.message || 'Something went wrong');
         }
     };
+
+    // Show loading state while fetching melody data in edit mode
+    if (isEditMode && isMelodyLoading) {
+        return (
+            <Layout>
+                <div className="p-8 flex items-center justify-center min-h-[400px]">
+                    <div className="flex items-center gap-2 text-white">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span>Loading melody data...</span>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
+    // Show error state if melody couldn't be loaded
+    if (isEditMode && melodyError) {
+        return (
+            <Layout>
+                <div className="p-8 flex items-center justify-center min-h-[400px]">
+                    <div className="text-center text-red-500">
+                        <p>Failed to load melody data</p>
+                        <p className="text-sm text-zinc-400 mt-2">Please try again</p>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
+    const hasAudio = file || existingAudioUrl;
+    const hasImage = imageFile || existingImageUrl;
 
     return (
         <Layout>
@@ -470,11 +543,20 @@ export default function UploadPage() {
                                     onChange={handleImageInput}
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
-                                    {imageFile ? (
+                                    {hasImage ? (
                                         <>
                                             <Music className="h-8 w-8 text-emerald-500" />
-                                            <p className="text-base font-medium text-white">{imageFile.name}</p>
+                                            <p className="text-base font-medium text-white">
+                                                {imageFile?.name || 'Current cover image'}
+                                            </p>
                                             <p className="text-xs text-zinc-400">Click to change image</p>
+                                            {existingImageUrl && !imageFile && (
+                                                <img 
+                                                    src={existingImageUrl} 
+                                                    alt="Current cover" 
+                                                    className="mt-2 h-16 w-16 rounded object-cover"
+                                                />
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -488,6 +570,7 @@ export default function UploadPage() {
                                     <p className="mt-2 text-xs text-red-500">{formErrors.image}</p>
                                 )}
                             </div>
+
                             {/* Drag & Drop Area */}
                             <div
                                 className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors ${
@@ -513,15 +596,14 @@ export default function UploadPage() {
                                     onChange={handleFileInput}
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
-                                    {file ? (
+                                    {hasAudio ? (
                                         <>
                                             <Music className="h-10 w-10 md:h-12 md:w-12 text-emerald-500" />
                                             <p className="text-base md:text-lg font-medium text-white">
-                                                {file.name}
+                                                {file?.name || 'Current audio file'}
                                             </p>
                                             <p className="text-xs md:text-sm text-zinc-400">
-                                                Click or drag to upload a
-                                                different file
+                                                Click or drag to upload a different file
                                             </p>
                                         </>
                                     ) : (
@@ -531,8 +613,7 @@ export default function UploadPage() {
                                                 Drop your audio file here
                                             </p>
                                             <p className="text-xs md:text-sm text-zinc-400 px-2">
-                                                or click to browse (MP3, WAV up
-                                                to 50MB)
+                                                or click to browse (MP3, WAV up to 50MB)
                                             </p>
                                         </>
                                     )}
@@ -543,7 +624,7 @@ export default function UploadPage() {
                             </div>
 
                             {/* Audio Player */}
-                            {file && (
+                            {hasAudio && (
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
                                         <Button
@@ -561,7 +642,7 @@ export default function UploadPage() {
                                         </Button>
                                         <div>
                                             <p className="text-sm font-medium text-white">
-                                                {file.name}
+                                                {file?.name || melodyName || 'Audio File'}
                                             </p>
                                             <p className="text-xs text-zinc-400">
                                                 {formatTime(currentTime)} /{' '}
@@ -580,18 +661,13 @@ export default function UploadPage() {
                             {/* Form Fields */}
                             <div className="grid gap-6">
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="name"
-                                        className="text-white"
-                                    >
+                                    <Label htmlFor="name" className="text-white">
                                         Melody Name
                                     </Label>
                                     <Input
                                         id="name"
                                         value={melodyName}
-                                        onChange={(e) =>
-                                            setMelodyName(e.target.value)
-                                        }
+                                        onChange={(e) => setMelodyName(e.target.value)}
                                         placeholder="Enter the name of your melody"
                                         className={`border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 ${formErrors.melodyName ? 'border-red-500' : ''}`}
                                     />
@@ -604,16 +680,15 @@ export default function UploadPage() {
                                     {/* Left Column - Simple Fields */}
                                     <div className="space-y-6">
                                         <div className="space-y-2">
-                                            <Label
-                                                htmlFor="bpm"
-                                                className="text-white"
-                                            >
+                                            <Label htmlFor="bpm" className="text-white">
                                                 BPM
                                             </Label>
                                             <Input
                                                 id="bpm"
                                                 type="number"
                                                 min="0"
+                                                value={bpm}
+                                                onChange={(e) => setBpm(e.target.value)}
                                                 placeholder="e.g. 120"
                                                 className={`border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 [appearance:textfield] ${formErrors.bpm ? 'border-red-500' : ''}`}
                                             />
@@ -623,10 +698,7 @@ export default function UploadPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label
-                                                htmlFor="key"
-                                                className="text-white"
-                                            >
+                                            <Label htmlFor="key" className="text-white">
                                                 Key
                                             </Label>
                                             <Popover>
@@ -636,19 +708,13 @@ export default function UploadPage() {
                                                         role="combobox"
                                                         className={`w-full justify-between border-zinc-800 bg-zinc-900 text-left font-normal text-white hover:bg-zinc-800 ${formErrors.key ? 'border-red-500' : ''}`}
                                                     >
-                                                        {selectedKey ||
-                                                            'Select a key'}
+                                                        {selectedKey || 'Select a key'}
                                                     </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent
-                                                    className="w-auto p-0"
-                                                    align="start"
-                                                >
+                                                <PopoverContent className="w-auto p-0" align="start">
                                                     <KeySelector
                                                         value={selectedKey}
-                                                        onChange={
-                                                            setSelectedKey
-                                                        }
+                                                        onChange={setSelectedKey}
                                                     />
                                                 </PopoverContent>
                                             </Popover>
@@ -658,10 +724,7 @@ export default function UploadPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label
-                                                htmlFor="split"
-                                                className="text-white"
-                                            >
+                                            <Label htmlFor="split" className="text-white">
                                                 Split Percentage
                                             </Label>
                                             <Input
@@ -671,9 +734,7 @@ export default function UploadPage() {
                                                 max="100"
                                                 value={splitPercentage}
                                                 onChange={(e) =>
-                                                    setSplitPercentage(
-                                                        Number(e.target.value)
-                                                    )
+                                                    setSplitPercentage(Number(e.target.value))
                                                 }
                                                 className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 [appearance:textfield]"
                                             />
@@ -688,23 +749,17 @@ export default function UploadPage() {
                                             tags={selectedGenres}
                                             onRemoveTag={(tag) =>
                                                 setSelectedGenres(
-                                                    selectedGenres.filter(
-                                                        (g) => g !== tag
-                                                    )
+                                                    selectedGenres.filter((g) => g !== tag)
                                                 )
                                             }
                                             options={genreOptions}
                                             onSelect={(value) =>
                                                 setSelectedGenres((prev) =>
-                                                    prev.includes(value)
-                                                        ? prev
-                                                        : [...prev, value]
+                                                    prev.includes(value) ? prev : [...prev, value]
                                                 )
                                             }
+                                            error={formErrors.genres}
                                         />
-                                        {formErrors.genres && (
-                                            <p className="mt-1 text-xs text-red-500">{formErrors.genres}</p>
-                                        )}
 
                                         <TagInput
                                             label="Instruments"
@@ -712,23 +767,17 @@ export default function UploadPage() {
                                             tags={selectedInstruments}
                                             onRemoveTag={(tag) =>
                                                 setSelectedInstruments(
-                                                    selectedInstruments.filter(
-                                                        (i) => i !== tag
-                                                    )
+                                                    selectedInstruments.filter((i) => i !== tag)
                                                 )
                                             }
                                             options={instrumentOptions}
                                             onSelect={(value) =>
                                                 setSelectedInstruments((prev) =>
-                                                    prev.includes(value)
-                                                        ? prev
-                                                        : [...prev, value]
+                                                    prev.includes(value) ? prev : [...prev, value]
                                                 )
                                             }
+                                            error={formErrors.instruments}
                                         />
-                                        {formErrors.instruments && (
-                                            <p className="mt-1 text-xs text-red-500">{formErrors.instruments}</p>
-                                        )}
 
                                         <TagInput
                                             label="Artist Type"
@@ -736,23 +785,17 @@ export default function UploadPage() {
                                             tags={selectedArtistTypes}
                                             onRemoveTag={(tag) =>
                                                 setSelectedArtistTypes(
-                                                    selectedArtistTypes.filter(
-                                                        (a) => a !== tag
-                                                    )
+                                                    selectedArtistTypes.filter((a) => a !== tag)
                                                 )
                                             }
                                             options={artistTypeOptions}
                                             onSelect={(value) =>
                                                 setSelectedArtistTypes((prev) =>
-                                                    prev.includes(value)
-                                                        ? prev
-                                                        : [...prev, value]
+                                                    prev.includes(value) ? prev : [...prev, value]
                                                 )
                                             }
+                                            error={formErrors.artistTypes}
                                         />
-                                        {formErrors.artistTypes && (
-                                            <p className="mt-1 text-xs text-red-500">{formErrors.artistTypes}</p>
-                                        )}
                                     </div>
                                 </div>
 
@@ -791,9 +834,17 @@ export default function UploadPage() {
                                 <div className="flex justify-end pt-6">
                                     <Button
                                         type="submit"
-                                        className="bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-300"
+                                        disabled={isCreatingMelody || isUpdatingMelody}
+                                        className="bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isCreatingMelody ? <Loader2 className="h-4 w-4 animate-spin" /> : isEditMode ? 'Save Changes' : 'Upload Melody'}
+                                        {(isCreatingMelody || isUpdatingMelody) ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                {isEditMode ? 'Updating...' : 'Uploading...'}
+                                            </div>
+                                        ) : (
+                                            isEditMode ? 'Save Changes' : 'Upload Melody'
+                                        )}
                                     </Button>
                                 </div>
                             </div>
