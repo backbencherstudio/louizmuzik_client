@@ -206,7 +206,6 @@ export default function UploadPage() {
         setExistingImageUrl('');
     };
 
-    // Load existing melody data if in edit mode
     useEffect(() => {
         if (isEditMode && melodyData?.success && melodyData?.data) {
             const melody = melodyData.data;
@@ -216,7 +215,6 @@ export default function UploadPage() {
             setSplitPercentage(melody.splitPercentage || 50);
             setSelectedKey(melody.key || '');
             
-            // Handle genres - parse if it's a string, otherwise use as array
             if (melody.genre) {
                 try {
                     const genres = typeof melody.genre === 'string' 
@@ -228,7 +226,6 @@ export default function UploadPage() {
                 }
             }
             
-            // Handle instruments - parse if it's a string, otherwise use as array
             if (melody.instruments) {
                 try {
                     const instruments = typeof melody.instruments === 'string' 
@@ -240,7 +237,6 @@ export default function UploadPage() {
                 }
             }
             
-            // Handle artist types - parse if it's a string, otherwise use as array
             if (melody.artistType) {
                 try {
                     const artistTypes = typeof melody.artistType === 'string' 
@@ -252,7 +248,6 @@ export default function UploadPage() {
                 }
             }
             
-            // Set existing file URLs
             if (melody.audioUrl) {
                 setExistingAudioUrl(melody.audioUrl);
             }
@@ -260,20 +255,16 @@ export default function UploadPage() {
                 setExistingImageUrl(melody.image);
             }
             
-            // Auto-agree to terms for existing melodies
             setAgreedToTerms(true);
         }
     }, [isEditMode, melodyData]);
 
-    // Initialize WaveSurfer for uploaded file or existing audio
     useEffect(() => {
         if (waveformRef.current && (file || existingAudioUrl)) {
-            // Destroy previous instance if it exists
             if (wavesurferRef.current) {
                 wavesurferRef.current.destroy();
             }
 
-            // Create new WaveSurfer instance
             const wavesurfer = WaveSurfer.create({
                 container: waveformRef.current,
                 waveColor: '#374151', // Zinc-700
@@ -286,14 +277,12 @@ export default function UploadPage() {
                 normalize: true,
             });
 
-            // Load audio file or URL
             if (file) {
                 wavesurfer.loadBlob(file);
             } else if (existingAudioUrl) {
                 wavesurfer.load(existingAudioUrl);
             }
 
-            // Add event listeners
             wavesurfer.on('ready', () => {
                 setDuration(wavesurfer.getDuration());
                 wavesurferRef.current = wavesurfer;
@@ -307,7 +296,6 @@ export default function UploadPage() {
                 setIsPlaying(false);
             });
 
-            // Cleanup
             return () => {
                 wavesurfer.destroy();
             };
@@ -350,7 +338,7 @@ export default function UploadPage() {
             const file = e.dataTransfer.files[0];
             if (file.type.startsWith('audio/')) {
                 setFile(file);
-                setExistingAudioUrl(''); // Clear existing audio when new file is uploaded
+                setExistingAudioUrl(''); 
             }
         }
     };
@@ -360,7 +348,7 @@ export default function UploadPage() {
             const file = e.target.files[0];
             if (file.type.startsWith('audio/')) {
                 setFile(file);
-                setExistingAudioUrl(''); // Clear existing audio when new file is uploaded
+                setExistingAudioUrl(''); 
             }
         }
     };
@@ -370,7 +358,7 @@ export default function UploadPage() {
             const file = e.target.files[0];
             if (file.type.startsWith('image/')) {
                 setImageFile(file);
-                setExistingImageUrl(''); // Clear existing image when new file is uploaded
+                setExistingImageUrl(''); 
             }
         }
     };
@@ -390,9 +378,9 @@ export default function UploadPage() {
         if (selectedGenres.length === 0) {
             errors.genres = 'At least one genre is required.';
         }
-        if (selectedInstruments.length === 0) {
-            errors.instruments = 'At least one instrument is required.';
-        }
+        // if (selectedInstruments.length === 0) {
+        //     errors.instruments = 'At least one instrument is required.';
+        // }
         if (selectedArtistTypes.length === 0) {
             errors.artistTypes = 'At least one artist type is required.';
         }
@@ -459,8 +447,6 @@ export default function UploadPage() {
             toast.error(error?.data?.message || error?.message || 'Something went wrong');
         }
     };
-
-    // Show loading state while fetching melody data in edit mode
     if (isEditMode && isMelodyLoading) {
         return (
             <Layout>
@@ -474,7 +460,6 @@ export default function UploadPage() {
         );
     }
 
-    // Show error state if melody couldn't be loaded
     if (isEditMode && melodyError) {
         return (
             <Layout>
@@ -761,7 +746,7 @@ export default function UploadPage() {
                                             error={formErrors.genres}
                                         />
 
-                                        <TagInput
+                                        {/* <TagInput
                                             label="Instruments"
                                             placeholder="Search instruments..."
                                             tags={selectedInstruments}
@@ -777,7 +762,7 @@ export default function UploadPage() {
                                                 )
                                             }
                                             error={formErrors.instruments}
-                                        />
+                                        /> */}
 
                                         <TagInput
                                             label="Artist Type"

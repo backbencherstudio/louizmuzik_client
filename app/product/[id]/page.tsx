@@ -55,8 +55,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         },
         videoPreview: pack.video_path || null,
         details: {
-          format: pack.zip_path ? ".zip File" : "Audio File",
-          size: "N/A",
+          // format: pack.zip_path ? ".zip File" : "Audio File",
+          // size: "N/A",
           category: "Pack",
           genre:
             pack.genre && pack.genre.length > 0 ? pack.genre.join(", ") : "N/A",
