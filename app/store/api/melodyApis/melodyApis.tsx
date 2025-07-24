@@ -35,7 +35,7 @@ export const melodyApi = baseApi.injectEndpoints({
 
     favoriteMelody: build.mutation({
       query: ({ id, userId }) => ({
-        url: `/melody/favorite-melody?id=${id}&userId=${userId}`,
+        url: `/melody/${id}?userId=${userId}`,
         method: "PATCH",
       }),
       invalidatesTags: ["Melody"],

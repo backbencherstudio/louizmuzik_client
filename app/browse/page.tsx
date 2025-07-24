@@ -54,7 +54,7 @@ export default function BrowsePage() {
     const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const [selectedKey, setSelectedKey] = useState('');
-    const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
+
     const [sortConfig, setSortConfig] = useState<{
         key: string;
         direction: 'asc' | 'desc';
@@ -76,9 +76,10 @@ export default function BrowsePage() {
 
     // Get user
     const { data: user ,refetch: refetchUser} = useLoggedInUser();
+    console.log("user",user);
     const userId = user?.data?._id;
     // Get melodies
-    const { data: melodiesData } = useGetMelodiesQuery(null);
+    const { data: melodiesData, refetch: refetchMelodies } = useGetMelodiesQuery(null);
     const melodies = melodiesData?.data;
     console.log("melodies",melodies);
 
@@ -87,12 +88,15 @@ export default function BrowsePage() {
     const [melodyDownloadCounter] = useMelodyDownloadMutation();
 
     const [favoriteMelody] = useFavoriteMelodyMutation();
-    const isFavorite = melodies?.favorites?.includes(melodies?._id);
+    const isMelodyFavorite = (melodyId: string) => {
+        return user?.data?.favourite_melodies?.includes(melodyId) || false;
+    };
 
-    const toogleFavorite = (melody: any) => {
+    const toogleFavorite = async (melody: any) => {
         if(melody && userId){
-            favoriteMelody({id:melody._id, userId: userId});
+            await favoriteMelody({ id: melody, userId: userId}).unwrap();
             refetchUser();
+            refetchMelodies();
         }
     }
 
@@ -186,14 +190,7 @@ export default function BrowsePage() {
         });
     };
 
-    const handleFavoriteClick = (melodyId: number) => {
-        setFavoriteMelodies((prev) => {
-            if (prev.includes(melodyId)) {
-                return prev.filter((id) => id !== melodyId);
-            }
-            return [...prev, melodyId];
-        });
-    };
+
 
     const handleBpmFilterApply = (values: {
         type: 'exact' | 'range';
@@ -606,9 +603,9 @@ export default function BrowsePage() {
                                             />
                                         </div>
                                     </th>
-                                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                                    {/* <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                                         WAVEFORM
-                                    </th>
+                                    </th> */}
                                     <th
                                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                                         onClick={() => handleSort('bpm')}
@@ -713,7 +710,7 @@ export default function BrowsePage() {
                                                 size="icon"
                                                 className={`h-8 w-8 rounded-full ${
                                                     currentPlayingMelody?._id ===
-                                                    melody.id
+                                                    melody._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
@@ -755,20 +752,15 @@ export default function BrowsePage() {
                                                 {melody.producer}
                                             </Link>
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3">
+                                        {/* <td className="whitespace-nowrap px-4 py-3">
                                             <WaveformDisplay
                                                 audioUrl={melody.audioUrl}
-                                                isPlaying={
-                                                    currentPlayingMelody?.id ===
-                                                    melody.id
-                                                }
-                                                onPlayPause={() =>
-                                                    handlePlayClick(melody)
-                                                }
+                                                isPlaying={currentPlayingMelody?._id === melody._id}
+                                                onPlayPause={() => handlePlayClick(melody)}
                                                 height={30}
                                                 width="200px"
                                             />
-                                        </td>
+                                        </td> */}
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             {melody.bpm}
                                         </td>
@@ -787,19 +779,15 @@ export default function BrowsePage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                                        favoriteMelodies.includes(
-                                                            melody.id
-                                                        )
+                                                        isMelodyFavorite(melody._id)
                                                             ? 'text-red-500'
                                                             : ''
                                                     }`}
-                                                    onClick={toogleFavorite}
+                                                    onClick={() => toogleFavorite(melody._id)}
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${
-                                                            favoriteMelodies.includes(
-                                                                melody.id
-                                                            )
+                                                            isMelodyFavorite(melody._id)
                                                                 ? 'fill-current'
                                                                 : ''
                                                         }`}
@@ -850,7 +838,7 @@ export default function BrowsePage() {
                                                 size="icon"
                                                 className={`h-8 w-8 flex-shrink-0 rounded-full ${
                                                     currentPlayingMelody?.id ===
-                                                    melody.id
+                                                    melody._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
@@ -859,7 +847,7 @@ export default function BrowsePage() {
                                                 }
                                             >
                                                 {currentPlayingMelody?.id ===
-                                                melody.id ? (
+                                                melody._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
                                                     <Play className="h-4 w-4" />
@@ -889,23 +877,15 @@ export default function BrowsePage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                                        favoriteMelodies.includes(
-                                                            melody.id
-                                                        )
+                                                        isMelodyFavorite(melody._id)
                                                             ? 'text-red-500'
                                                             : ''
                                                     }`}
-                                                    onClick={() =>
-                                                        handleFavoriteClick(
-                                                            melody.id
-                                                        )
-                                                    }
+                                                    onClick={() => toogleFavorite(melody._id)}
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${
-                                                            favoriteMelodies.includes(
-                                                                melody.id
-                                                            )
+                                                            isMelodyFavorite(melody._id)
                                                                 ? 'fill-current'
                                                                 : ''
                                                         }`}
@@ -986,10 +966,10 @@ export default function BrowsePage() {
                             }}
                             isFavorite={
                                 currentPlayingMelody
-                                    ? favoriteMelodies.includes(currentPlayingMelody.id)
+                                    ? isMelodyFavorite(currentPlayingMelody._id)
                                     : false
                             }
-                            onFavoriteClick={handleFavoriteClick}
+                            onFavoriteClick={(melodyId) => toogleFavorite(melodyId)}
                             playNextMelody={playNextMelody}
                             playPreviousMelody={playPreviousMelody}
                             onEnded={playNextMelody}
