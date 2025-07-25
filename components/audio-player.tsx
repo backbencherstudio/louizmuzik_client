@@ -202,7 +202,7 @@ export function AudioPlayer({
                             <span className="text-xs text-zinc-400 min-w-[40px] flex-shrink-0">
                                 {formatTime(currentTime)}
                             </span>
-                            <div className="flex-1 relative  px-2">
+                            {/* <div className="flex-1 relative  px-2 hidden">
                                 <Slider
                                     value={[currentTime]}
                                     min={0}
@@ -211,8 +211,8 @@ export function AudioPlayer({
                                     onValueChange={handleSeek}
                                     className="cursor-pointer"
                                 />
-                            </div>
-                            {/* <div className="flex-1 relative overflow-hidden">
+                            </div> */}
+                            <div className="flex-1 relative overflow-hidden">
                                 <WaveformDisplay
                                     audioUrl={
                                         melody.audioUrl || '/demo-audio.mp3'
@@ -221,7 +221,7 @@ export function AudioPlayer({
                                     onPlayPause={togglePlay}
                                     height={30}
                                 />
-                            </div> */}
+                            </div>
                             <span className="text-xs text-zinc-400 min-w-[40px] flex-shrink-0">
                                 {formatTime(duration)}
                             </span>
@@ -296,10 +296,10 @@ export function AudioPlayer({
                         }
                     }}
                 >
-                    <source
+                    {/* <source
                         src={melody.audioUrl || '/demo-audio.mp3'}
                         type="audio/mpeg"
-                    />
+                    /> */}
                     Your browser does not support the audio element.
                 </audio>
             </div>
