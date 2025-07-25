@@ -66,7 +66,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     if (pack?.audio_path) {
-      audioRef.current = new Audio(pack.audio_path);
+      audioRef.current = new Audio(pack?.audio_path);
       audioRef.current.addEventListener("timeupdate", handleTimeUpdate);
       audioRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
       audioRef.current.addEventListener("ended", handleEnded);
@@ -189,16 +189,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div className="lg:w-1/2">
               {/* Product Image or Video */}
               <div className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-900 mb-4">
-                {showVideo && product.videoPreview ? (
+                {showVideo && product?.videoPreview ? (
                   <video
-                    src={product.videoPreview}
+                    src={product?.videoPreview}
                     controls
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <Image
-                    src={product.image}
-                    alt={product.title}
+                    src={product?.image}
+                    alt={product?.title}
                     fill
                     className="object-cover"
                     priority
@@ -207,7 +207,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               {/* Media Toggle */}
-              {product.videoPreview && (
+              {product?.videoPreview && (
                 <div className="flex gap-2">
                   <Button
                     variant={!showVideo ? "default" : "outline"}
@@ -241,13 +241,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {product.title}
+                    {product?.title}
                   </h1>
                   <Link
                     href={`/producers/${pack?.userId?._id || "unknown"}`}
                     className="text-emerald-500 hover:text-emerald-400 transition-colors text-lg"
                   >
-                    {product.producer}
+                    {product?.producer}
                   </Link>
                 </div>
                 <Button
@@ -286,7 +286,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       </Button>
                       <div className="flex-1">
                         <h3 className="text-white font-medium">
-                          {product.audioDemo.name}
+                          {product?.audioDemo?.name}
                         </h3>
                         <div className="flex items-center gap-2 text-zinc-400 text-sm">
                           <span>{formatTime(currentTime)}</span>
@@ -319,7 +319,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               {/* Price & Buy */}
               <div className="flex items-center gap-4 mb-8">
                 <div className="text-3xl font-bold text-white">
-                  ${product.price.toFixed(2)}
+                  ${product?.price?.toFixed(2)}
                 </div>
                 <Button
                   className="bg-emerald-500 text-black hover:bg-emerald-600 h-12 px-8 flex-1"
@@ -332,12 +332,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
               {/* Description */}
               <p className="text-zinc-300 leading-relaxed mb-8">
-                {product.description}
+                {product?.description}
               </p>
 
               {/* Details */}
               <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-zinc-900/50">
-                {Object.entries(product.details).map(([key, value]) => (
+                {Object.entries(product?.details || {}).map(([key, value]) => (
                   <div key={key}>
                     <p className="text-zinc-500 text-sm capitalize">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -355,29 +355,29 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           <div className="border-t border-zinc-800 mt-16">
             <div className="mx-auto max-w-6xl px-4 py-12">
               <h2 className="text-2xl font-bold text-white mb-6">
-                More from {pack?.userId?.producer_name || product.producer}
+                More from {pack?.userId?.producer_name || product?.producer}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {morePacks.slice(0, 20).map((item: any) => (
                   <Link
-                    key={item._id}
-                    href={`/product/${item._id}`}
+                    key={item?._id}
+                    href={`/product/${item?._id}`}
                     className="group block overflow-hidden rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 transition-all"
                   >
                     <div className="relative aspect-square">
                       <Image
-                        src={item.thumbnail_image}
-                        alt={item.title}
+                        src={item?.thumbnail_image}
+                        alt={item?.title}
                         fill
                         className="object-cover transition-all duration-300 group-hover:scale-105 hover:brightness-75"
                       />
                     </div>
                     <div className="p-3">
                       <h3 className="text-xs font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                        {item.title}
+                        {item?.title}
                       </h3>
                       <p className="mt-1 text-xs font-bold text-emerald-500">
-                        ${item.price.toFixed(2)}
+                        ${item?.price?.toFixed(2)}
                       </p>
                     </div>
                   </Link>
