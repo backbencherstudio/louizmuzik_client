@@ -22,9 +22,20 @@ export const userManagementApis = baseApi.injectEndpoints({
         body: formData,
       }),
     }),
+
+    updateUserPassword: builder.mutation({
+      query: ({ id, formData }: { id: string; formData: FormData }) => ({
+        url: `/auth/userManagement/changePassword/${id}`,
+        method: "PATCH",
+        body: formData,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUserProfileQuery, useUpdateUserProfileMutation } =
-  userManagementApis;
+export const {
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+  useUpdateUserPasswordMutation,
+} = userManagementApis;

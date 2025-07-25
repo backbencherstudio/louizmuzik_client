@@ -12,9 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Layout from "@/components/layout";
-import { useUpdateUserProfileMutation } from "../store/api/userManagementApis/userManagementApis";
+import { useUpdateUserPasswordMutation, useUpdateUserProfileMutation } from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 import { useRef } from "react";
+import { toast } from "sonner";
 
 export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +30,9 @@ export default function AccountPage() {
   const [updateUserProfile, { isLoading: isUpdatingProfile }] =
     useUpdateUserProfileMutation();
 
+  const [updateUserPassword, { isLoading: isUpdatingPassword }] =
+    useUpdateUserPasswordMutation();
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -42,15 +46,34 @@ export default function AccountPage() {
     const formData = new FormData(form);
 
     try {
-      await updateUserProfile({ formData, id: userId }).unwrap();
-    } catch (err) {
-      console.log("err 61", err);
+     const response =  await updateUserProfile({ formData, id: userId }).unwrap();
+     if(response.success){
+      toast.success(response.message);
+     }else{
+      toast.error(response.message);
+     }
+    } catch (error:any) {
+      toast.error(error.data.message);  
+      console.log("err 61", error);
     }
   };
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle password change
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    try {
+      const response = await updateUserPassword({ formData, id: userId }).unwrap();
+      if(response.success){
+        toast.success(response.message);
+      }else{
+        toast.error(response.message);
+      }
+    } catch (error:any) {
+      toast.error(error.data.message);  
+      console.log("err 61", error);
+    }
   };
 
   //   const handleLinkPayPal = () => {
@@ -246,9 +269,9 @@ export default function AccountPage() {
                   </Label>
                   <Textarea
                     id="bio"
-                    name="bio"
+                    name="about"
                     placeholder="Tell us about yourself"
-                    defaultValue={user?.data?.bio || ""}
+                    defaultValue={user?.data?.about || ""}
                     className="min-h-[100px] border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                   />
                 </div>
@@ -279,6 +302,7 @@ export default function AccountPage() {
                     <Input
                       id="currentPassword"
                       type={showPassword ? "text" : "password"}
+                      name="old_password"
                       placeholder="••••••••"
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 pr-10"
                     />
@@ -307,6 +331,7 @@ export default function AccountPage() {
                       <Input
                         id="newPassword"
                         type={showNewPassword ? "text" : "password"}
+                        name="new_password"
                         placeholder="••••••••"
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 pr-10"
                       />
@@ -334,6 +359,7 @@ export default function AccountPage() {
                         id="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        // name="confirm_password"
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500 pr-10"
                       />
                       <Button
