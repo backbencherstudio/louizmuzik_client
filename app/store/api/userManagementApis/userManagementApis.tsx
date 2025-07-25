@@ -30,6 +30,15 @@ export const userManagementApis = baseApi.injectEndpoints({
         body: formData,
       }),
     }),
+
+    allProducersDataWithTopProducersData: builder.query({
+      query: () => ({
+        url: `/auth/userManagement/allProducersDataWithTopProducersData`,
+        method: "GET",
+      }),
+    }),
+
+
   }),
   overrideExisting: false,
 });
@@ -38,4 +47,5 @@ export const {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useUpdateUserPasswordMutation,
+  useAllProducersDataWithTopProducersDataQuery,
 } = userManagementApis;
