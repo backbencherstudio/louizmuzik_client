@@ -21,6 +21,7 @@ import Layout from "@/components/layout";
 import { useGetUserProfileQuery } from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import { MelodiesTable } from "@/components/melodies-table";
+import Skeleton from "react-loading-skeleton";
 
 // Sample data for Recent Releases
 const premiumPacks = [
@@ -62,6 +63,11 @@ const premiumPacks = [
 ];
 
 export default function ProfilePage() {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  const handleImageLoad = () => {
+    setIsImageLoaded(true);
+  };
   const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
@@ -117,16 +123,21 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
-          {/* Banner Image */}
-          <Image
-            src={
-              userData?.profile_image || "/images/profiles/banner-profile.jpg"
-            }
-            alt="Profile Banner"
-            fill
-            className="object-cover"
-            priority
-          />
+          {isUserProfileLoading && (
+            <Skeleton height={400} width="100%" highlightColor="#27272a" className="mb-4" />
+          )}
+          {!isUserProfileLoading && (
+            <>
+              {/* Banner Image */}
+              <Image
+                src={userData?.profile_image}
+                alt="Profile Banner"
+                fill
+                className="object-cover"
+                priority
+              />
+            </>
+          )}
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" />
 
@@ -135,23 +146,26 @@ export default function ProfilePage() {
             <div className="mx-auto max-w-7xl">
               <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6">
                 {/* Profile Image and Follow Button */}
-                <div className="flex flex-col items-center gap-3 md:gap-4">
-                  <div className="relative w-28 h-28 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-black shadow-[0_0_40px_rgba(0,0,0,0.3)] -mt-8 md:-mt-24">
-                    <Image
-                      src={
-                        userData?.profile_image ||
-                        "/images/profiles/banner-profile.jpg"
-                      }
-                      alt="Thunder Beatz"
-                      fill
-                      className="object-cover"
+                <div className="relative w-28 h-28 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-black shadow-[0_0_40px_rgba(0,0,0,0.3)] -mt-8 md:-mt-24">
+                  {!isImageLoaded && (
+                    <Skeleton
+                      height={160}
+                      width="100%"
+                      className="mb-4"
+                      circle={true}
                     />
-                  </div>
-                  {userId !== userData?._id && (
-                    <Button className="bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px]">
-                      Follow
-                    </Button>
                   )}
+
+                  <Image
+                    src={
+                      userData?.profile_image || "/path/to/default-image.jpg"
+                    }
+                    alt="Profile Image"
+                    fill
+                    className="object-cover"
+                    onLoadingComplete={handleImageLoad} 
+                    style={{ display: isImageLoaded ? "block" : "none" }} 
+                  />
                 </div>
 
                 {/* Profile Info */}

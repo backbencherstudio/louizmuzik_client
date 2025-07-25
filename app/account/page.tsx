@@ -189,7 +189,7 @@ export default function AccountPage() {
                     </Label>
                     <Input
                       id="artistName"
-                      name="artistName"
+                      name="producer_name"
                       placeholder="Your producer name"
                       defaultValue={user?.data?.producer_name || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
