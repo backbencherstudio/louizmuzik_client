@@ -244,7 +244,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     {product.title}
                   </h1>
                   <Link
-                    href={`/profile/${pack?.userId?._id || "unknown"}`}
+                    href={`/producers/${pack?.userId?._id || "unknown"}`}
                     className="text-emerald-500 hover:text-emerald-400 transition-colors text-lg"
                   >
                     {product.producer}

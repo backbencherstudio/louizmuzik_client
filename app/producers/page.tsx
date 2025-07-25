@@ -18,7 +18,7 @@ import { useAllProducersDataWithTopProducersDataQuery } from "../store/api/userM
 // Removed: import { Pagination } from "../components/admin/Pagination";
 
 const countries = [
-  "USA",
+  "United States",
   "UK",
   "Canada",
   "India",
@@ -178,8 +178,8 @@ export default function ProducersPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {topProducers.map((producer:any) => (
                   <Link
-                    key={producer.id}
-                    href={`/producers/${producer.id}`}
+                    key={producer._id}
+                    href={`/producers/${producer._id}`}
                     className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                   >
                     <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-800">
@@ -240,8 +240,8 @@ export default function ProducersPage() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                   {filteredProducers.map((producer:any) => (
                     <Link
-                      key={producer.id}
-                      href={`/producers/${producer.id}`}
+                      key={producer._id}
+                      href={`/producers/${producer._id}`}
                       className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                     >
                       <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-800">
