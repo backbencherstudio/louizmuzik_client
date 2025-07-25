@@ -20,6 +20,7 @@ import { AudioPlayer } from "@/components/audio-player";
 import Layout from "@/components/layout";
 import { useGetUserProfileQuery } from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
+import { MelodiesTable } from "@/components/melodies-table";
 
 // Sample data for Recent Releases
 const premiumPacks = [
@@ -293,6 +294,9 @@ export default function ProfilePage() {
                 </Link>
               ))}
             </div>
+          </div>
+          <div className="mt-10 rounded-lg border border-zinc-800/30">
+            {melodies?.length > 0 && <MelodiesTable melodies={melodies} />}
           </div>
         </div>
 

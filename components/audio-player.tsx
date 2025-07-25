@@ -31,7 +31,7 @@ interface AudioPlayerProps {
     onClose: () => void;
     isFavorite?: boolean;
     onFavoriteClick?: (melodyId: string) => void;
-    shouldAutoPlay?: boolean; // <-- add this prop
+    shouldAutoPlay?: boolean; 
     playNextMelody?: () => void;
     playPreviousMelody?: () => void;
     onEnded?: () => void;
