@@ -43,6 +43,13 @@ export const userManagementApis = baseApi.injectEndpoints({
       }),
     }),
 
+    followUnFollowProducer: builder.mutation({
+      query: ({ userId,producerId }: { userId: string; producerId: string }) => ({
+        url: `/auth/userManagement/followingProducersCalculation/${userId}?producerUserId=${producerId}`,
+        method: "PATCH",
+      }),
+    }),
+
 
   }),
   overrideExisting: false,
@@ -53,4 +60,5 @@ export const {
   useUpdateUserProfileMutation,
   useUpdateUserPasswordMutation,
   useAllProducersDataWithTopProducersDataQuery,
-} = userManagementApis;
+  useFollowUnFollowProducerMutation,
+  } = userManagementApis;

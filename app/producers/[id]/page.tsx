@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Play,
   Pause,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,10 @@ import Layout from "@/components/layout";
 import { MelodiesTable } from "@/components/melodies-table";
 import Skeleton from "react-loading-skeleton";
 import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
-import { useGetUserProfileQuery } from "@/app/store/api/userManagementApis/userManagementApis";
+import {
+  useFollowUnFollowProducerMutation,
+  useGetUserProfileQuery,
+} from "@/app/store/api/userManagementApis/userManagementApis";
 import { useParams } from "next/navigation";
 
 export default function ProfilePage() {
@@ -38,12 +42,21 @@ export default function ProfilePage() {
     "packs"
   );
   const [playingPackId, setPlayingPackId] = useState<number | null>(null);
-  const { data: user } = useLoggedInUserQuery(null);
+  const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
+  console.log("user", user);
   const userId = user?.data?._id;
   const { id } = useParams();
 
-  const { data: userProfile, isLoading: isUserProfileLoading } =
-    useGetUserProfileQuery(id as string);
+  const {
+    data: userProfile,
+    isLoading: isUserProfileLoading,
+    refetch: refetchUserProfile,
+  } = useGetUserProfileQuery(id as string);
+  console.log("userProfile", userProfile);
+  const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
+    useFollowUnFollowProducerMutation();
+
+  const isFollowing = user?.data?.following.includes(id as string);
 
   const userData = userProfile?.data?.userData;
   console.log("userData", userData);
@@ -78,6 +91,12 @@ export default function ProfilePage() {
       setCurrentPlayingMelody(null);
       setIsAudioPlayerVisible(true);
     }
+  };
+
+  const handleFollowUnFollowProducer = async () => {
+    await followUnFollowProducer({ userId, producerId: id as string });
+    refetchUser();
+    refetchUserProfile();
   };
 
   return (
@@ -126,13 +145,19 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {
-                    userId !== id && (
-                      <Button className="bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px]">
-                        Follow
-                      </Button>
-                    )
-                  }
+                  {userId !== id && (
+                    <Button
+                      className={`bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px] ${
+                        isFollowing
+                          ? "bg-zinc-400 hover:bg-zinc-50 font-bold"
+                          : "bg-emerald-500 hover:bg-emerald-600"
+                      }`}
+                      onClick={() => handleFollowUnFollowProducer()}
+                    >
+                      {isFollowingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {isFollowing ? "Unfollow" : "Follow"}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Profile Info */}
