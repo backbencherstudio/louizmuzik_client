@@ -87,7 +87,13 @@ export default function FavoritesPage() {
               Favorite Melodies
             </h2>
             <Card className="border-0 bg-[#0F0F0F] overflow-hidden">
-              <MelodiesTable melodies={melodies} />
+              {melodies.length === 0 ? (
+                <p className="text-zinc-400 text-center py-8">
+                  No favorite melodies yet. Start exploring to add some!
+                </p>
+              ) : (
+                <MelodiesTable melodies={melodies} />
+              )}
             </Card>
           </div>
         </div>
