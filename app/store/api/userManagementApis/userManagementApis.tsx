@@ -7,6 +7,7 @@ export const userManagementApis = baseApi.injectEndpoints({
         url: `/auth/userManagement/profile/${userId}`,
         method: "GET",
       }),
+      providesTags: ["User"],
     }),
 
     updateUserProfile: builder.mutation({
@@ -21,6 +22,7 @@ export const userManagementApis = baseApi.injectEndpoints({
         method: "PATCH",
         body: formData,
       }),
+      invalidatesTags: ["User"],
     }),
 
     updateUserPassword: builder.mutation({
@@ -34,6 +36,7 @@ export const userManagementApis = baseApi.injectEndpoints({
           }
         }
       },
+      invalidatesTags: ["User"],
     }),
 
     allProducersDataWithTopProducersData: builder.query({
@@ -42,26 +45,31 @@ export const userManagementApis = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    followingProducerContent: builder.query({
+      query: ({ userId }: { userId: string }) => ({
+        url: `/auth/userManagement/${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
+
 
     followUnFollowProducer: builder.mutation({
       query: ({ userId,producerId }: { userId: string; producerId: string }) => ({
         url: `/auth/userManagement/followingProducersCalculation/${userId}?producerUserId=${producerId}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["User"],
     }),
 
-    followingProducerContent: builder.query({
-      query: ({ userId }: { userId: string }) => ({
-        url: `/auth/userManagement/${userId}`,
-        method: "GET",
-      }),
-    }),
+    
 
     getUserFavoriteMelodies: builder.query({
       query: ({ userId }: { userId: string }) => ({
         url: `/auth/userManagement/favorites/${userId}`,
         method: "GET",
       }),
+      providesTags: ["User"],
     }),
 
   }),
