@@ -50,6 +50,12 @@ export const userManagementApis = baseApi.injectEndpoints({
       }),
     }),
 
+    followingProducerContent: builder.query({
+      query: ({ userId }: { userId: string }) => ({
+        url: `/auth/userManagement/${userId}`,
+        method: "GET",
+      }),
+    }),
 
   }),
   overrideExisting: false,
@@ -61,4 +67,5 @@ export const {
   useUpdateUserPasswordMutation,
   useAllProducersDataWithTopProducersDataQuery,
   useFollowUnFollowProducerMutation,
+  useFollowingProducerContentQuery,
   } = userManagementApis;

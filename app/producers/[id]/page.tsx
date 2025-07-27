@@ -149,7 +149,7 @@ export default function ProfilePage() {
                     <Button
                       className={`bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px] ${
                         isFollowing
-                          ? "bg-zinc-400 hover:bg-zinc-50 font-bold"
+                          ? "bg-emerald-500 hover:bg-emerald-600 font-bold"
                           : "bg-emerald-500 hover:bg-emerald-600"
                       }`}
                       onClick={() => handleFollowUnFollowProducer()}

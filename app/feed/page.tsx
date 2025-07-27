@@ -20,16 +20,12 @@ import BpmFilter from '@/components/bpm-filter';
 import { AudioPlayer } from '@/components/audio-player';
 import { KeySelector } from '@/components/key-selector';
 import {
-    Command,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
+import { useFollowingProducerContentQuery } from '../store/api/userManagementApis/userManagementApis';
 
 interface AudioItem {
     id: number;
@@ -39,12 +35,16 @@ interface AudioItem {
     bpm: number;
     key: string;
     image: string;
+    _id?: string;
+    audioUrl?: string;
+    artistType?: string;
 }
 
 interface Pack extends Omit<AudioItem, 'name'> {
     title: string;
     price: number;
     date: string;
+    thumbnail_image: string;
 }
 
 interface Melody extends AudioItem {
@@ -52,274 +52,25 @@ interface Melody extends AudioItem {
     artistType: string;
 }
 
-const mockPacks: Pack[] = [
-    {
-        id: 1,
-        title: 'Bumper Pack Vol.1',
-        producer: 'Thunder Beatz',
-        price: 35.0,
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pack1-HoiblImnGCTPvq0M5OtPx5GJRaoRKy.jpg',
-        date: '2024-03-25',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 128,
-        key: 'C Maj',
-    },
-    {
-        id: 2,
-        title: 'Radio Lotto Pack',
-        producer: 'Thunder Beatz',
-        price: 20.0,
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pack2-uoM6NdN5hMe9otOwiONDKGITdU1L3H.jpg',
-        date: '2024-03-24',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 140,
-        key: 'G Min',
-    },
-    {
-        id: 3,
-        title: 'Old School Pack',
-        producer: 'Thunder Beatz',
-        price: 19.0,
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pack3-VJLnQZEmalGAsuMWj5l5xiDtzcRGij.jpg',
-        date: '2024-03-23',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 95,
-        key: 'D Min',
-    },
-    {
-        id: 4,
-        title: 'Hip Hop Elements',
-        producer: 'Urban Sound',
-        price: 59.99,
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pack4-wJ6u6o1bnpgNgz28mdTurjWFCWIgGe.jpg',
-        date: '2024-03-22',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 135,
-        key: 'A Min',
-    },
-    {
-        id: 5,
-        title: 'Trap Essentials',
-        producer: 'Urban Sound',
-        price: 49.99,
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pack5-wJ6u6o1bnpgNgz28mdTurjWFCWIgGe.jpg',
-        date: '2024-03-21',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 145,
-        key: 'F Min',
-    },
-];
-
-const mockMelodies: Melody[] = [
-    {
-        id: 1,
-        name: 'Summer Vibes',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'Thunder Beatz',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 120,
-        key: 'C Maj',
-        genre: 'Trap',
-        artistType: 'Producer',
-    },
-    {
-        id: 2,
-        name: 'Midnight Dreams',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'IQBAL',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 95,
-        key: 'G Min',
-        genre: 'R&B',
-        artistType: 'Beatmaker',
-    },
-    {
-        id: 3,
-        name: 'Urban Flow',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        producer: 'Bijoy',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 140,
-        key: 'D Min',
-        genre: 'Hip Hop',
-        artistType: 'DJ',
-    },
-    {
-        id: 4,
-        name: 'Chill Wave',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Thunder Beatz',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 85,
-        key: 'A Min',
-        genre: 'Lo-Fi',
-        artistType: 'Composer',
-    },
-    {
-        id: 5,
-        name: 'Neon Lights',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'Urban Sound',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 130,
-        key: 'E Min',
-        genre: 'Synthwave',
-        artistType: 'Producer',
-    },
-    {
-        id: 6,
-        name: 'Deep House Groove',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'DJ Master',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 125,
-        key: 'F Maj',
-        genre: 'House',
-        artistType: 'DJ',
-    },
-    {
-        id: 7,
-        name: 'Tropical Dreams',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        producer: 'Summer Vibes',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 110,
-        key: 'D Maj',
-        genre: 'Tropical House',
-        artistType: 'Producer',
-    },
-    {
-        id: 8,
-        name: 'Future Bass',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Sound Designer',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 150,
-        key: 'G Maj',
-        genre: 'Future Bass',
-        artistType: 'Sound Designer',
-    },
-    {
-        id: 9,
-        name: 'Ambient Journey',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'Atmospheric',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 90,
-        key: 'A Maj',
-        genre: 'Ambient',
-        artistType: 'Composer',
-    },
-    {
-        id: 10,
-        name: 'Tech House Beat',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'Tech Master',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 128,
-        key: 'C Min',
-        genre: 'Tech House',
-        artistType: 'Producer',
-    },
-    {
-        id: 11,
-        name: 'Melodic Techno',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        producer: 'Techno Master',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 125,
-        key: 'B Min',
-        genre: 'Techno',
-        artistType: 'Producer',
-    },
-    {
-        id: 12,
-        name: 'Progressive House',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Progressive Vibes',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 128,
-        key: 'E Maj',
-        genre: 'House',
-        artistType: 'DJ',
-    },
-    {
-        id: 13,
-        name: 'Drum & Bass',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'DnB Master',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 174,
-        key: 'F Min',
-        genre: 'Drum & Bass',
-        artistType: 'Producer',
-    },
-    {
-        id: 14,
-        name: 'Trance Journey',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'Trance Master',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 138,
-        key: 'A Maj',
-        genre: 'Trance',
-        artistType: 'Producer',
-    },
-    {
-        id: 15,
-        name: 'Dubstep Drop',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png',
-        producer: 'Bass Master',
-        waveform: '▅▂▂▃▇▂▂▃',
-        bpm: 140,
-        key: 'G Min',
-        genre: 'Dubstep',
-        artistType: 'Sound Designer',
-    },
-    {
-        id: 16,
-        name: 'Liquid DnB',
-        image: '/placeholder.svg?height=60&width=60',
-        producer: 'Liquid Vibes',
-        waveform: '▂▂▃▅▂▂▃▅▂',
-        bpm: 174,
-        key: 'D Maj',
-        genre: 'Drum & Bass',
-        artistType: 'Producer',
-    },
-    {
-        id: 17,
-        name: 'Psytrance',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        producer: 'Psy Master',
-        waveform: '▂▃▅▂▇▂▅▃▂',
-        bpm: 145,
-        key: 'F Min',
-        genre: 'Psytrance',
-        artistType: 'Producer',
-    },
-    {
-        id: 18,
-        name: 'Hardstyle',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        producer: 'Hard Master',
-        waveform: '▃▂▅▂▂▇▃▂',
-        bpm: 150,
-        key: 'C Min',
-        genre: 'Hardstyle',
-        artistType: 'Producer',
-    },
-];
+interface CollabModalData {
+    name: string;
+    splitPercentage: string;
+    producerName: string;
+    beatstarsUsername: string;
+    soundeeUsername?: string;
+    instagramUsername: string;
+    youtubeChannel: string;
+}
 
 export default function FeedPage() {
     const [currentPage, setCurrentPage] = useState(0);
     const [currentMelodiesPage, setCurrentMelodiesPage] = useState(0);
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
-    const [selectedMelody, setSelectedMelody] = useState<AudioItem | null>(
+    const [selectedMelody, setSelectedMelody] = useState<CollabModalData | null>(
         null
     );
     const [currentPlayingMelody, setCurrentPlayingMelody] =
-        useState<AudioItem | null>(null);
+        useState<AudioItem | Pack | null>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const [selectedKey, setSelectedKey] = useState('');
     const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
@@ -327,6 +78,17 @@ export default function FeedPage() {
         key: 'name',
         direction: 'asc',
     });
+
+    const { data: user } = useLoggedInUserQuery(null);
+    const userId = user?.data?._id;
+
+    const { data: followingProducerContent, isLoading: isFollowingProducerContentLoading } = useFollowingProducerContentQuery({ userId });
+    console.log("followingProducerContent", followingProducerContent);
+    const melodies = followingProducerContent?.data?.melodies || [];
+    const packs = followingProducerContent?.data?.packs || [];
+    console.log("melodies", melodies);
+    console.log("packs", packs);
+
     const itemsPerPage = 5;
     const melodiesPerPage = 10;
 
@@ -335,7 +97,7 @@ export default function FeedPage() {
     };
 
     const handleNext = () => {
-        const maxPage = Math.ceil(mockPacks.length / itemsPerPage) - 1;
+        const maxPage = Math.ceil(packs.length / itemsPerPage) - 1;
         setCurrentPage(Math.min(maxPage, currentPage + 1));
     };
 
@@ -350,7 +112,7 @@ export default function FeedPage() {
 
     const getCurrentItems = () => {
         const start = currentPage * itemsPerPage;
-        return mockPacks.slice(start, start + itemsPerPage);
+        return packs.slice(start, start + itemsPerPage);
     };
 
     const getCurrentMelodies = () => {
@@ -371,7 +133,7 @@ export default function FeedPage() {
         setIsCollabModalOpen(true);
     };
 
-    const handlePlayClick = (melody: AudioItem) => {
+    const handlePlayClick = (melody: AudioItem | Pack) => {
         setCurrentPlayingMelody(melody);
         setIsAudioPlayerVisible(true);
     };
@@ -395,7 +157,7 @@ export default function FeedPage() {
         });
     };
 
-    const sortedMelodies = [...mockMelodies].sort((a, b) => {
+    const sortedMelodies = [...melodies].sort((a, b) => {
         if (sortConfig.key === 'bpm') {
             return sortConfig.direction === 'asc'
                 ? a.bpm - b.bpm
@@ -412,6 +174,21 @@ export default function FeedPage() {
         }
         return bValue.localeCompare(aValue);
     });
+
+    // Loading state
+    if (isFollowingProducerContentLoading) {
+        return (
+            <Layout>
+                <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
+                    <div className="mx-auto max-w-[1200px]">
+                        <div className="text-center">
+                            <p className="text-zinc-400">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -444,14 +221,14 @@ export default function FeedPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 {getCurrentItems()
                                     .slice(0, 2)
-                                    .map((item) => (
+                                    .map((item: Pack) => (
                                         <div
                                             key={item.id}
                                             className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                                         >
                                             <div className="relative aspect-square">
                                                 <Image
-                                                    src={item.image}
+                                                    src={item?.thumbnail_image}
                                                     alt={item.title}
                                                     fill
                                                     className="object-cover"
@@ -497,7 +274,7 @@ export default function FeedPage() {
                             {/* Mobile Navigation Dots */}
                             <div className="flex justify-center items-center gap-2 mt-4">
                                 {Array.from({
-                                    length: Math.ceil(mockPacks.length / 2),
+                                    length: Math.ceil(packs.length / 2),
                                 }).map((_, index) => (
                                     <button
                                         key={index}
@@ -527,7 +304,7 @@ export default function FeedPage() {
                                 onClick={handleNext}
                                 disabled={
                                     currentPage >=
-                                    Math.ceil(mockPacks.length / 2) - 1
+                                    Math.ceil(packs.length / 2) - 1
                                 }
                                 className="absolute -right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
                             >
@@ -537,14 +314,14 @@ export default function FeedPage() {
 
                         {/* Desktop Grid */}
                         <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
-                            {getCurrentItems().map((item) => (
+                            {getCurrentItems().map((item: Pack) => (
                                 <div
                                     key={item.id}
                                     className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                                 >
                                     <div className="relative aspect-square">
                                         <Image
-                                            src={item.image}
+                                            src={item.thumbnail_image}
                                             alt={item.title}
                                             fill
                                             className="object-cover"
@@ -602,7 +379,7 @@ export default function FeedPage() {
                                 onClick={handleNext}
                                 disabled={
                                     currentPage >=
-                                    Math.ceil(mockPacks.length / itemsPerPage) -
+                                    Math.ceil(packs.length / itemsPerPage) -
                                         1
                                 }
                                 className="absolute -right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
@@ -1098,7 +875,16 @@ export default function FeedPage() {
 
                 <AudioPlayer
                     isVisible={isAudioPlayerVisible}
-                    melody={currentPlayingMelody}
+                    melody={currentPlayingMelody ? {
+                        _id: currentPlayingMelody._id || currentPlayingMelody.id.toString(),
+                        name: 'title' in currentPlayingMelody ? currentPlayingMelody.title : currentPlayingMelody.name,
+                        producer: currentPlayingMelody.producer,
+                        image: currentPlayingMelody.image,
+                        audioUrl: currentPlayingMelody.audioUrl || '',
+                        bpm: currentPlayingMelody.bpm,
+                        key: currentPlayingMelody.key,
+                        artistType: currentPlayingMelody.artistType || ''
+                    } : null}
                     onClose={() => setIsAudioPlayerVisible(false)}
                 />
                 {selectedMelody && (
