@@ -50,18 +50,18 @@ export default function FavoritesPage() {
           <div>
             <h1 className="text-3xl font-bold text-white">My Favorites</h1>
             <p className="mt-2 text-zinc-400">
-              Your favorite melodies and sample packs in one place.
+              Your favorite melodies and packs in one place.
             </p>
           </div>
 
           {/* Favorite Sample Packs Section */}
           <div>
             <h2 className="text-2xl font-bold text-white mb-6">
-              Favorite Sample Packs
+              Favorite Packs
             </h2>
             {packs.length === 0 ? (
               <p className="text-zinc-400 text-center py-8">
-                No favorite sample packs yet. Start exploring to add some!
+                No favorite packs yet. Start exploring to add some!
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
