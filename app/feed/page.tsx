@@ -45,6 +45,9 @@ interface Pack extends Omit<AudioItem, 'name'> {
     price: number;
     date: string;
     thumbnail_image: string;
+    userId: {
+        _id: string;
+    };
 }
 
 interface Melody extends AudioItem {
@@ -222,9 +225,10 @@ export default function FeedPage() {
                                 {getCurrentItems()
                                     .slice(0, 2)
                                     .map((item: Pack) => (
-                                        <div
-                                            key={item.id}
+                                        <Link
+                                            key={item._id}
                                             className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
+                                            href={`/product/${item._id}`}
                                         >
                                             <div className="relative aspect-square">
                                                 <Image
@@ -251,15 +255,13 @@ export default function FeedPage() {
                                             </div>
                                             <div className="p-4">
                                                 <h3 className="text-base font-semibold text-white mb-1">
-                                                    {item.title}
+                                                    {item.title}ddd
                                                 </h3>
                                                 <Link
-                                                    href={`/profile/${item.producer
-                                                        .toLowerCase()
-                                                        .replace(' ', '-')}`}
+                                                    href={`/producers/${item?.userId?._id}`}
                                                     className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
                                                 >
-                                                    {item.producer}
+                                                    {item.producer}ggg
                                                 </Link>
                                                 <div className="mt-2">
                                                     <span className="text-xl font-bold text-white">
@@ -267,7 +269,7 @@ export default function FeedPage() {
                                                     </span>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                             </div>
 
@@ -315,8 +317,9 @@ export default function FeedPage() {
                         {/* Desktop Grid */}
                         <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
                             {getCurrentItems().map((item: Pack) => (
-                                <div
-                                    key={item.id}
+                                <Link
+                                    key={item._id}
+                                    href={`/product/${item._id}`}
                                     className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                                 >
                                     <div className="relative aspect-square">
@@ -345,9 +348,7 @@ export default function FeedPage() {
                                             {item.title}
                                         </h3>
                                         <Link
-                                            href={`/profile/${item.producer
-                                                .toLowerCase()
-                                                .replace(' ', '-')}`}
+                                            href={`/producers/${item?.userId?._id}`}
                                             className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
                                         >
                                             {item.producer}
@@ -358,7 +359,7 @@ export default function FeedPage() {
                                             </span>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
 
@@ -528,9 +529,6 @@ export default function FeedPage() {
                                                     />
                                                 </div>
                                             </th>
-                                            <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                                                WAVEFORM
-                                            </th>
                                             <th
                                                 className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                                                 onClick={() =>
@@ -679,11 +677,6 @@ export default function FeedPage() {
                                                 </td>
                                                 <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                                     {melody.producer}
-                                                </td>
-                                                <td className="whitespace-nowrap px-4 py-3">
-                                                    <div className="font-mono text-sm text-emerald-500">
-                                                        {melody.waveform}
-                                                    </div>
                                                 </td>
                                                 <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                                     {melody.bpm}

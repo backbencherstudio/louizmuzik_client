@@ -376,8 +376,11 @@ export default function ItemsPage() {
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             {melody.genre}
                                         </td>
+                                        <td className="px-4 py-3 text-sm text-zinc-400">
+                                            {melody?.artistType?.join(', ')}
+                                        </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody.artistType}
+
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-center">
                                             <div className="flex items-center justify-center gap-1">
