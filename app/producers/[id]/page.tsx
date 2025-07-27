@@ -126,9 +126,13 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <Button className="bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px]">
-                    Follow
-                  </Button>
+                  {
+                    userId !== id && (
+                      <Button className="bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px]">
+                        Follow
+                      </Button>
+                    )
+                  }
                 </div>
 
                 {/* Profile Info */}
