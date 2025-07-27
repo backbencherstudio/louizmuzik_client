@@ -752,27 +752,24 @@ export default function BrowsePage() {
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                                 <Image
-                                                    src={
-                                                        melody.image ||
-                                                        '/placeholder.svg'
-                                                    }
-                                                    alt={melody.name}
+                                                    src={melody?.image}
+                                                    alt={melody?.name}
                                                     fill
                                                     className="object-cover"
                                                 />
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                                            {melody.name}
+                                            {melody?.name}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             <Link
-                                                href={`/producer/${melody.producer
+                                                href={`/producer/${melody?.producer
                                                     .toLowerCase()
                                                     .replace(/\s+/g, '-')}`}
                                                 className="hover:text-emerald-500 transition-colors"
                                             >
-                                                {melody.producer}
+                                                {melody?.producer}
                                             </Link>
                                         </td>
                                         {/* <td className="whitespace-nowrap px-4 py-3">
@@ -785,16 +782,16 @@ export default function BrowsePage() {
                                             />
                                         </td> */}
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody.bpm}
+                                            {melody?.bpm}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody.key}
+                                            {melody?.key}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody.genre}
+                                            {melody?.genre?.join(', ')}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody.artistType}
+                                            {melody?.artistType?.join(', ')}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-center">
                                             <div className="flex items-center justify-center gap-1">
@@ -802,11 +799,11 @@ export default function BrowsePage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                                        isMelodyFavorite(melody._id)
+                                                        isMelodyFavorite(melody?._id)
                                                             ? 'text-red-500'
                                                             : ''
                                                     }`}
-                                                    onClick={() => toogleFavorite(melody._id)}
+                                                    onClick={() => toogleFavorite(melody?._id)}
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${
@@ -841,17 +838,14 @@ export default function BrowsePage() {
                             <tbody>
                                 {currentMelodies.map((melody) => (
                                     <tr
-                                        key={melody._id}
+                                        key={melody?._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                     >
                                         <td className="px-4 py-3 flex items-center gap-3">
                                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                                                 <Image
-                                                    src={
-                                                        melody.image ||
-                                                        '/placeholder.svg'
-                                                    }
-                                                    alt={melody.name}
+                                                    src={melody?.image}
+                                                    alt={melody?.name}
                                                     fill
                                                     className="object-cover"
                                                 />
@@ -870,7 +864,7 @@ export default function BrowsePage() {
                                                 }
                                             >
                                                 {currentPlayingMelody?.id ===
-                                                melody._id ? (
+                                                melody?._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
                                                     <Play className="h-4 w-4" />
@@ -882,7 +876,7 @@ export default function BrowsePage() {
                                                 </p>
                                                 <p className="text-xs text-zinc-400 truncate mt-0.5">
                                                     <Link
-                                                        href={`/producer/${melody.producer
+                                                        href={`/producer/${melody?.producer
                                                             .toLowerCase()
                                                             .replace(
                                                                 /\s+/g,
@@ -890,7 +884,7 @@ export default function BrowsePage() {
                                                             )}`}
                                                         className="hover:text-emerald-500 transition-colors"
                                                     >
-                                                        {melody.producer}
+                                                        {melody?.producer}
                                                     </Link>
                                                 </p>
                                             </div>
@@ -900,15 +894,15 @@ export default function BrowsePage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                                        isMelodyFavorite(melody._id)
+                                                        isMelodyFavorite(melody?._id)
                                                             ? 'text-red-500'
                                                             : ''
                                                     }`}
-                                                    onClick={() => toogleFavorite(melody._id)}
+                                                    onClick={() => toogleFavorite(melody?._id)}
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${
-                                                            isMelodyFavorite(melody._id)
+                                                            isMelodyFavorite(melody?._id)
                                                                 ? 'fill-current'
                                                                 : ''
                                                         }`}
