@@ -40,6 +40,7 @@ import {
 import { useCart } from "@/components/cart-context";
 import ProtectedRoute from "@/Private/ProtectedRoute";
 import { toast } from "sonner";
+import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 
@@ -50,6 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
   const pathname = usePathname();
   const { cartItems, removeFromCart } = useCart();
+  const { data: user } = useLoggedInUser();
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
@@ -282,7 +284,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className="h-10 w-10 rounded-full overflow-hidden border border-emerald-500 bg-zinc-900 p-0 hover:bg-zinc-800"
                 >
                   <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/1729819215.jpg-uoM6NdN5hMe9otOwiONDKGITdU1L3H.jpeg"
+                    src={user?.data?.profile_image}
                     alt="Profile"
                     width={40}
                     height={40}
@@ -520,11 +522,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               >
                 <div className="relative h-8 w-8 overflow-hidden rounded-full">
                   <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/1729819215.jpg-uoM6NdN5hMe9otOwiONDKGITdU1L3H.jpeg"
+                    src={user?.data?.profile_image}
                     alt="Profile"
-                    width={32}
-                    height={32}
-                    className="object-cover"
+                    width={500}
+                    height={500}
+                    className="object-cover h-full w-full"
                   />
                 </div>
                 <span>Profile</span>
