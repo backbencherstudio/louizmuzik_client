@@ -61,18 +61,19 @@ export default function AccountPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-
+    const old_password = (form.elements.namedItem("old_password") as HTMLInputElement).value;
+    const new_password = (form.elements.namedItem("new_password") as HTMLInputElement).value;
+    const data = { old_password, new_password };
     try {
-      const response = await updateUserPassword({ formData, id: userId }).unwrap();
+      const response = await updateUserPassword({ data, id: userId }).unwrap();
       if(response.success){
         toast.success(response.message);
       }else{
         toast.error(response.message);
       }
     } catch (error:any) {
-      toast.error(error.data.message);  
-      console.log("err 61", error);
+      toast.error(error.data?.message || "Something went wrong");
+      console.log("err", error);
     }
   };
 

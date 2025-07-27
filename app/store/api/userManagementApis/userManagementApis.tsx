@@ -24,11 +24,16 @@ export const userManagementApis = baseApi.injectEndpoints({
     }),
 
     updateUserPassword: builder.mutation({
-      query: ({ id, formData }: { id: string; formData: FormData }) => ({
-        url: `/auth/userManagement/changePassword/${id}`,
-        method: "PATCH",
-        body: formData,
-      }),
+      query: ({ id, data }: { id: string; data: { old_password: string; new_password: string } }) => {
+        return {
+          url: `/auth/userManagement/changePassword/${id}`,
+          method: "PATCH",
+          body: data,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      },
     }),
 
     allProducersDataWithTopProducersData: builder.query({
