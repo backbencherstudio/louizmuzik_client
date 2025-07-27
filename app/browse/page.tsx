@@ -83,6 +83,7 @@ export default function BrowsePage() {
     // Get melodies
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodiesQuery(null);
     const melodies = melodiesData?.data;
+    console.log("melodies",melodies);
 
     // Mutations
     const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -100,8 +101,22 @@ export default function BrowsePage() {
         }
     }
 
-    const genres = Array.from(new Set(melodies?.map((m:any) => m.genre)));
-    const artistTypes = Array.from(new Set(melodies?.map((m:any) => m.artistType)));
+    const genres = Array.from(new Set(
+        melodies?.flatMap((m: any) => {
+            if (Array.isArray(m.genre)) {
+                return m.genre;
+            }
+            return m.genre ? [m.genre] : [];
+        }) || []
+    ));
+    const artistTypes = Array.from(new Set(
+        melodies?.flatMap((m: any) => {
+            if (Array.isArray(m.artistType)) {
+                return m.artistType;
+            }
+            return m.artistType ? [m.artistType] : [];
+        }) || []
+    ));
 
     const handleDownloadClick = async (melody: any) => {
         try {
@@ -240,15 +255,24 @@ export default function BrowsePage() {
                 return false;
             }
 
-            if (selectedGenre && melody.genre !== selectedGenre) {
-                return false;
+            if (selectedGenre) {
+                if (Array.isArray(melody.genre)) {
+                    if (!melody.genre.includes(selectedGenre)) {
+                        return false;
+                    }
+                } else if (melody.genre !== selectedGenre) {
+                    return false;
+                }
             }
 
-            if (
-                selectedArtistType &&
-                melody.artistType !== selectedArtistType
-            ) {
-                return false;
+            if (selectedArtistType) {
+                if (Array.isArray(melody.artistType)) {
+                    if (!melody.artistType.includes(selectedArtistType)) {
+                        return false;
+                    }
+                } else if (melody.artistType !== selectedArtistType) {
+                    return false;
+                }
             }
 
             if (bpmFilter) {
@@ -788,10 +812,14 @@ export default function BrowsePage() {
                                             {melody?.key}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody?.genre?.join(', ')}
+                                            {Array.isArray(melody?.genre) 
+                                                ? melody.genre.join(', ') 
+                                                : melody?.genre}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {melody?.artistType?.join(', ')}
+                                            {Array.isArray(melody?.artistType) 
+                                                ? melody.artistType.join(', ') 
+                                                : melody?.artistType}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-center">
                                             <div className="flex items-center justify-center gap-1">
