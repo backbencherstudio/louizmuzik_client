@@ -8,24 +8,20 @@ import { SamplePackCard } from "@/components/sample-pack-card";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 import {
   useFavoritePackMutation,
-  useGetFavoritePackQuery,
 } from "../store/api/packApis/packApis";
-import { useGetFavoriteMelodyQuery } from "../store/api/melodyApis/melodyApis";
+import { useGetUserFavoriteMelodiesQuery } from "../store/api/userManagementApis/userManagementApis";
 
 export default function FavoritesPage() {
   const { data: user, refetch: refetchUser } = useLoggedInUser();
   const userId = user?.data?._id;
-  const { data: favoritePack, refetch: refetchFavorites } =
-    useGetFavoritePackQuery({ id: userId }, { skip: !userId });
+  
+  const { data: favoritedata, refetch: refetchFavorites } =
+    useGetUserFavoriteMelodiesQuery({ userId }, { skip: !userId });
+
+  const melodies = favoritedata?.data?.melodies || [];
+  const packs = favoritedata?.data?.packs || [];
 
   const [favorite] = useFavoritePackMutation();
-  const { data: favoriteMelody, refetch: refetchFavoriteMelody } =
-    useGetFavoriteMelodyQuery(userId);
-
-
-  const favouritePacks = favoritePack?.data?.packs || [];
-  const favouriteMelodies = favoriteMelody?.data?.melodies || [];
-  console.log("favouriteMelodies",favouriteMelodies);
 
   const handleFavoriteClick = async (packId: string) => {
     try {
@@ -35,6 +31,7 @@ export default function FavoritesPage() {
       console.error("Error toggling favorite:", error);
     }
   };
+  
   const isPackFavorite = (packId: string) => {
     return user?.data?.favourite_packs?.includes(packId) || false;
   };
@@ -44,7 +41,6 @@ export default function FavoritesPage() {
       refetchFavorites();
     }
   }, [userId, refetchFavorites]);
-
 
   return (
     <Layout>
@@ -63,13 +59,13 @@ export default function FavoritesPage() {
             <h2 className="text-2xl font-bold text-white mb-6">
               Favorite Sample Packs
             </h2>
-            {favouritePacks.length === 0 ? (
+            {packs.length === 0 ? (
               <p className="text-zinc-400 text-center py-8">
                 No favorite sample packs yet. Start exploring to add some!
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {favouritePacks.map((pack: any) => (
+                {packs.map((pack: any) => (
                   <SamplePackCard
                     key={pack._id}
                     title={pack.title}
@@ -91,7 +87,7 @@ export default function FavoritesPage() {
               Favorite Melodies
             </h2>
             <Card className="border-0 bg-[#0F0F0F] overflow-hidden">
-              <MelodiesTable melodies={favouriteMelodies} />
+              <MelodiesTable melodies={melodies} />
             </Card>
           </div>
         </div>

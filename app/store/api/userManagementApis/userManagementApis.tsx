@@ -57,6 +57,13 @@ export const userManagementApis = baseApi.injectEndpoints({
       }),
     }),
 
+    getUserFavoriteMelodies: builder.query({
+      query: ({ userId }: { userId: string }) => ({
+        url: `/auth/userManagement/favorites/${userId}`,
+        method: "GET",
+      }),
+    }),
+
   }),
   overrideExisting: false,
 });
@@ -68,4 +75,5 @@ export const {
   useAllProducersDataWithTopProducersDataQuery,
   useFollowUnFollowProducerMutation,
   useFollowingProducerContentQuery,
+  useGetUserFavoriteMelodiesQuery,
   } = userManagementApis;

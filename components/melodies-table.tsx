@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Heart, Play, Download } from "lucide-react";
 import {
   useFavoriteMelodyMutation,
-  useGetFavoriteMelodyQuery,
   useMelodyDownloadMutation,
 } from "@/app/store/api/melodyApis/melodyApis";
+import { useGetUserFavoriteMelodiesQuery } from "@/app/store/api/userManagementApis/userManagementApis";
 import { toast } from "sonner";
 import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
 
@@ -43,7 +43,7 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
 
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
   const [favoriteMelody, { isLoading: isFavoriteLoading }] = useFavoriteMelodyMutation();
-  const { refetch: refetchMelodies } = useGetFavoriteMelodyQuery(userId || "");
+  const { refetch: refetchFavorites } = useGetUserFavoriteMelodiesQuery({ userId: userId || "" });
   const handleDownloadClick = async (melody: any) => {
     try {
       const response = await melodyDownloadCounter(melody._id).unwrap();
@@ -74,7 +74,7 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
         id: melodyId, 
         userId: userId 
       }).unwrap();
-      await Promise.all([refetchUser(), refetchMelodies()]);
+      await Promise.all([refetchUser(), refetchFavorites()]);
       toast.info(response?.message);
     } catch (error: any) {
       console.log("favorite error", error);
