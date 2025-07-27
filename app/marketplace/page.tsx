@@ -120,8 +120,8 @@ export default function MarketplacePage() {
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const { data: allPacksData } = useAllPacksQuery(null);
-    const packs = allPacksData?.data;
-    console.log(packs);
+    const packs = allPacksData?.data || [];
+    console.log('Packs data:', packs);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % featuredPacks.length);
@@ -138,17 +138,17 @@ export default function MarketplacePage() {
     };
 
     const handlePlayClick = (pack: any) => {
-        if (currentPlayingPack?.id === pack.id) {
+        if (currentPlayingPack?.id === pack?.id) {
             // Si el pack actual está sonando, lo pausamos
             setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(false);
         } else {
             // Si es un nuevo pack o está pausado, lo reproducimos
             setCurrentPlayingPack({
-                id: pack.id,
-                name: pack.title,
-                producer: pack.producer,
-                image: pack.image,
+                id: pack?.id || pack?._id,
+                name: pack?.title || 'Untitled Pack',
+                producer: pack?.producer || 'Unknown Producer',
+                image: pack?.thumbnail_image || pack?.image || '/placeholder.svg?height=300&width=300',
                 waveform: '▂▃▅▂▇▂▅▃▂', // Waveform de ejemplo
                 bpm: 120, // BPM de ejemplo
                 key: 'C Maj', // Key de ejemplo
@@ -326,8 +326,7 @@ export default function MarketplacePage() {
                                     <div className="relative aspect-square">
                                         <Image
                                             src={
-                                                pack.thumbnail_image || '/placeholder.svg'
-                                            }
+                                                pack?.thumbnail_image}
                                             alt={pack.title}
                                             fill
                                             className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
