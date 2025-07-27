@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -12,6 +12,7 @@ import {
     Download,
     Play,
     MoreVertical,
+    Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/layout';
@@ -24,6 +25,12 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+    Command,
+    CommandGroup,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
 import { useFollowingProducerContentQuery } from '../store/api/userManagementApis/userManagementApis';
 
@@ -38,9 +45,20 @@ interface AudioItem {
     _id?: string;
     audioUrl?: string;
     artistType?: string;
+    genre?: string;
+    plays?: number;
+    downloads?: number;
+    favorites?: number;
+    createdAt?: string;
+    userId?: {
+        _id: string;
+        producer_name: string;
+        email: string;
+        profile_image: string;
+    };
 }
 
-interface Pack extends Omit<AudioItem, 'name'> {
+interface Pack extends Omit<AudioItem, 'name' | 'userId'> {
     title: string;
     price: number;
     date: string;
@@ -82,6 +100,16 @@ export default function FeedPage() {
         direction: 'asc',
     });
 
+    // Filter states
+    const [selectedGenre, setSelectedGenre] = useState('');
+    const [selectedArtistType, setSelectedArtistType] = useState('');
+    const [selectedPopularity, setSelectedPopularity] = useState('');
+    const [bpmFilter, setBpmFilter] = useState<{
+        type: 'exact' | 'range';
+        min?: number;
+        max?: number;
+    } | null>(null);
+
     const { data: user } = useLoggedInUserQuery(null);
     const userId = user?.data?._id;
 
@@ -94,6 +122,38 @@ export default function FeedPage() {
 
     const itemsPerPage = 5;
     const melodiesPerPage = 10;
+
+    // Extract unique values for filter options
+    const genres = useMemo(() => {
+        const uniqueGenres = new Set<string>();
+        melodies.forEach((melody: any) => {
+            if (melody.genre && Array.isArray(melody.genre)) {
+                melody.genre.forEach((g: string) => uniqueGenres.add(g));
+            } else if (melody.genre) {
+                uniqueGenres.add(melody.genre);
+            }
+        });
+        return Array.from(uniqueGenres).sort();
+    }, [melodies]);
+
+    const artistTypes = useMemo(() => {
+        const uniqueTypes = new Set<string>();
+        melodies.forEach((melody: any) => {
+            if (melody.artistType && Array.isArray(melody.artistType)) {
+                melody.artistType.forEach((type: string) => uniqueTypes.add(type));
+            } else if (melody.artistType) {
+                uniqueTypes.add(melody.artistType);
+            }
+        });
+        return Array.from(uniqueTypes).sort();
+    }, [melodies]);
+
+    const popularityOptions = [
+        { value: 'plays', label: 'Most Played' },
+        { value: 'downloads', label: 'Most Downloaded' },
+        { value: 'favorites', label: 'Most Favorited' },
+        { value: 'recent', label: 'Recently Added' },
+    ];
 
     const handlePrevious = () => {
         setCurrentPage(Math.max(0, currentPage - 1));
@@ -109,7 +169,7 @@ export default function FeedPage() {
     };
 
     const handleMelodiesNext = () => {
-        const maxPage = Math.ceil(sortedMelodies.length / melodiesPerPage) - 1;
+        const maxPage = Math.ceil(filteredAndSortedMelodies.length / melodiesPerPage) - 1;
         setCurrentMelodiesPage(Math.min(maxPage, currentMelodiesPage + 1));
     };
 
@@ -120,7 +180,7 @@ export default function FeedPage() {
 
     const getCurrentMelodies = () => {
         const start = currentMelodiesPage * melodiesPerPage;
-        return sortedMelodies.slice(start, start + melodiesPerPage);
+        return filteredAndSortedMelodies.slice(start, start + melodiesPerPage);
     };
 
     const handleDownloadClick = (melody: AudioItem) => {
@@ -160,23 +220,117 @@ export default function FeedPage() {
         });
     };
 
-    const sortedMelodies = [...melodies].sort((a, b) => {
-        if (sortConfig.key === 'bpm') {
-            return sortConfig.direction === 'asc'
-                ? a.bpm - b.bpm
-                : b.bpm - a.bpm;
+    // Filter and sort melodies
+    const filteredAndSortedMelodies = useMemo(() => {
+        let filtered = [...melodies];
+
+        // Apply filters
+        if (selectedKey) {
+            filtered = filtered.filter((melody: any) => melody.key === selectedKey);
         }
 
-        const aValue =
-            a[sortConfig.key as keyof typeof a]?.toString().toLowerCase() || '';
-        const bValue =
-            b[sortConfig.key as keyof typeof b]?.toString().toLowerCase() || '';
-
-        if (sortConfig.direction === 'asc') {
-            return aValue.localeCompare(bValue);
+        if (selectedGenre) {
+            filtered = filtered.filter((melody: any) => {
+                if (Array.isArray(melody.genre)) {
+                    return melody.genre.includes(selectedGenre);
+                }
+                return melody.genre === selectedGenre;
+            });
         }
-        return bValue.localeCompare(aValue);
-    });
+
+        if (selectedArtistType) {
+            filtered = filtered.filter((melody: any) => {
+                if (Array.isArray(melody.artistType)) {
+                    return melody.artistType.includes(selectedArtistType);
+                }
+                return melody.artistType === selectedArtistType;
+            });
+        }
+
+        if (bpmFilter) {
+            if (bpmFilter.type === 'exact' && bpmFilter.min) {
+                filtered = filtered.filter((melody: any) => melody.bpm === bpmFilter.min);
+            } else if (bpmFilter.type === 'range' && bpmFilter.min && bpmFilter.max) {
+                filtered = filtered.filter((melody: any) => 
+                    melody.bpm >= bpmFilter.min! && melody.bpm <= bpmFilter.max!
+                );
+            }
+        }
+
+        // Apply popularity sorting
+        if (selectedPopularity) {
+            if (selectedPopularity === 'recent') {
+                filtered.sort((a: any, b: any) => {
+                    const dateA = new Date(a.createdAt || 0);
+                    const dateB = new Date(b.createdAt || 0);
+                    return dateB.getTime() - dateA.getTime();
+                });
+            } else {
+                filtered.sort((a: any, b: any) => {
+                    const aValue = a[selectedPopularity] || 0;
+                    const bValue = b[selectedPopularity] || 0;
+                    return bValue - aValue;
+                });
+            }
+        } else {
+            // Apply regular sorting
+            filtered.sort((a: any, b: any) => {
+                if (sortConfig.key === 'bpm') {
+                    return sortConfig.direction === 'asc'
+                        ? a.bpm - b.bpm
+                        : b.bpm - a.bpm;
+                }
+
+                const aValue = a[sortConfig.key as keyof typeof a]?.toString().toLowerCase() || '';
+                const bValue = b[sortConfig.key as keyof typeof b]?.toString().toLowerCase() || '';
+
+                if (sortConfig.direction === 'asc') {
+                    return aValue.localeCompare(bValue);
+                }
+                return bValue.localeCompare(aValue);
+            });
+        }
+
+        return filtered;
+    }, [melodies, selectedKey, selectedGenre, selectedArtistType, bpmFilter, selectedPopularity, sortConfig]);
+
+    const handleBpmFilterApply = (values: {
+        type: 'exact' | 'range';
+        min?: number;
+        max?: number;
+    }) => {
+        setBpmFilter(values);
+        setCurrentMelodiesPage(0);
+    };
+
+    const handleBpmFilterClear = () => {
+        setBpmFilter(null);
+        setCurrentMelodiesPage(0);
+    };
+
+    const handleGenreSelect = (genre: string) => {
+        setSelectedGenre(genre === selectedGenre ? '' : genre);
+        setCurrentMelodiesPage(0);
+    };
+
+    const handleArtistTypeSelect = (type: string) => {
+        setSelectedArtistType(type === selectedArtistType ? '' : type);
+        setCurrentMelodiesPage(0);
+    };
+
+    const handlePopularitySelect = (popularity: string) => {
+        setSelectedPopularity(popularity === selectedPopularity ? '' : popularity);
+        setCurrentMelodiesPage(0);
+    };
+
+    const handleClearAllFilters = () => {
+        setSelectedKey('');
+        setSelectedGenre('');
+        setSelectedArtistType('');
+        setSelectedPopularity('');
+        setBpmFilter(null);
+        setCurrentMelodiesPage(0);
+    };
 
     // Loading state
     if (isFollowingProducerContentLoading) {
@@ -255,13 +409,13 @@ export default function FeedPage() {
                                             </div>
                                             <div className="p-4">
                                                 <h3 className="text-base font-semibold text-white mb-1">
-                                                    {item.title}ddd
+                                                    {item.title}
                                                 </h3>
                                                 <Link
                                                     href={`/producers/${item?.userId?._id}`}
                                                     className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
                                                 >
-                                                    {item.producer}ggg
+                                                    {item.producer}
                                                 </Link>
                                                 <div className="mt-2">
                                                     <span className="text-xl font-bold text-white">
@@ -400,39 +554,91 @@ export default function FeedPage() {
                     {/* Melodies Section */}
                     <div className="mb-32">
                         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                            <Button
-                                variant="outline"
-                                className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                            >
-                                POPULAR
-                                <ChevronDown className="h-4 w-4" />
-                            </Button>
+                            {/* Popularity Filter */}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                                    >
+                                        {selectedPopularity ? popularityOptions.find(opt => opt.value === selectedPopularity)?.label : 'POPULARITY'}
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-0" align="center">
+                                    <Command>
+                                        <CommandList>
+                                            <CommandGroup>
+                                                {popularityOptions.map((option) => (
+                                                    <CommandItem
+                                                        key={option.value}
+                                                        onSelect={() => handlePopularitySelect(option.value)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <div className={`flex-1 ${
+                                                            selectedPopularity === option.value
+                                                                ? 'text-emerald-500'
+                                                                : 'text-white'
+                                                        }`}>
+                                                            {option.label}
+                                                        </div>
+                                                        {selectedPopularity === option.value && (
+                                                            <Check className="h-4 w-4 text-emerald-500" />
+                                                        )}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
 
-                            <Button
-                                variant="outline"
-                                className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                            >
-                                GENRES
-                                <ChevronDown className="h-4 w-4" />
-                            </Button>
+                            {/* Genre Filter */}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                                    >
+                                        {selectedGenre || 'GENRES'}
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-0" align="center">
+                                    <Command>
+                                        <CommandList>
+                                            <CommandGroup>
+                                                {genres.map((genre) => (
+                                                    <CommandItem
+                                                        key={genre}
+                                                        onSelect={() => handleGenreSelect(genre)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <div className={`flex-1 ${
+                                                            selectedGenre === genre
+                                                                ? 'text-emerald-500'
+                                                                : 'text-white'
+                                                        }`}>
+                                                            {genre}
+                                                        </div>
+                                                        {selectedGenre === genre && (
+                                                            <Check className="h-4 w-4 text-emerald-500" />
+                                                        )}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
 
+                            {/* BPM Filter */}
                             <BpmFilter
-                                onApply={(values) =>
-                                    console.log('BPM filter applied:', values)
-                                }
-                                onClear={() =>
-                                    console.log('BPM filter cleared')
-                                }
+                                onApply={handleBpmFilterApply}
+                                onClear={handleBpmFilterClear}
                             />
 
-                            <Button
-                                variant="outline"
-                                className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                            >
-                                INSTRUMENT
-                                <ChevronDown className="h-4 w-4" />
-                            </Button>
-
+                            {/* Key Filter */}
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -446,28 +652,59 @@ export default function FeedPage() {
                                 <PopoverContent className="p-0" align="center">
                                     <KeySelector
                                         value={selectedKey}
-                                        onChange={setSelectedKey}
+                                        onChange={(key) => {
+                                            setSelectedKey(key);
+                                            setCurrentMelodiesPage(0);
+                                        }}
                                     />
+                                </PopoverContent>
+                            </Popover>
+
+                            {/* Artist Type Filter */}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                                    >
+                                        {selectedArtistType || 'ARTIST TYPE'}
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-0" align="center">
+                                    <Command>
+                                        <CommandList>
+                                            <CommandGroup>
+                                                {artistTypes.map((type) => (
+                                                    <CommandItem
+                                                        key={type}
+                                                        onSelect={() => handleArtistTypeSelect(type)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <div className={`flex-1 ${
+                                                            selectedArtistType === type
+                                                                ? 'text-emerald-500'
+                                                                : 'text-white'
+                                                        }`}>
+                                                            {type}
+                                                        </div>
+                                                        {selectedArtistType === type && (
+                                                            <Check className="h-4 w-4 text-emerald-500" />
+                                                        )}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
                                 </PopoverContent>
                             </Popover>
 
                             <Button
                                 variant="outline"
-                                className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                            >
-                                ARTIST TYPE
-                                <ChevronDown className="h-4 w-4" />
-                            </Button>
-
-                            <Button className="h-10 bg-emerald-500 text-black hover:bg-emerald-600">
-                                Apply Filter
-                            </Button>
-
-                            <Button
-                                variant="outline"
                                 className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                                onClick={handleClearAllFilters}
                             >
-                                Clear Filter
+                                Clear Filters
                             </Button>
                         </div>
 
@@ -635,9 +872,9 @@ export default function FeedPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {getCurrentMelodies().map((melody) => (
+                                        {getCurrentMelodies().map((melody: any) => (
                                             <tr
-                                                key={melody.id}
+                                                key={melody._id || melody.id}
                                                 className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                             >
                                                 <td className="whitespace-nowrap px-4 py-3 text-center">
@@ -685,10 +922,10 @@ export default function FeedPage() {
                                                     {melody.key}
                                                 </td>
                                                 <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                                    {melody.genre}
+                                                    {Array.isArray(melody.genre) ? melody.genre.join(', ') : melody.genre}
                                                 </td>
                                                 <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                                    {melody.artistType}
+                                                    {Array.isArray(melody.artistType) ? melody.artistType.join(', ') : melody.artistType}
                                                 </td>
                                                 <td className="whitespace-nowrap px-4 py-3 text-center">
                                                     <div className="flex items-center justify-center gap-1">
@@ -740,9 +977,9 @@ export default function FeedPage() {
                                 {/* Mobile Table */}
                                 <table className="w-full md:hidden">
                                     <tbody>
-                                        {getCurrentMelodies().map((melody) => (
+                                        {getCurrentMelodies().map((melody: any) => (
                                             <tr
-                                                key={melody.id}
+                                                key={melody._id || melody.id}
                                                 className="border-b border-zinc-800 hover:bg-zinc-900/30"
                                             >
                                                 <td className="px-4 py-3 flex items-center gap-3">
@@ -844,7 +1081,7 @@ export default function FeedPage() {
                             <span className="text-sm text-zinc-400">
                                 Page {currentMelodiesPage + 1} of{' '}
                                 {Math.ceil(
-                                    sortedMelodies.length / melodiesPerPage
+                                    filteredAndSortedMelodies.length / melodiesPerPage
                                 )}
                             </span>
                             <Button
@@ -854,7 +1091,7 @@ export default function FeedPage() {
                                 disabled={
                                     currentMelodiesPage >=
                                     Math.ceil(
-                                        sortedMelodies.length / melodiesPerPage
+                                        filteredAndSortedMelodies.length / melodiesPerPage
                                     ) -
                                         1
                                 }
