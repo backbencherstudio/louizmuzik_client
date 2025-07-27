@@ -6,16 +6,10 @@ import Link from 'next/link';
 import {
     Play,
     Pause,
-    Download,
-    Heart,
     Search,
-    ArrowUpDown,
     ArrowLeft,
     Pencil,
-    Share2,
     Trash,
-    Loader2,
-    X,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
