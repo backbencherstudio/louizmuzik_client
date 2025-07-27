@@ -18,6 +18,24 @@ export const packApis = baseApi.injectEndpoints({
       }),
     }),
 
+    // New endpoint for paginated packs with search
+    getPacksWithPagination: builder.query({
+      query: ({ page = 1, limit = 20, search = '' }: { page?: number; limit?: number; search?: string }) => ({
+        url: `/pack?page=${page}&limit=${limit}${search ? `&search=${encodeURIComponent(search)}` : ''}`,
+        method: "GET",
+      }),
+      providesTags: ["Pack"],
+    }),
+
+    // New endpoint for search packs
+    searchPacks: builder.query({
+      query: (searchQuery: string) => ({
+        url: `/pack/search?q=${encodeURIComponent(searchQuery)}`,
+        method: "GET",
+      }),
+      providesTags: ["Pack"],
+    }),
+
     getProducerPack: builder.query({
       query: (id: string) => ({
         url: `/pack/${id}`,
@@ -55,7 +73,6 @@ export const packApis = baseApi.injectEndpoints({
       invalidatesTags: ["User", "Pack"],
     }),
 
-
     getFavoritePack: builder.query({
         query: ({id}: { id: string}) => ({
           url: `/auth/userManagement/favorites/${id}`,
@@ -73,6 +90,8 @@ export const {
   useGetPackDetailsQuery,
   useDeletePackMutation,
   useAllPacksQuery,
+  useGetPacksWithPaginationQuery,
+  useSearchPacksQuery,
   useUpdatePackMutation,
   useFavoritePackMutation,
   useGetFavoritePackQuery,

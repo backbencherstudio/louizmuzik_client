@@ -2,9 +2,7 @@
 
 'use client';
 
-
-
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
@@ -14,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { AudioPlayer } from '@/components/audio-player';
 import Layout from '@/components/layout';
 import { useAllPacksQuery } from '../store/api/packApis/packApis';
+import { Pagination } from '@/components/ui/pagination';
 
 // Sample featured packs data
 const featuredPacks = [
@@ -40,88 +39,55 @@ const featuredPacks = [
     },
 ];
 
-// Sample all packs data
-const allPacks = [
-    {
-        id: 1,
-        title: 'Test',
-        producer: 'IQBAL',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 50.0,
-    },
-    {
-        id: 2,
-        title: 'Bumper Pack Vol.1',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg',
-        price: 35.0,
-    },
-    {
-        id: 3,
-        title: 'Radio Lotto Pack',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        price: 20.0,
-    },
-    {
-        id: 4,
-        title: 'Old School Pack',
-        producer: 'Thunder Beatz',
-        image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png',
-        price: 19.0,
-    },
-    {
-        id: 5,
-        title: 'Afrohouse Sample Pack',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 17.0,
-    },
-    {
-        id: 6,
-        title: 'True Tech House',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 25.0,
-    },
-    {
-        id: 7,
-        title: 'Phonk Sample Pack',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 37.0,
-    },
-    {
-        id: 8,
-        title: 'Galactic Music',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 6.0,
-    },
-    {
-        id: 9,
-        title: 'Thunder Sample Pack',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 29.0,
-    },
-    {
-        id: 10,
-        title: 'Premium One Shots Vol. 3',
-        producer: 'Thunder Beatz',
-        image: '/placeholder.svg?height=300&width=300',
-        price: 25.0,
-    },
-];
-
 export default function MarketplacePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(20);
     const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const { data: allPacksData } = useAllPacksQuery(null);
     const packs = allPacksData?.data || [];
     console.log('Packs data:', packs);
+
+    // Filter packs based on search query
+    const filteredPacks = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return packs;
+        }
+        
+        const query = searchQuery.toLowerCase();
+        return packs.filter((pack: any) => 
+            pack.title?.toLowerCase().includes(query) ||
+            pack.producer?.toLowerCase().includes(query) ||
+            pack.description?.toLowerCase().includes(query)
+        );
+    }, [packs, searchQuery]);
+
+    // Calculate pagination
+    const totalItems = filteredPacks.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPacks = filteredPacks.slice(startIndex, endIndex);
+
+    // Reset to first page when search query changes
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // Scroll to top of packs section
+        const packsSection = document.querySelector('.packs-section') as HTMLElement;
+        if (packsSection) {
+            window.scrollTo({
+                top: packsSection.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % featuredPacks.length);
@@ -289,7 +255,7 @@ export default function MarketplacePage() {
                                 type="text"
                                 placeholder="Search Sample Packs"
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleSearchChange}
                                 className="h-12 border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-400"
                             />
                             <Button className="h-12 bg-emerald-500 px-8 hover:bg-emerald-600 whitespace-nowrap">
@@ -300,98 +266,107 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Browse All Packs */}
-                <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
+                <div className="packs-section mx-auto max-w-7xl px-4 py-8 sm:py-12">
                     <div className="mb-6 sm:mb-8 flex items-center justify-between">
-                        <h2 className="text-xl sm:text-2xl font-bold text-white">
-                            Browse All Packs
-                        </h2>
-                        <Button
-                            variant="link"
-                            className="text-emerald-500 hover:text-emerald-400"
-                        >
-                            View All
-                        </Button>
+                        <div>
+                            <h2 className="text-xl sm:text-2xl font-bold text-white">
+                                Browse All Packs
+                            </h2>
+                            {searchQuery && (
+                                <p className="mt-2 text-sm text-zinc-400">
+                                    Showing {totalItems} result{totalItems !== 1 ? 's' : ''} for "{searchQuery}"
+                                </p>
+                            )}
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm text-zinc-400">
+                                {totalItems} pack{totalItems !== 1 ? 's' : ''} total
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {packs?.map((pack: any) => (
-                            <div
-                                key={pack._id}
-                                className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
-                            >
-                                <Link
-                                    href={`/product/${pack._id}`}
-                                    className="block"
+                    {currentPacks.length === 0 ? (
+                        <div className="text-center py-12">
+                            <p className="text-zinc-400 text-lg">
+                                {searchQuery ? `No packs found for "${searchQuery}"` : 'No packs available'}
+                            </p>
+                            {searchQuery && (
+                                <Button
+                                    onClick={() => setSearchQuery('')}
+                                    className="mt-4 bg-emerald-500 hover:bg-emerald-600"
                                 >
-                                    <div className="relative aspect-square">
-                                        <Image
-                                            src={
-                                                pack?.thumbnail_image}
-                                            alt={pack.title}
-                                            fill
-                                            className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
-                                        />
-                                        {/* Botón de play que aparece al hacer hover */}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                                            <Button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handlePlayClick(pack);
-                                                }}
-                                                className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
-                                            >
-                                                {currentPlayingPack?.id ===
-                                                pack.id ? (
-                                                    <Pause className="h-6 w-6" />
-                                                ) : (
-                                                    <Play className="h-6 w-6" />
-                                                )}
-                                            </Button>
-                                        </div>
+                                    Clear Search
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                {currentPacks.map((pack: any) => (
+                                    <div
+                                        key={pack._id}
+                                        className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
+                                    >
+                                        <Link
+                                            href={`/product/${pack._id}`}
+                                            className="block"
+                                        >
+                                            <div className="relative aspect-square">
+                                                <Image
+                                                    src={
+                                                        pack?.thumbnail_image}
+                                                    alt={pack.title}
+                                                    fill
+                                                    className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
+                                                />
+                                                {/* Botón de play que aparece al hacer hover */}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                                                    <Button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handlePlayClick(pack);
+                                                        }}
+                                                        className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
+                                                    >
+                                                        {currentPlayingPack?.id ===
+                                                        pack.id ? (
+                                                            <Pause className="h-6 w-6" />
+                                                        ) : (
+                                                            <Play className="h-6 w-6" />
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 sm:p-4">
+                                                <h3 className="mb-1 text-sm sm:text-base font-medium text-white group-hover:text-emerald-500 line-clamp-1">
+                                                    {pack.title}
+                                                </h3>
+                                                <p className="text-xs sm:text-sm text-emerald-500">
+                                                    {pack.producer}
+                                                </p>
+                                                <p className="mt-2 text-sm sm:text-base font-bold text-white">
+                                                    ${pack.price.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </Link>
                                     </div>
-                                    <div className="p-3 sm:p-4">
-                                        <h3 className="mb-1 text-sm sm:text-base font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                                            {pack.title}
-                                        </h3>
-                                        <p className="text-xs sm:text-sm text-emerald-500">
-                                            {pack.producer}
-                                        </p>
-                                        <p className="mt-2 text-sm sm:text-base font-bold text-white">
-                                            ${pack.price.toFixed(2)}
-                                        </p>
-                                    </div>
-                                </Link>
+                                ))}
                             </div>
-                        ))}
-                    </div>
 
-                    {/* Pagination */}
-                    <div className="mt-8 sm:mt-12 flex justify-center gap-1.5 sm:gap-2">
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 sm:h-10 sm:w-10 bg-emerald-500 p-0 text-white hover:bg-emerald-600"
-                        >
-                            1
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            2
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 bg-black text-white hover:bg-zinc-900 hover:text-white"
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="mt-8">
+                                    <Pagination 
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                        totalItems={totalItems}
+                                        itemsPerPage={itemsPerPage}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
             {/* Audio Player */}
