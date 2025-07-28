@@ -19,14 +19,8 @@ import {
 } from 'recharts';
 import Layout from '@/components/layout';
 import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
-import { useDownloadChartMelodyQuery } from '../store/api/melodyApis/melodyApis';
+import { useDownloadChartMelodyQuery, useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
 
-// Temporary mock user data
-const mockUser = {
-    id: '1',
-    email: 'user@example.com',
-    role: 'user',
-};
 
 const formatedFollowers = (followers: number) => {
     if(followers>=1000000){
@@ -35,6 +29,16 @@ const formatedFollowers = (followers: number) => {
         return `${(followers/1000).toFixed(1)}K`
     }else{
         return followers;
+    }
+}
+
+const formatedPlays = (plays: number) => {
+    if(plays>=1000000){
+        return `${(plays/1000000).toFixed(1)}M`
+    }else if (plays>=1000){
+        return `${(plays/1000).toFixed(1)}K`
+    }else{
+        return plays;
     }
 }
 
@@ -53,35 +57,38 @@ const processDownloadData = (rawData: any[]) => {
 
 export default function DashboardPage() {
     const [selectedTimeRange, setSelectedTimeRange] = useState('7days');
-    const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState(mockUser);
+
     const { data: userData, error, isLoading: isLoadingUser } = useLoggedInUserQuery(null);
     const userId = userData?.data?._id;
     const followers = userData?.data?.followersCounter;
     const totalFollowers = formatedFollowers(followers || 0);
 
+    const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
+    const melodies = melodiesData?.data
+    console.log("melodies", melodies);
+
     const { data: downloadChartData, isLoading: isLoadingDownloadChart } = useDownloadChartMelodyQuery(userId);
-    
-    // Process the real download data for chart only
     const downloadData = processDownloadData(downloadChartData?.data || []);
+    console.log("download data", downloadData);
 
-    useEffect(() => {
-        // Simulate loading dashboard data
-        const loadDashboard = async () => {
-            try {
-                // Here you would typically fetch user data and dashboard stats
-                // For now, we'll just simulate a loading delay
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                setUser(mockUser);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                setIsLoading(false);
-            }
-        };
+    // Calculate totals from melodies data
+    const calculateTotals = () => {
+        if (!melodies || !Array.isArray(melodies)) {
+            return { totalPlays: 0, totalDownloads: 0 };
+        }
+        
+        const totals = melodies.reduce((acc, melody) => {
+            acc.totalPlays += melody.plays || 0;
+            acc.totalDownloads += melody.downloads || 0;
+            return acc;
+        }, { totalPlays: 0, totalDownloads: 0 });
+        
+        return totals;
+    };
 
-        loadDashboard();
-    }, []);
+    const { totalPlays, totalDownloads } = calculateTotals();
+
+  
 
     // Sample data for sales chart (keep this for now)
     const salesData = [
@@ -94,7 +101,7 @@ export default function DashboardPage() {
         { day: 'Sun', sales: 60 },
     ];
 
-    if (isLoading || isLoadingUser || isLoadingDownloadChart) {
+    if (isLoadingUser || isLoadingDownloadChart) {
         return (
             <Layout>
                 <div className="flex items-center justify-center min-h-screen">
@@ -126,7 +133,7 @@ export default function DashboardPage() {
                                 Total Plays
                             </div>
                             <div className="mt-2 text-3xl font-bold text-white">
-                                188
+                                {formatedPlays(totalPlays)}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 to-transparent" />
@@ -137,7 +144,7 @@ export default function DashboardPage() {
                                 Total Downloads
                             </div>
                             <div className="mt-2 text-3xl font-bold text-white">
-                                66
+                                {formatedPlays(totalDownloads)}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 to-transparent" />
