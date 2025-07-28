@@ -26,13 +26,24 @@ const mockUser = {
     email: 'user@example.com',
     role: 'user',
 };
-
+const formatedFollowers = (followers: number) => {
+    if(followers>=1000000){
+        return `${(followers/1000000).toFixed(1)}M`
+    }else if (followers>=1000){
+        return `${(followers/1000).toFixed(1)}K`
+    }else{
+        return followers;
+    }
+}
 export default function DashboardPage() {
     const [selectedTimeRange, setSelectedTimeRange] = useState('7days');
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(mockUser);
     const { data: userData, error, isLoading: isLoadingUser } = useLoggedInUserQuery(null);
     console.log("user data dashboard", userData);
+    const followers = userData?.data?.followersCounter;
+    const totalFollowers = formatedFollowers(followers || 0);
+    
 
     useEffect(() => {
         // Simulate loading dashboard data
@@ -94,7 +105,7 @@ export default function DashboardPage() {
                                 Total Followers
                             </div>
                             <div className="mt-2 text-3xl font-bold text-white">
-                                4
+                                {totalFollowers}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 to-transparent" />
