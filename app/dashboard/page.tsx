@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import Layout from '@/components/layout';
 import { useLoggedInUserQuery } from '../store/api/authApis/authApi';
+import { useDownloadChartMelodyQuery } from '../store/api/melodyApis/melodyApis';
 
 // Temporary mock user data
 const mockUser = {
@@ -26,6 +27,7 @@ const mockUser = {
     email: 'user@example.com',
     role: 'user',
 };
+
 const formatedFollowers = (followers: number) => {
     if(followers>=1000000){
         return `${(followers/1000000).toFixed(1)}M`
@@ -35,15 +37,33 @@ const formatedFollowers = (followers: number) => {
         return followers;
     }
 }
+
+// Helper function to process download chart data
+const processDownloadData = (rawData: any[]) => {
+    if (!rawData || !Array.isArray(rawData)) {
+        return [];
+    }
+    
+    return rawData.map(item => ({
+        day: item.day,
+        downloads: item.downloads,
+        date: item.date
+    }));
+};
+
 export default function DashboardPage() {
     const [selectedTimeRange, setSelectedTimeRange] = useState('7days');
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(mockUser);
     const { data: userData, error, isLoading: isLoadingUser } = useLoggedInUserQuery(null);
-    console.log("user data dashboard", userData);
+    const userId = userData?.data?._id;
     const followers = userData?.data?.followersCounter;
     const totalFollowers = formatedFollowers(followers || 0);
+
+    const { data: downloadChartData, isLoading: isLoadingDownloadChart } = useDownloadChartMelodyQuery(userId);
     
+    // Process the real download data for chart only
+    const downloadData = processDownloadData(downloadChartData?.data || []);
 
     useEffect(() => {
         // Simulate loading dashboard data
@@ -63,17 +83,7 @@ export default function DashboardPage() {
         loadDashboard();
     }, []);
 
-    // Sample data for the charts
-    const downloadData = [
-        { day: 'Mon', downloads: 12 },
-        { day: 'Tue', downloads: 8 },
-        { day: 'Wed', downloads: 15 },
-        { day: 'Thu', downloads: 10 },
-        { day: 'Fri', downloads: 20 },
-        { day: 'Sat', downloads: 18 },
-        { day: 'Sun', downloads: 15 },
-    ];
-
+    // Sample data for sales chart (keep this for now)
     const salesData = [
         { day: 'Mon', sales: 0 },
         { day: 'Tue', sales: 50 },
@@ -84,7 +94,7 @@ export default function DashboardPage() {
         { day: 'Sun', sales: 60 },
     ];
 
-    if (isLoading) {
+    if (isLoading || isLoadingUser || isLoadingDownloadChart) {
         return (
             <Layout>
                 <div className="flex items-center justify-center min-h-screen">
@@ -164,7 +174,8 @@ export default function DashboardPage() {
                                     Download Graph
                                 </h3>
                                 <Tabs
-                                    defaultValue="7days"
+                                    value={selectedTimeRange}
+                                    onValueChange={setSelectedTimeRange}
                                     className="space-y-4"
                                 >
                                     <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
@@ -205,51 +216,65 @@ export default function DashboardPage() {
                                 </Tabs>
                             </div>
                             <div className="h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={downloadData}>
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            stroke="#333"
-                                        />
-                                        <XAxis dataKey="day" stroke="#666" />
-                                        <YAxis stroke="#666" />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#18181b',
-                                                border: 'none',
-                                                borderRadius: '8px',
-                                                boxShadow:
-                                                    '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                            }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="downloads"
-                                            stroke="#10b981"
-                                            fill="url(#downloadGradient)"
-                                        />
-                                        <defs>
-                                            <linearGradient
-                                                id="downloadGradient"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop
-                                                    offset="5%"
-                                                    stopColor="#10b981"
-                                                    stopOpacity={0.3}
-                                                />
-                                                <stop
-                                                    offset="95%"
-                                                    stopColor="#10b981"
-                                                    stopOpacity={0}
-                                                />
-                                            </linearGradient>
-                                        </defs>
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                                {downloadData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={downloadData}>
+                                            <CartesianGrid
+                                                strokeDasharray="3 3"
+                                                stroke="#333"
+                                            />
+                                            <XAxis dataKey="day" stroke="#666" />
+                                            <YAxis stroke="#666" />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#18181b',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    boxShadow:
+                                                        '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                                formatter={(value, name) => [
+                                                    `${value} downloads`,
+                                                    'Downloads'
+                                                ]}
+                                                labelFormatter={(label) => `Day: ${label}`}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="downloads"
+                                                stroke="#10b981"
+                                                fill="url(#downloadGradient)"
+                                            />
+                                            <defs>
+                                                <linearGradient
+                                                    id="downloadGradient"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
+                                                    <stop
+                                                        offset="5%"
+                                                        stopColor="#10b981"
+                                                        stopOpacity={0.3}
+                                                    />
+                                                    <stop
+                                                        offset="95%"
+                                                        stopColor="#10b981"
+                                                        stopOpacity={0}
+                                                    />
+                                                </linearGradient>
+                                            </defs>
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-zinc-400 text-center">
+                                            <div className="text-lg font-medium mb-2">No Download Data</div>
+                                            <div className="text-sm">Start uploading melodies to see your download statistics</div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </Card>

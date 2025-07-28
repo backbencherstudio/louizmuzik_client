@@ -81,6 +81,16 @@ export const melodyApi = baseApi.injectEndpoints({
       providesTags: ["Melody"],
     }),
 
+    // For User dashboard Download Chart
+
+    downloadChartMelody: build.query({
+      query: (id) => ({
+        url: `/melody/melodyDownloadCounterForEachProducer/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Melody"],
+    }),
+
   }),
   overrideExisting: true,
 });
@@ -96,4 +106,5 @@ export const {
   useMelodyDownloadMutation,
   useMelodyPlayMutation,
   useGetFavoriteMelodyQuery,
+  useDownloadChartMelodyQuery,
   } = melodyApi;
