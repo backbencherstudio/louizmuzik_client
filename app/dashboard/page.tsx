@@ -24,6 +24,8 @@ import {
   useGetMelodyByUserIdQuery,
 } from "../store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
+import { useGetProducerPackQuery } from "../store/api/packApis/packApis";
+import { useRouter } from "next/navigation";
 
 const formatedFollowers = (followers: number) => {
   if (followers >= 1000000) {
@@ -60,6 +62,7 @@ const processDownloadData = (rawData: any[]) => {
 
 export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("7days");
+  const router = useRouter();
 
   const {
     data: userData,
@@ -73,12 +76,16 @@ export default function DashboardPage() {
   const { data: melodiesData, refetch: refetchMelodies } =
     useGetMelodyByUserIdQuery(userId);
   const melodies = melodiesData?.data;
-  console.log("melodies", melodies);
+  
+
+  const { data: packsData, refetch: refetchPacks } =useGetProducerPackQuery(userId)
+  const packs = packsData?.data;
+ 
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
   const downloadData = processDownloadData(downloadChartData?.data || []);
-  console.log("download data", downloadData);
+ 
 
   // Calculate totals from melodies data
   const calculateTotals = () => {
@@ -433,42 +440,23 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {[
-                  {
-                    title: "Bumper Pack Vol.1",
-                    artist: "Thunder Beatz",
-                    image:
-                      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-                  },
-                  {
-                    title: "Radio Lotto Pack",
-                    artist: "Thunder Beatz",
-                    image:
-                      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-                  },
-                  {
-                    title: "Old School Pack",
-                    artist: "Thunder Beatz",
-                    image:
-                      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-                  },
-                ].map((pack, i) => (
-                  <Link key={i} href="#" className="group block">
-                    <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
+                {packs?.map((pack:any) => (
+                  <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
+                    <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
                       <Image
-                        src={pack.image || "/placeholder.svg"}
+                        src={pack.thumbnail_image || "/placeholder.svg"}
                         alt={pack.title}
                         width={200}
                         height={200}
-                        className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
+                        className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
                       />
                     </div>
                     <div className="mt-2">
                       <div className="text-sm font-medium text-white group-hover:text-emerald-500 transition-colors">
-                        {pack.title}
+                        {pack.name}
                       </div>
                       <div className="text-xs text-emerald-500">
-                        {pack.artist}
+                        {pack.producer}
                       </div>
                     </div>
                   </Link>
