@@ -110,6 +110,8 @@ export function AudioPlayer({
             return;
         }
         setIsPlaying(!isPlaying);
+        console.log('togglePlay', melody._id);
+        document.getElementById(melody._id)?.click();
     };
 
     const handleTimeUpdate = () => {
@@ -158,7 +160,7 @@ export function AudioPlayer({
     if (!isVisible || !melody) return null;
 
     return (
-        <div className="fixed bottom-0 right-0 bg-black z-50 lg:left-64 left-0">
+        <div className={`fixed bottom-0 right-0 bg-black z-50 lg:left-64 left-0`}>
             <div className="w-full px-4 py-3">
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-4">
@@ -306,6 +308,7 @@ export function AudioPlayer({
                     onTimeUpdate={handleTimeUpdate}
                     onEnded={onEnded}
                     onLoadedMetadata={handleAudioLoaded}
+                    id={`audio-${melody._id}`}
                     onError={handleAudioError}
                     onCanPlay={() => setIsLoading(false)}
                 >

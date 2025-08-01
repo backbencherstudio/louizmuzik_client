@@ -755,12 +755,14 @@ export default function BrowsePage() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                id={melody?._id}
                                                 className={`h-8 w-8 rounded-full ${
                                                     currentPlayingMelody?._id ===
                                                     melody._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
+                                                // disabled={document.getElementById(`audio-${melody._id}`)?.onload ? false : true}
                                                 onClick={() =>
                                                     handlePlayClick(melody)
                                                 }
@@ -879,6 +881,7 @@ export default function BrowsePage() {
                                                 />
                                             </div>
                                             <Button
+                                                // id={melody?._id}
                                                 variant="ghost"
                                                 size="icon"
                                                 className={`h-8 w-8 flex-shrink-0 rounded-full ${
@@ -895,7 +898,7 @@ export default function BrowsePage() {
                                                 melody?._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
-                                                    <Play className="h-4 w-4" />
+                                                    <Play className="h-4 w-4"  />
                                                 )}
                                             </Button>
                                             <div className="flex-1 min-w-0">
@@ -970,6 +973,7 @@ export default function BrowsePage() {
                     (currentPlayingMelody || currentPlayingPack) && (
                         <AudioPlayer
                             key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
+                            
                             isVisible={isAudioPlayerVisible}
                             melody={currentPlayingMelody || currentPlayingPack}
                             shouldAutoPlay={shouldAutoPlay}
