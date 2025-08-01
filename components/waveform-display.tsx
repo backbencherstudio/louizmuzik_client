@@ -220,10 +220,10 @@ export function WaveformDisplay({
                     className="absolute inset-0 rounded bg-zinc-900/50 flex items-center justify-center text-zinc-400 text-xs"
                     onClick={handleClick}
                 >
-                    <div className="flex items-center space-x-2">
+                    {/* <div className="flex items-center space-x-2">
                         <div className="animate-spin rounded-full h-3 w-3 border border-emerald-500 border-t-transparent"></div>
-                        <span>Loading...</span>
-                    </div>
+                        <span></span>
+                    </div> */}
                 </div>
             )}
             
@@ -243,22 +243,53 @@ export function WaveformDisplay({
             {/* Fallback static waveform when loading or error */}
             {(isLoading || error) && (
                 <div 
-                    className="absolute inset-0 flex items-center justify-center space-x-1 opacity-20"
+                    className="absolute inset-0 flex items-center justify-center space-x-1 opacity-30"
                     onClick={handleClick}
                 >
-                    {Array.from({ length: 20 }).map((_, i) => (
+                    {Array.from({ length: 40 }).map((_, i) => (
                         <div
                             key={i}
-                            className="bg-zinc-600 rounded-sm animate-pulse"
+                            className="rounded-sm"
                             style={{
-                                width: '2px',
-                                height: `${Math.random() * 60 + 20}%`,
-                                animationDelay: `${i * 0.1}s`
+                                width: '1px',
+                                height: `${Math.sin(i * 0.2) * 25 + 50}%`,
+                                backgroundColor: i < 20 ? '#10b981' : '#6b7280',
+                                animation: `waveformProgress 2s ease-in-out infinite`,
+                                animationDelay: `${i * 0.05}s`,
+                                transform: 'scaleY(0.3)',
+                                transformOrigin: 'center'
                             }}
                         />
                     ))}
                 </div>
             )}
+            
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    @keyframes waveformProgress {
+                        0% {
+                            transform: scaleY(0.3);
+                            opacity: 0.4;
+                        }
+                        25% {
+                            transform: scaleY(1);
+                            opacity: 1;
+                        }
+                        50% {
+                            transform: scaleY(0.8);
+                            opacity: 0.8;
+                        }
+                        75% {
+                            transform: scaleY(1);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: scaleY(0.3);
+                            opacity: 0.4;
+                        }
+                    }
+                `
+            }} />
         </div>
     );
 }
