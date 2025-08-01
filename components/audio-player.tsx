@@ -55,19 +55,22 @@ export function AudioPlayer({
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(80);
     const [isMuted, setIsMuted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
-    // console.log(melody);
 
     useEffect(() => {
         // Reset player state when melody changes
         if (melody) {
             setCurrentTime(0);
             setIsPlaying(false);
-
-            // Simulate loading audio duration
-            const fakeDuration = Math.floor(Math.random() * 120) + 60; // Random duration between 60-180 seconds
-            setDuration(fakeDuration);
+            setIsLoading(true);
+            
+            // Set the audio source
+            if (audioRef.current) {
+                audioRef.current.src = melody.audioUrl || '';
+                audioRef.current.load();
+            }
         }
     }, [melody]);
 
@@ -84,8 +87,8 @@ export function AudioPlayer({
         // Handle play/pause
         if (audioRef.current) {
             if (isPlaying) {
-                audioRef.current.play().catch(() => {
-                    // Handle play error (e.g., no audio source)
+                audioRef.current.play().catch((error) => {
+                    console.error('Error playing audio:', error);
                     setIsPlaying(false);
                 });
             } else {
@@ -102,6 +105,10 @@ export function AudioPlayer({
     }, [volume, isMuted]);
 
     const togglePlay = () => {
+        if (!melody?.audioUrl) {
+            console.error('No audio URL provided');
+            return;
+        }
         setIsPlaying(!isPlaying);
     };
 
@@ -133,6 +140,19 @@ export function AudioPlayer({
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    const handleAudioLoaded = () => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+            setIsLoading(false);
+        }
+    };
+
+    const handleAudioError = (error: any) => {
+        console.error('Audio loading error:', error);
+        setIsLoading(false);
+        setIsPlaying(false);
     };
 
     if (!isVisible || !melody) return null;
@@ -172,6 +192,7 @@ export function AudioPlayer({
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-9 w-9"
                                 onClick={playPreviousMelody}
+                                disabled={!playPreviousMelody}
                             >
                                 <SkipBack className="h-5 w-5" />
                             </Button>
@@ -180,8 +201,11 @@ export function AudioPlayer({
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-10 w-10"
                                 onClick={togglePlay}
+                                disabled={!melody.audioUrl || isLoading}
                             >
-                                {isPlaying ? (
+                                {isLoading ? (
+                                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                ) : isPlaying ? (
                                     <Pause className="h-6 w-6" />
                                 ) : (
                                     <Play className="h-6 w-6" />
@@ -192,34 +216,26 @@ export function AudioPlayer({
                                 size="icon"
                                 className="text-white hover:bg-zinc-800 h-9 w-9"
                                 onClick={playNextMelody}
+                                disabled={!playNextMelody}
                             >
                                 <SkipForward className="h-5 w-5" />
                             </Button>
                         </div>
 
-                        {/* Waveform Display */}
+                        {/* Progress Bar */}
                         <div className="flex-1 flex items-center gap-2 overflow-hidden">
                             <span className="text-xs text-zinc-400 min-w-[40px] flex-shrink-0">
                                 {formatTime(currentTime)}
                             </span>
-                            {/* <div className="flex-1 relative  px-2 hidden">
+                            <div className="flex-1 relative px-2">
                                 <Slider
                                     value={[currentTime]}
                                     min={0}
-                                    max={duration}
+                                    max={duration || 100}
                                     step={0.1}
                                     onValueChange={handleSeek}
                                     className="cursor-pointer"
-                                />
-                            </div> */}
-                            <div className="flex-1 relative overflow-hidden">
-                                <WaveformDisplay
-                                    audioUrl={
-                                        melody.audioUrl || '/demo-audio.mp3'
-                                    }
-                                    isPlaying={isPlaying}
-                                    onPlayPause={togglePlay}
-                                    height={30}
+                                    disabled={!melody.audioUrl}
                                 />
                             </div>
                             <span className="text-xs text-zinc-400 min-w-[40px] flex-shrink-0">
@@ -284,22 +300,18 @@ export function AudioPlayer({
                     </div>
                 </div>
 
-                {/* Hidden audio element */}
+                {/* Audio element */}
                 <audio
                     ref={audioRef}
                     onTimeUpdate={handleTimeUpdate}
-                    // onEnded={() => setIsPlaying(false)}
                     onEnded={onEnded}
-                    onLoadedMetadata={(e) => {
-                        if (audioRef.current) {
-                            setDuration(audioRef.current.duration);
-                        }
-                    }}
+                    onLoadedMetadata={handleAudioLoaded}
+                    onError={handleAudioError}
+                    onCanPlay={() => setIsLoading(false)}
                 >
-                    {/* <source
-                        src={melody.audioUrl || '/demo-audio.mp3'}
-                        type="audio/mpeg"
-                    /> */}
+                    <source src={melody.audioUrl} type="audio/mpeg" />
+                    <source src={melody.audioUrl} type="audio/wav" />
+                    <source src={melody.audioUrl} type="audio/mp3" />
                     Your browser does not support the audio element.
                 </audio>
             </div>

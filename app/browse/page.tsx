@@ -650,9 +650,9 @@ export default function BrowsePage() {
                                             />
                                         </div>
                                     </th>
-                                    {/* <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                                         WAVEFORM
-                                    </th> */}
+                                    </th>
                                     <th
                                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                                         onClick={() => handleSort('bpm')}
@@ -796,7 +796,7 @@ export default function BrowsePage() {
                                                 {melody?.producer}
                                             </Link>
                                         </td>
-                                        {/* <td className="whitespace-nowrap px-4 py-3">
+                                        <td className="whitespace-nowrap px-4 py-3">
                                             <WaveformDisplay
                                                 audioUrl={melody.audioUrl}
                                                 isPlaying={currentPlayingMelody?._id === melody._id}
@@ -804,7 +804,7 @@ export default function BrowsePage() {
                                                 height={30}
                                                 width="200px"
                                             />
-                                        </td> */}
+                                        </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             {melody?.bpm}
                                         </td>
