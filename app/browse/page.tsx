@@ -47,6 +47,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { useFavoriteMelodyMutation, useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
 import { toast } from 'sonner';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
+import { useAudioContext } from '@/components/audio-context';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -393,6 +394,7 @@ export default function BrowsePage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [currentPlayingMelody, isAudioPlayerVisible]);
 
+    const { currentTime, duration, currentMelodyId } = useAudioContext();
 
 
     return (
@@ -778,7 +780,7 @@ export default function BrowsePage() {
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                                 <Image
-                                                    src={melody?.image}
+                                                    src={melody?.image || '/images/default-melody.png'}
                                                     alt={melody?.name}
                                                     fill
                                                     className="object-cover"
@@ -805,6 +807,9 @@ export default function BrowsePage() {
                                                 onPlayPause={() => handlePlayClick(melody)}
                                                 height={30}
                                                 width="200px"
+                                                isControlled={true}
+                                                currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                                                duration={currentMelodyId === melody._id ? duration : 0}
                                             />
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">

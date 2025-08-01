@@ -9,6 +9,10 @@ interface WaveformDisplayProps {
     onPlayPause?: () => void;
     height?: number;
     width?: string;
+    // New props for syncing with audio player
+    currentTime?: number;
+    duration?: number;
+    isControlled?: boolean; // If true, waveform is controlled by external audio player
 }
 
 export function WaveformDisplay({
@@ -17,14 +21,15 @@ export function WaveformDisplay({
     onPlayPause,
     height = 40,
     width = '100%',
+    currentTime = 0,
+    duration = 0,
+    isControlled = false,
 }: WaveformDisplayProps) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
-
-    // console.log('audioUrl', audioUrl);
 
     useEffect(() => {
         // Clean up previous instance if it exists
@@ -38,7 +43,6 @@ export function WaveformDisplay({
             return;
         }
 
-        // console.log('Creating WaveSurfer for URL:', audioUrl);
         setIsLoading(true);
         setError(null);
         setIsReady(false);
@@ -57,12 +61,11 @@ export function WaveformDisplay({
                     barRadius: 2,
                     height: height,
                     normalize: true,
-                    interact: true,
+                    interact: !isControlled, // Disable interaction if controlled by external player
                     mediaControls: false,
                     hideScrollbar: true,
                     minPxPerSec: 50,
                     fillParent: true,
-                    // Add backend option for better browser compatibility
                     backend: 'WebAudio',
                 });
 
@@ -87,6 +90,15 @@ export function WaveformDisplay({
                     console.log('Loading progress:', percent + '%');
                 });
 
+                // Only handle click events if not controlled by external player
+                if (!isControlled) {
+                    wavesurfer.on('click', () => {
+                        if (onPlayPause) {
+                            onPlayPause();
+                        }
+                    });
+                }
+
                 // Load the audio with error handling
                 const loadAudio = async () => {
                     try {
@@ -97,9 +109,6 @@ export function WaveformDisplay({
                             method: 'HEAD',
                             mode: 'cors' 
                         });
-                
-                        console.log('Response status:', response.status);
-                        console.log('Response headers:', response.headers);
                 
                         if (!response.ok) {
                             throw new Error('Audio file not accessible');
@@ -138,10 +147,12 @@ export function WaveformDisplay({
             }
             setIsReady(false);
         };
-    }, [audioUrl, height]);
+    }, [audioUrl, height, isControlled]);
 
-    // Handle play/pause state changes
+    // Handle play/pause state changes (only if not controlled)
     useEffect(() => {
+        if (isControlled) return; // Skip if controlled by external player
+        
         const wavesurfer = wavesurferRef.current;
         if (!wavesurfer || !isReady || error) {
             return;
@@ -160,12 +171,36 @@ export function WaveformDisplay({
         } catch (err) {
             console.error('Error controlling playback:', err);
         }
-    }, [isPlaying, isReady, error]);
+    }, [isPlaying, isReady, error, isControlled]);
+
+    // Sync with external audio player progress
+    useEffect(() => {
+        if (!isControlled || !isReady) return;
+        
+        const wavesurfer = wavesurferRef.current;
+        if (!wavesurfer || !duration) return;
+
+        try {
+            // Update the progress position without playing
+            const progress = currentTime / duration;
+            wavesurfer.setTime(currentTime);
+        } catch (err) {
+            console.error('Error syncing waveform progress:', err);
+        }
+    }, [currentTime, duration, isControlled, isReady]);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (onPlayPause) {
-            onPlayPause();
+        if (isControlled) {
+            // If controlled, just trigger the play/pause callback
+            if (onPlayPause) {
+                onPlayPause();
+            }
+        } else {
+            // If not controlled, let WaveSurfer handle it
+            if (onPlayPause) {
+                onPlayPause();
+            }
         }
     };
 
