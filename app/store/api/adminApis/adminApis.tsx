@@ -8,9 +8,14 @@ export const adminApis = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
-    
+    createAdmin: builder.mutation({
+      query: () => ({
+        url: "/auth/create-admin",
+        method: "POST",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery } = adminApis;
+export const { useGetUsersQuery, useCreateAdminMutation } = adminApis;
