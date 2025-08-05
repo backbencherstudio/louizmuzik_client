@@ -9,14 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Heart, Play, Download } from "lucide-react";
-import {
-  useFavoriteMelodyMutation,
-  useMelodyDownloadMutation,
-} from "@/app/store/api/melodyApis/melodyApis";
-import { useGetUserFavoriteMelodiesQuery } from "@/app/store/api/userManagementApis/userManagementApis";
-import { toast } from "sonner";
-import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
+import { Heart, Play, Download, Pause } from "lucide-react";
+import { WaveformDisplay } from "@/components/waveform-display";
+import Image from "next/image";
 
 interface Melody {
   _id: string;
@@ -26,73 +21,47 @@ interface Melody {
   key: string;
   genre: string;
   audioUrl: string;
-  isFavorite: boolean;
+  image?: string;
+  artistType?: string;
+  isFavorite?: boolean;
 }
 
 interface MelodiesTableProps {
   melodies: Melody[];
+  onPlayClick?: (melody: any) => void;
+  onDownloadClick?: (melody: any) => void;
+  onFavoriteClick?: (melodyId: string) => void;
+  isFavorite?: (melodyId: string) => boolean;
+  currentPlayingMelody?: any;
+  currentTime?: number;
+  duration?: number;
+  currentMelodyId?: string | null;
 }
 
-export function MelodiesTable({ melodies }: MelodiesTableProps) {
-  const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
-  const userId = user?.data?._id;
-  
-  useEffect(() => {
-    refetchUser();
-  }, [refetchUser]);
-
-  const [melodyDownloadCounter] = useMelodyDownloadMutation();
-  const [favoriteMelody, { isLoading: isFavoriteLoading }] = useFavoriteMelodyMutation();
-  const { refetch: refetchFavorites } = useGetUserFavoriteMelodiesQuery({ userId: userId || "" });
-  const handleDownloadClick = async (melody: any) => {
-    try {
-      const response = await melodyDownloadCounter(melody._id).unwrap();
-      console.log("melodyDownloadCounter", response);
-
-      const audioUrl = melody.audioUrl;
-      if (audioUrl) {
-        const link = document.createElement("a");
-        link.href = audioUrl;
-        link.download = audioUrl.split("/").pop() || "melody";
-        link.click();
-      } else {
-        toast.error("No audio URL found!");
-      }
-    } catch (error) {
-      console.log("error", error);
-      toast.error("Failed to download melody");
-    }
-  };
-
-  const isMelodyFavorite = (melodyId: string) => {
-    return user?.data?.favourite_melodies?.includes(melodyId) || false;
-  };
-
-  const toggleFavorite = async (melodyId: string) => {
-    try {
-      const response = await favoriteMelody({ 
-        id: melodyId, 
-        userId: userId 
-      }).unwrap();
-      await Promise.all([refetchUser(), refetchFavorites()]);
-      toast.info(response?.message);
-    } catch (error: any) {
-      console.log("favorite error", error);
-      toast.error(error?.data?.message || "Failed to update favorite");
-    }
-  };
-
+export function MelodiesTable({ 
+  melodies, 
+  onPlayClick,
+  onDownloadClick,
+  onFavoriteClick,
+  isFavorite,
+  currentPlayingMelody,
+  currentTime = 0,
+  duration = 0,
+  currentMelodyId
+}: MelodiesTableProps) {
   return (
     <div className="w-full overflow-auto">
       <Table>
         <TableHeader>
           <TableRow className="border-zinc-800">
             <TableHead className="text-zinc-400 w-[100px]"></TableHead>
+            <TableHead className="text-zinc-400 w-[100px]"></TableHead>
             <TableHead className="text-zinc-400">Title</TableHead>
-            <TableHead className="text-zinc-400">Producer</TableHead>
+            <TableHead className="text-zinc-400">Waveform</TableHead>
             <TableHead className="text-zinc-400">BPM</TableHead>
             <TableHead className="text-zinc-400">Key</TableHead>
             <TableHead className="text-zinc-400">Genre</TableHead>
+            <TableHead className="text-zinc-400">Artist Type</TableHead>
             <TableHead className="text-zinc-400 w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -102,46 +71,90 @@ export function MelodiesTable({ melodies }: MelodiesTableProps) {
               key={melody._id}
               className="border-zinc-800 hover:bg-zinc-900/50"
             >
-              <TableCell className="flex gap-2">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-white hover:bg-black/50"
-                >
-                  <Play className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-white hover:bg-black/50"
-                  onClick={() => toggleFavorite(melody._id)}
-                  disabled={isFavoriteLoading}
-                >
-                  <Heart
-                    className={`h-4 w-4 transition-colors ${
-                      isMelodyFavorite(melody._id)
-                        ? "fill-emerald-500 text-emerald-500"
-                        : "text-white hover:text-emerald-500"
-                    }`}
-                  />
-                </Button>
-              </TableCell>
-              <TableCell className="font-medium text-white">
-                {melody.name}
-              </TableCell>
-              <TableCell className="text-zinc-400">{melody.producer}</TableCell>
-              <TableCell className="text-zinc-400">{melody.bpm}</TableCell>
-              <TableCell className="text-zinc-400">{melody.key}</TableCell>
-              <TableCell className="text-zinc-400">{melody.genre}</TableCell>
               <TableCell>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-white hover:bg-black/50"
-                  onClick={() => handleDownloadClick(melody)}
+                  className={`h-8 w-8 rounded-full ${
+                    currentPlayingMelody?._id === melody._id
+                      ? 'bg-emerald-500 text-black hover:bg-emerald-600'
+                      : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                  }`}
+                  onClick={() => onPlayClick?.(melody)}
                 >
-                  <Download className="h-4 w-4" />
+                  {currentPlayingMelody?._id === melody._id ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
                 </Button>
+              </TableCell>
+              <TableCell>
+                <div className="relative h-10 w-10 overflow-hidden rounded-md">
+                  <Image
+                    src={melody?.image || '/images/default-melody.png'}
+                    alt={melody?.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </TableCell>
+              <TableCell className="font-medium text-white">
+                {melody.name}
+              </TableCell>
+              <TableCell>
+                <WaveformDisplay
+                  audioUrl={melody.audioUrl}
+                  isPlaying={currentPlayingMelody?._id === melody._id}
+                  onPlayPause={() => onPlayClick?.(melody)}
+                  height={30}
+                  width="200px"
+                  isControlled={true}
+                  currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                  duration={currentMelodyId === melody._id ? duration : 0}
+                />
+              </TableCell>
+              <TableCell className="text-zinc-400">{melody.bpm}</TableCell>
+              <TableCell className="text-zinc-400">{melody.key}</TableCell>
+              <TableCell className="text-zinc-400">
+                {Array.isArray(melody?.genre) 
+                  ? melody.genre.join(', ') 
+                  : melody?.genre}
+              </TableCell>
+              <TableCell className="text-zinc-400">
+                {Array.isArray(melody?.artistType) 
+                  ? melody.artistType.join(', ') 
+                  : melody?.artistType}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center justify-center gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                      isFavorite?.(melody._id)
+                        ? 'text-red-500'
+                        : ''
+                    }`}
+                    onClick={() => onFavoriteClick?.(melody._id)}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${
+                        isFavorite?.(melody._id)
+                          ? 'fill-current'
+                          : ''
+                      }`}
+                    />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-zinc-400 hover:text-white"
+                    onClick={() => onDownloadClick?.(melody)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

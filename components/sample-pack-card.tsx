@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Heart, Play } from 'lucide-react';
+import { Heart, Play, Pause } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,8 @@ interface SamplePackCardProps {
     isFavorite: boolean;
     id: string;
     handleFavoriteClick: () => void;
+    onPlayClick?: () => void;
+    isPlaying?: boolean;
 }
 
 export function SamplePackCard({
@@ -23,6 +25,8 @@ export function SamplePackCard({
     isFavorite,
     id,
     handleFavoriteClick,
+    onPlayClick,
+    isPlaying = false,
 }: SamplePackCardProps) {
     const router = useRouter();
     return (
@@ -51,9 +55,18 @@ export function SamplePackCard({
                 <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white hover:bg-black/50"
+                    className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${
+                        isPlaying
+                            ? 'bg-emerald-500 text-black hover:bg-emerald-600'
+                            : 'text-white hover:bg-black/50'
+                    }`}
+                    onClick={onPlayClick}
                 >
-                    <Play className="h-8 w-8" />
+                    {isPlaying ? (
+                        <Pause className="h-8 w-8" />
+                    ) : (
+                        <Play className="h-8 w-8" />
+                    )}
                 </Button>
             </div>
             <div className="p-4">
