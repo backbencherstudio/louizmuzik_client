@@ -211,7 +211,7 @@ export function WaveformDisplay({
                     className="absolute inset-0 rounded bg-zinc-900/50 flex items-center justify-center text-red-400 text-xs border border-red-500/20"
                     onClick={handleClick}
                 >
-                    <span className="px-2 py-1">Audio Error</span>
+                    {/* <span className="px-2 py-1">Audio Error</span> */}
                 </div>
             )}
             
