@@ -116,10 +116,16 @@ export default function UsersPage() {
     };
 
     const toggleUserExpanded = (userId: string) => {
-        setExpandedUsers((prev) => ({
-            ...prev,
-            [userId]: !prev[userId],
-        }));
+        setExpandedUsers((prev) => {
+            // If the clicked user is already expanded, close it
+            if (prev[userId]) {
+                const newState = { ...prev };
+                delete newState[userId];
+                return newState;
+            }
+            // If another user is expanded, close it and open the clicked user
+            return { [userId]: true };
+        });
     };
 
     const filteredUsers = users.filter(
