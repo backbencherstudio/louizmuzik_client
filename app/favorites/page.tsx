@@ -197,7 +197,7 @@ export default function FavoritesPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen p-4 sm:p-6 lg:p-8`}>
         <div className="mx-auto max-w-7xl space-y-8">
           {/* Page Title */}
           <div>

@@ -243,7 +243,7 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
+      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
           {isUserProfileLoading && (
@@ -396,7 +396,7 @@ export default function ProfilePage() {
               {premiumPacks?.map((pack: any) => (
                 <Link
                   key={pack._id}
-                  href=""
+                  href={`/product/${pack._id}`}
                   className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                 >
                   <div className="relative aspect-square">
@@ -407,24 +407,6 @@ export default function ProfilePage() {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                    {/* Play/Pause Button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                        currentPlayingPack?.id === pack._id
-                          ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                          : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                      }`}
-                      onClick={() => handlePackPlayClick(pack)}
-                    >
-                      {currentPlayingPack?.id === pack._id ? (
-                        <Pause className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
-                    </Button>
                   </div>
                   <div className="p-4">
                     <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">

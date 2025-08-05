@@ -224,7 +224,7 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
+      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
           {isUserProfileLoading && (
@@ -390,7 +390,7 @@ export default function ProfilePage() {
               {premiumPacks?.map((pack: any) => (
                 <Link
                   key={pack._id}
-                  href=""
+                  href={`/product/${pack._id}`}
                   className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                 >
                   <div className="relative aspect-square">

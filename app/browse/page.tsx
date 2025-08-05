@@ -399,7 +399,7 @@ export default function BrowsePage() {
 
     return (
         <Layout>
-            <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
+            <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12`}>
                 <div className="flex flex-col items-center justify-center text-center mb-12">
                     <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 md:mb-6">
                         All Melodies
