@@ -10,6 +10,8 @@ import {
   ShoppingCart,
   ArrowLeft,
   PlaySquare,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,12 +19,12 @@ import Layout from "@/components/layout";
 import { useCart } from "@/components/cart-context";
 import { useFavoritePackMutation, useGetPackDetailsQuery } from "@/app/store/api/packApis/packApis";
 import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
+import { Slider } from "@/components/ui/slider";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  // const [isFavorite, setIsFavorite] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -55,8 +57,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         },
         videoPreview: pack.video_path || null,
         details: {
-          // format: pack.zip_path ? ".zip File" : "Audio File",
-          // size: "N/A",
           category: "Pack",
           genre:
             pack.genre && pack.genre.length > 0 ? pack.genre.join(", ") : "N/A",
@@ -115,11 +115,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     }
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseFloat(e.target.value);
+  const handleProgressChange = (value: number[]) => {
+    const newTime = value[0];
     if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
     }
   };
 
@@ -295,21 +295,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="range"
-                        min="0"
+                    
+                    {/* Progress Slider */}
+                    <div className="space-y-2">
+                      <Slider
+                        value={[currentTime]}
+                        min={0}
                         max={duration || 100}
-                        value={currentTime}
-                        onChange={handleSeek}
-                        className="w-full h-1.5 rounded-full appearance-none bg-zinc-800 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 hover:[&::-webkit-slider-thumb]:bg-emerald-400 transition-colors"
-                        style={{
-                          background: `linear-gradient(to right, #10b981 ${
-                            (currentTime / (duration || 100)) * 100
-                          }%, rgb(39 39 42) ${
-                            (currentTime / (duration || 100)) * 100
-                          }%)`,
-                        }}
+                        step={0.1}
+                        onValueChange={handleProgressChange}
+                        className="cursor-pointer"
                       />
                     </div>
                   </div>

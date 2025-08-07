@@ -9,6 +9,10 @@ interface WaveformDisplayProps {
     onPlayPause?: () => void;
     height?: number;
     width?: string;
+    // New props for syncing with audio player
+    currentTime?: number;
+    duration?: number;
+    isControlled?: boolean; // If true, waveform is controlled by external audio player
 }
 
 export function WaveformDisplay({
@@ -17,14 +21,15 @@ export function WaveformDisplay({
     onPlayPause,
     height = 40,
     width = '100%',
+    currentTime = 0,
+    duration = 0,
+    isControlled = false,
 }: WaveformDisplayProps) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
-
-    // console.log('audioUrl', audioUrl);
 
     useEffect(() => {
         // Clean up previous instance if it exists
@@ -38,7 +43,6 @@ export function WaveformDisplay({
             return;
         }
 
-        // console.log('Creating WaveSurfer for URL:', audioUrl);
         setIsLoading(true);
         setError(null);
         setIsReady(false);
@@ -57,12 +61,11 @@ export function WaveformDisplay({
                     barRadius: 2,
                     height: height,
                     normalize: true,
-                    interact: true,
+                    interact: !isControlled, // Disable interaction if controlled by external player
                     mediaControls: false,
                     hideScrollbar: true,
                     minPxPerSec: 50,
                     fillParent: true,
-                    // Add backend option for better browser compatibility
                     backend: 'WebAudio',
                 });
 
@@ -87,6 +90,15 @@ export function WaveformDisplay({
                     console.log('Loading progress:', percent + '%');
                 });
 
+                // Only handle click events if not controlled by external player
+                if (!isControlled) {
+                    wavesurfer.on('click', () => {
+                        if (onPlayPause) {
+                            onPlayPause();
+                        }
+                    });
+                }
+
                 // Load the audio with error handling
                 const loadAudio = async () => {
                     try {
@@ -97,9 +109,6 @@ export function WaveformDisplay({
                             method: 'HEAD',
                             mode: 'cors' 
                         });
-                
-                        console.log('Response status:', response.status);
-                        console.log('Response headers:', response.headers);
                 
                         if (!response.ok) {
                             throw new Error('Audio file not accessible');
@@ -138,10 +147,12 @@ export function WaveformDisplay({
             }
             setIsReady(false);
         };
-    }, [audioUrl, height]);
+    }, [audioUrl, height, isControlled]);
 
-    // Handle play/pause state changes
+    // Handle play/pause state changes (only if not controlled)
     useEffect(() => {
+        if (isControlled) return; // Skip if controlled by external player
+        
         const wavesurfer = wavesurferRef.current;
         if (!wavesurfer || !isReady || error) {
             return;
@@ -160,12 +171,36 @@ export function WaveformDisplay({
         } catch (err) {
             console.error('Error controlling playback:', err);
         }
-    }, [isPlaying, isReady, error]);
+    }, [isPlaying, isReady, error, isControlled]);
+
+    // Sync with external audio player progress
+    useEffect(() => {
+        if (!isControlled || !isReady) return;
+        
+        const wavesurfer = wavesurferRef.current;
+        if (!wavesurfer || !duration) return;
+
+        try {
+            // Update the progress position without playing
+            const progress = currentTime / duration;
+            wavesurfer.setTime(currentTime);
+        } catch (err) {
+            console.error('Error syncing waveform progress:', err);
+        }
+    }, [currentTime, duration, isControlled, isReady]);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (onPlayPause) {
-            onPlayPause();
+        if (isControlled) {
+            // If controlled, just trigger the play/pause callback
+            if (onPlayPause) {
+                onPlayPause();
+            }
+        } else {
+            // If not controlled, let WaveSurfer handle it
+            if (onPlayPause) {
+                onPlayPause();
+            }
         }
     };
 
@@ -176,7 +211,7 @@ export function WaveformDisplay({
                     className="absolute inset-0 rounded bg-zinc-900/50 flex items-center justify-center text-red-400 text-xs border border-red-500/20"
                     onClick={handleClick}
                 >
-                    <span className="px-2 py-1">Audio Error</span>
+                    {/* <span className="px-2 py-1">Audio Error</span> */}
                 </div>
             )}
             
@@ -185,10 +220,10 @@ export function WaveformDisplay({
                     className="absolute inset-0 rounded bg-zinc-900/50 flex items-center justify-center text-zinc-400 text-xs"
                     onClick={handleClick}
                 >
-                    <div className="flex items-center space-x-2">
+                    {/* <div className="flex items-center space-x-2">
                         <div className="animate-spin rounded-full h-3 w-3 border border-emerald-500 border-t-transparent"></div>
-                        <span>Loading...</span>
-                    </div>
+                        <span></span>
+                    </div> */}
                 </div>
             )}
             
@@ -208,22 +243,53 @@ export function WaveformDisplay({
             {/* Fallback static waveform when loading or error */}
             {(isLoading || error) && (
                 <div 
-                    className="absolute inset-0 flex items-center justify-center space-x-1 opacity-20"
+                    className="absolute inset-0 flex items-center justify-center space-x-1 opacity-30"
                     onClick={handleClick}
                 >
-                    {Array.from({ length: 20 }).map((_, i) => (
+                    {Array.from({ length: 40 }).map((_, i) => (
                         <div
                             key={i}
-                            className="bg-zinc-600 rounded-sm animate-pulse"
+                            className="rounded-sm"
                             style={{
-                                width: '2px',
-                                height: `${Math.random() * 60 + 20}%`,
-                                animationDelay: `${i * 0.1}s`
+                                width: '1px',
+                                height: `${Math.sin(i * 0.2) * 25 + 50}%`,
+                                backgroundColor: i < 20 ? '#10b981' : '#6b7280',
+                                animation: `waveformProgress 2s ease-in-out infinite`,
+                                animationDelay: `${i * 0.05}s`,
+                                transform: 'scaleY(0.3)',
+                                transformOrigin: 'center'
                             }}
                         />
                     ))}
                 </div>
             )}
+            
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    @keyframes waveformProgress {
+                        0% {
+                            transform: scaleY(0.3);
+                            opacity: 0.4;
+                        }
+                        25% {
+                            transform: scaleY(1);
+                            opacity: 1;
+                        }
+                        50% {
+                            transform: scaleY(0.8);
+                            opacity: 0.8;
+                        }
+                        75% {
+                            transform: scaleY(1);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: scaleY(0.3);
+                            opacity: 0.4;
+                        }
+                    }
+                `
+            }} />
         </div>
     );
 }

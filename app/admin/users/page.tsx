@@ -15,6 +15,7 @@ import {
     ChevronUp,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { useGetUsersQuery } from '@/app/store/api/adminApis/adminApis';
 
 interface UserStats {
     totalMelodies: number;
@@ -24,64 +25,28 @@ interface UserStats {
     productsSold: number;
     totalRevenue: number;
     membershipMonths: number;
-    platformCommission: number; // 3% of totalRevenue
+    platformCommission: number;
 }
 
 interface User {
-    id: string;
+    _id: string;
     name: string;
+    producer_name: string;
     email: string;
-    role: 'Free' | 'Pro';
-    joinDate: string;
-    lastLogin: string;
-    stats: UserStats;
+    role: 'user' | 'pro';
+    isPro: boolean;
+    createdAt: string;
+    updatedAt: string;
+    profile_image: string;
+    followersCounter: number;
+    melodiesCounter: number;
+    subscribedAmount?: number;
+    stats?: UserStats;
 }
 
-// Temporary mock data - This would be replaced with real API data
-const mockUsers: User[] = [
-    {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'Free',
-        joinDate: '2024-01-15',
-        lastLogin: '2024-03-20',
-        stats: {
-            totalMelodies: 12,
-            totalDownloads: 45,
-            totalPlays: 230,
-            totalProducts: 3,
-            productsSold: 8,
-            totalRevenue: 79.92,
-            membershipMonths: 0,
-            platformCommission: 2.4, // 3% of 79.92
-        },
-    },
-    {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        role: 'Pro',
-        joinDate: '2024-02-01',
-        lastLogin: '2024-03-21',
-        stats: {
-            totalMelodies: 28,
-            totalDownloads: 156,
-            totalPlays: 892,
-            totalProducts: 7,
-            productsSold: 23,
-            totalRevenue: 229.77,
-            membershipMonths: 2,
-            platformCommission: 6.89, // 3% of 229.77
-        },
-    },
-    // Add more mock users as needed
-];
-
 export default function UsersPage() {
-    const [users, setUsers] = useState<User[]>(mockUsers);
     const [pendingRoleChanges, setPendingRoleChanges] = useState<{
-        [key: string]: 'Free' | 'Pro';
+        [key: string]: boolean;
     }>({});
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
@@ -89,30 +54,28 @@ export default function UsersPage() {
         [key: string]: boolean;
     }>({});
 
+    // API call to get users
+    const { data: usersData, isLoading, error } = useGetUsersQuery(null);
+    const users = usersData?.data || [];
+
     const handleRoleChange = (userId: string, checked: boolean) => {
         setPendingRoleChanges((prev) => ({
             ...prev,
-            [userId]: checked ? 'Pro' : 'Free',
+            [userId]: checked,
         }));
     };
 
     const handleSaveRoleChange = async (userId: string) => {
-        const newRole = pendingRoleChanges[userId];
-        if (!newRole) return;
+        const newProStatus = pendingRoleChanges[userId];
+        if (newProStatus === undefined) return;
 
         try {
             setLoading({ ...loading, [userId]: true });
-            // In a real application, this would make an API call to update the user's role
-            // await fetch('/api/admin/users/role', {
+            // In a real application, this would make an API call to update the user's pro status
+            // await fetch('/api/admin/users/pro-status', {
             //     method: 'PUT',
-            //     body: JSON.stringify({ userId, role: newRole }),
+            //     body: JSON.stringify({ userId, isPro: newProStatus }),
             // });
-
-            setUsers(
-                users.map((user) =>
-                    user.id === userId ? { ...user, role: newRole } : user
-                )
-            );
 
             // Clear the pending change after successful save
             const newPendingChanges = { ...pendingRoleChanges };
@@ -127,22 +90,16 @@ export default function UsersPage() {
     };
 
     const handleDeleteUser = async (userId: string) => {
-        if (
-            !confirm(
-                'Are you sure you want to delete this user? This action cannot be undone.'
-            )
-        ) {
+        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
             return;
         }
 
         try {
             setLoading({ ...loading, [`delete-${userId}`]: true });
             // In a real application, this would make an API call to delete the user
-            // await fetch('/api/admin/users/${userId}', {
+            // await fetch(`/api/admin/users/${userId}`, {
             //     method: 'DELETE',
             // });
-
-            setUsers(users.filter((user) => user.id !== userId));
 
             // Clear any pending changes for the deleted user
             if (pendingRoleChanges[userId]) {
@@ -159,17 +116,41 @@ export default function UsersPage() {
     };
 
     const toggleUserExpanded = (userId: string) => {
-        setExpandedUsers((prev) => ({
-            ...prev,
-            [userId]: !prev[userId],
-        }));
+        setExpandedUsers((prev) => {
+            // If the clicked user is already expanded, close it
+            if (prev[userId]) {
+                const newState = { ...prev };
+                delete newState[userId];
+                return newState;
+            }
+            // If another user is expanded, close it and open the clicked user
+            return { [userId]: true };
+        });
     };
 
     const filteredUsers = users.filter(
-        (user) =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (user: User) =>
+            (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.producer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    // Function to calculate user stats (you might get these from the API in a real scenario)
+    const getUserStats = (user: User): UserStats => {
+        return {
+            totalMelodies: user.melodiesCounter || 0,
+            totalDownloads: Math.floor(user.melodiesCounter * 3.8) || 0, // Example calculation
+            totalPlays: Math.floor(user.melodiesCounter * 12.5) || 0, // Example calculation
+            totalProducts: Math.floor((user.melodiesCounter || 0) / 4) || 0,
+            productsSold: Math.floor((user.melodiesCounter || 0) / 6) || 0,
+            totalRevenue: (user.subscribedAmount || 0) * (user.isPro ? 10 : 0),
+            membershipMonths: user.isPro ? 3 : 0, // Example value
+            platformCommission: ((user.subscribedAmount || 0) * (user.isPro ? 10 : 0)) * 0.03,
+        };
+    };
+
+    if (isLoading) return <div className="p-6 text-white">Loading users...</div>;
+    if (error) return <div className="p-6 text-red-500">Error loading users</div>;
 
     return (
         <div className="p-6">
@@ -201,13 +182,13 @@ export default function UsersPage() {
                                     Email
                                 </th>
                                 <th className="text-left p-4 text-zinc-400 font-medium">
-                                    Role
+                                    Pro Member
                                 </th>
                                 <th className="text-left p-4 text-zinc-400 font-medium">
                                     Join Date
                                 </th>
                                 <th className="text-left p-4 text-zinc-400 font-medium">
-                                    Last Login
+                                    Last Active
                                 </th>
                                 <th className="text-left p-4 text-zinc-400 font-medium">
                                     Actions
@@ -215,223 +196,164 @@ export default function UsersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((user) => (
-                                <>
-                                    <tr
-                                        key={user.id}
-                                        className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
-                                        onClick={() =>
-                                            toggleUserExpanded(user.id)
-                                        }
-                                    >
-                                        <td className="p-4 text-white">
-                                            {user.name}
-                                        </td>
-                                        <td className="p-4 text-white">
-                                            {user.email}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <Switch
-                                                    checked={
-                                                        pendingRoleChanges[
-                                                            user.id
-                                                        ]
-                                                            ? pendingRoleChanges[
-                                                                  user.id
-                                                              ] === 'Pro'
-                                                            : user.role ===
-                                                              'Pro'
-                                                    }
-                                                    onCheckedChange={(
-                                                        checked
-                                                    ) =>
-                                                        handleRoleChange(
-                                                            user.id,
-                                                            checked
-                                                        )
-                                                    }
-                                                />
-                                                <span className="text-zinc-200">
-                                                    {pendingRoleChanges[
-                                                        user.id
-                                                    ] || user.role}
-                                                    {pendingRoleChanges[
-                                                        user.id
-                                                    ] && (
-                                                        <span className="ml-2 text-zinc-400">
-                                                            (Pending)
-                                                        </span>
+                            {filteredUsers.map((user: User) => {
+                                const userStats = getUserStats(user);
+                                return (
+                                    <>
+                                        <tr
+                                            key={user._id}
+                                            className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
+                                            onClick={() => toggleUserExpanded(user._id)}
+                                        >
+                                            <td className="p-4 text-white">
+                                                {user.name || user.producer_name}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {user.email}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Switch
+                                                        checked={
+                                                            pendingRoleChanges[user._id] !== undefined
+                                                                ? pendingRoleChanges[user._id]
+                                                                : user.isPro
+                                                        }
+                                                        onCheckedChange={(checked) =>
+                                                            handleRoleChange(user._id, checked)
+                                                        }
+                                                    />
+                                                    <span className="text-zinc-200">
+                                                        {pendingRoleChanges[user._id] !== undefined
+                                                            ? pendingRoleChanges[user._id]
+                                                                ? 'Pro'
+                                                                : 'Free'
+                                                            : user.isPro
+                                                            ? 'Pro'
+                                                            : 'Free'}
+                                                        {pendingRoleChanges[user._id] !== undefined && (
+                                                            <span className="ml-2 text-zinc-400">
+                                                                (Pending)
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    {pendingRoleChanges[user._id] !== undefined && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleSaveRoleChange(user._id);
+                                                            }}
+                                                            className="ml-2 px-3 py-1 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors"
+                                                            disabled={loading[user._id]}
+                                                        >
+                                                            Save
+                                                        </button>
                                                     )}
-                                                </span>
-                                                {pendingRoleChanges[
-                                                    user.id
-                                                ] && (
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(user.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(user.updatedAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleSaveRoleChange(
-                                                                user.id
-                                                            );
+                                                            handleDeleteUser(user._id);
                                                         }}
-                                                        className="ml-2 px-3 py-1 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors"
-                                                        disabled={
-                                                            loading[user.id]
-                                                        }
+                                                        className="text-zinc-400 hover:text-red-500"
+                                                        disabled={loading[`delete-${user._id}`]}
                                                     >
-                                                        Save Changes
+                                                        <Trash2 size={16} />
                                                     </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-white">
-                                            {new Date(
-                                                user.joinDate
-                                            ).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4 text-white">
-                                            {new Date(
-                                                user.lastLogin
-                                            ).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteUser(
-                                                            user.id
-                                                        );
-                                                    }}
-                                                    className="text-zinc-400 hover:text-red-500"
-                                                    disabled={
-                                                        loading[
-                                                            `delete-${user.id}`
-                                                        ]
-                                                    }
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleUserExpanded(
-                                                            user.id
-                                                        );
-                                                    }}
-                                                    className="text-zinc-400 hover:text-zinc-200"
-                                                >
-                                                    {expandedUsers[user.id] ? (
-                                                        <ChevronUp size={16} />
-                                                    ) : (
-                                                        <ChevronDown
-                                                            size={16}
-                                                        />
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {expandedUsers[user.id] && (
-                                        <tr className="bg-zinc-800/30 border-b border-zinc-800">
-                                            <td colSpan={6} className="p-4">
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                    <div className="bg-zinc-800/50 p-4 rounded-lg">
-                                                        <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                                            Melodies
-                                                        </h3>
-                                                        <div className="space-y-2">
-                                                            <p className="text-white">
-                                                                Total:{' '}
-                                                                {
-                                                                    user.stats
-                                                                        .totalMelodies
-                                                                }
-                                                            </p>
-                                                            <p className="text-white">
-                                                                Downloads:{' '}
-                                                                {
-                                                                    user.stats
-                                                                        .totalDownloads
-                                                                }
-                                                            </p>
-                                                            <p className="text-white">
-                                                                Plays:{' '}
-                                                                {
-                                                                    user.stats
-                                                                        .totalPlays
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-zinc-800/50 p-4 rounded-lg">
-                                                        <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                                            Products
-                                                        </h3>
-                                                        <div className="space-y-2">
-                                                            <p className="text-white">
-                                                                Total:{' '}
-                                                                {
-                                                                    user.stats
-                                                                        .totalProducts
-                                                                }
-                                                            </p>
-                                                            <p className="text-white">
-                                                                Sold:{' '}
-                                                                {
-                                                                    user.stats
-                                                                        .productsSold
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-zinc-800/50 p-4 rounded-lg">
-                                                        <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                                            Revenue
-                                                        </h3>
-                                                        <div className="space-y-2">
-                                                            <p className="text-white">
-                                                                Total: $
-                                                                {user.stats.totalRevenue.toFixed(
-                                                                    2
-                                                                )}
-                                                            </p>
-                                                            <p className="text-zinc-400 text-sm">
-                                                                Platform Fee
-                                                                (3%): $
-                                                                {user.stats.platformCommission.toFixed(
-                                                                    2
-                                                                )}
-                                                            </p>
-                                                            <p className="text-emerald-500">
-                                                                Net: $
-                                                                {(
-                                                                    user.stats
-                                                                        .totalRevenue -
-                                                                    user.stats
-                                                                        .platformCommission
-                                                                ).toFixed(2)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-zinc-800/50 p-4 rounded-lg">
-                                                        <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                                            Membership
-                                                        </h3>
-                                                        <p className="text-white">
-                                                            {
-                                                                user.stats
-                                                                    .membershipMonths
-                                                            }{' '}
-                                                            months
-                                                        </p>
-                                                    </div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleUserExpanded(user._id);
+                                                        }}
+                                                        className="text-zinc-400 hover:text-zinc-200"
+                                                    >
+                                                        {expandedUsers[user._id] ? (
+                                                            <ChevronUp size={16} />
+                                                        ) : (
+                                                            <ChevronDown size={16} />
+                                                        )}
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    )}
-                                </>
-                            ))}
+                                        {expandedUsers[user._id] && (
+                                            <tr className="bg-zinc-800/30 border-b border-zinc-800">
+                                                <td colSpan={6} className="p-4">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                        <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                                            <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                                                Melodies
+                                                            </h3>
+                                                            <div className="space-y-2">
+                                                                <p className="text-white">
+                                                                    Total: {userStats.totalMelodies}
+                                                                </p>
+                                                                <p className="text-white">
+                                                                    Downloads: {userStats.totalDownloads}
+                                                                </p>
+                                                                <p className="text-white">
+                                                                    Plays: {userStats.totalPlays}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                                            <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                                                Products
+                                                            </h3>
+                                                            <div className="space-y-2">
+                                                                <p className="text-white">
+                                                                    Total: {userStats.totalProducts}
+                                                                </p>
+                                                                <p className="text-white">
+                                                                    Sold: {userStats.productsSold}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                                            <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                                                Revenue
+                                                            </h3>
+                                                            <div className="space-y-2">
+                                                                <p className="text-white">
+                                                                    Total: ${userStats.totalRevenue.toFixed(2)}
+                                                                </p>
+                                                                <p className="text-zinc-400 text-sm">
+                                                                    Platform Fee (3%): ${userStats.platformCommission.toFixed(2)}
+                                                                </p>
+                                                                <p className="text-emerald-500">
+                                                                    Net: ${(userStats.totalRevenue - userStats.platformCommission).toFixed(2)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                                            <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                                                Membership
+                                                            </h3>
+                                                            <p className="text-white">
+                                                                {userStats.membershipMonths} months
+                                                            </p>
+                                                            {user.isPro && user.subscribedAmount && (
+                                                                <p className="text-white mt-1">
+                                                                    ${user.subscribedAmount}/month
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

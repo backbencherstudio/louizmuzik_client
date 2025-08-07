@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,6 +11,7 @@ import {
   Heart,
   Download,
   Play,
+  Pause,
   MoreVertical,
   Check,
 } from "lucide-react";
@@ -34,8 +35,10 @@ import {
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import { useFollowingProducerContentQuery } from "../store/api/userManagementApis/userManagementApis";
-import { useFavoriteMelodyMutation, useMelodyDownloadMutation } from "../store/api/melodyApis/melodyApis";
+import { useFavoriteMelodyMutation, useMelodyDownloadMutation, useMelodyPlayMutation } from "../store/api/melodyApis/melodyApis";
 import { toast } from "sonner";
+import { WaveformDisplay } from "@/components/waveform-display";
+import { useAudioContext } from "@/components/audio-context";
 
 interface AudioItem {
   id: number;
@@ -93,9 +96,7 @@ export default function FeedPage() {
   const [selectedMelody, setSelectedMelody] = useState<CollabModalData | null>(
     null
   );
-  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<
-    AudioItem | Pack | null
-  >(null);
+  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
   const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
@@ -103,6 +104,8 @@ export default function FeedPage() {
     key: "name",
     direction: "asc",
   });
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
 
   // Filter states
   const [selectedGenre, setSelectedGenre] = useState("");
@@ -128,6 +131,8 @@ export default function FeedPage() {
   const [favoriteMelody, { isLoading: isFavoriteMelodyLoading }] =
     useFavoriteMelodyMutation();
 
+  
+
   const isMelodyFavorite = (melodyId: string) => {
     return user?.data?.favourite_melodies?.includes(melodyId) || false;
   };
@@ -140,6 +145,7 @@ export default function FeedPage() {
   };
 
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
+  const [melodyPlayCounter] = useMelodyPlayMutation();
 
   const handleDownloadClick = async (melody: any) => {
     try {
@@ -159,6 +165,57 @@ export default function FeedPage() {
         console.log("error", error);
     }
 };
+
+const { currentTime, duration, currentMelodyId } = useAudioContext();
+
+  const playNextMelody = () => {
+    if (!currentPlayingMelody) return;
+
+    const currentIndex = filteredAndSortedMelodies.findIndex(
+      (melody) => melody._id === currentPlayingMelody._id
+    );
+
+    if (currentIndex < filteredAndSortedMelodies.length - 1) {
+      const nextMelody = filteredAndSortedMelodies[currentIndex + 1];
+      handlePlayClick(nextMelody);
+    }
+  };
+  
+  const playPreviousMelody = () => {
+    if (!currentPlayingMelody) return;
+
+    const currentIndex = filteredAndSortedMelodies.findIndex(
+      (melody) => melody._id === currentPlayingMelody._id
+    );
+
+    if (currentIndex > 0) {
+      const previousMelody = filteredAndSortedMelodies[currentIndex - 1];
+      handlePlayClick(previousMelody);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isAudioPlayerVisible) return;
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          playNextMelody();
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          playPreviousMelody();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPlayingMelody, isAudioPlayerVisible]);
+
 
 
   const itemsPerPage = 5;
@@ -226,9 +283,38 @@ export default function FeedPage() {
   };
 
 
-  const handlePlayClick = (melody: AudioItem | Pack) => {
-    setCurrentPlayingMelody(melody);
-    setIsAudioPlayerVisible(true);
+  const handlePlayClick = async (melody: any) => {
+    if (currentPlayingMelody?._id === melody._id) {
+      setCurrentPlayingMelody(null);
+      setCurrentPlayingPack(null);
+      setIsAudioPlayerVisible(false);
+      setShouldAutoPlay(false);
+    } else {
+      try {
+        const response = await melodyPlayCounter(melody._id).unwrap();
+        console.log("melodyPlayCounter", response);
+      } catch (error) {
+        console.log("error", error);
+      }
+      
+      const melodyToPlay = {
+        _id: melody._id, 
+        name: melody.name,
+        producer: melody.producer,
+        image: melody.image,
+        audio: melody.audio_path || melody.audio || melody.audioUrl,
+        audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+        bpm: melody.bpm || 120,
+        key: melody.key || 'C Maj',
+        genre: melody.genre || 'Unknown',
+        artistType: melody.artistType || 'Producer',
+      };
+      
+      setCurrentPlayingMelody(melodyToPlay);
+      setCurrentPlayingPack(null);
+      setIsAudioPlayerVisible(true);
+      setShouldAutoPlay(true);
+    }
   };
 
   const handleSort = (key: string) => {
@@ -752,8 +838,8 @@ export default function FeedPage() {
                 <table className="w-full hidden md:table">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
+                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">#</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">Thumbnail</th>
                       <th
                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                         onClick={() => handleSort("name")}
@@ -774,6 +860,7 @@ export default function FeedPage() {
                           />
                         </div>
                       </th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">Waveform</th>
                       <th
                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                         onClick={() => handleSort("producer")}
@@ -890,13 +977,17 @@ export default function FeedPage() {
                             variant="ghost"
                             size="icon"
                             className={`h-8 w-8 rounded-full ${
-                              currentPlayingMelody?.id === melody.id
+                              currentPlayingMelody?._id === melody._id
                                 ? "bg-emerald-500 text-black hover:bg-emerald-600"
                                 : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                             }`}
                             onClick={() => handlePlayClick(melody)}
                           >
-                            <Play className="h-4 w-4" />
+                            {currentPlayingMelody?._id === melody._id ? (
+                              <Pause className="h-4 w-4" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
                           </Button>
                         </td>
                         <td className="whitespace-nowrap px-4 py-3">
@@ -911,6 +1002,18 @@ export default function FeedPage() {
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
                           {melody.name}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <WaveformDisplay
+                            audioUrl={melody.audio_path || melody.audio || melody.audioUrl}
+                            isPlaying={currentPlayingMelody?._id === melody._id}
+                            onPlayPause={() => handlePlayClick(melody)}
+                            height={30}
+                            width="200px"
+                            isControlled={true}
+                            currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                            duration={currentMelodyId === melody._id ? duration : 0}
+                          />
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                           {melody.producer}
@@ -985,13 +1088,17 @@ export default function FeedPage() {
                             variant="ghost"
                             size="icon"
                             className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                              currentPlayingMelody?.id === melody.id
+                              currentPlayingMelody?._id === melody._id
                                 ? "bg-emerald-500 text-black hover:bg-emerald-600"
                                 : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                             }`}
                             onClick={() => handlePlayClick(melody)}
                           >
-                            <Play className="h-4 w-4" />
+                            {currentPlayingMelody?._id === melody._id ? (
+                              <Pause className="h-4 w-4" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
                           </Button>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">
@@ -1069,29 +1176,31 @@ export default function FeedPage() {
           </div>
         </div>
 
-        <AudioPlayer
-          isVisible={isAudioPlayerVisible}
-          melody={
-            currentPlayingMelody
-              ? {
-                  _id:
-                    currentPlayingMelody._id ||
-                    currentPlayingMelody.id.toString(),
-                  name:
-                    "title" in currentPlayingMelody
-                      ? currentPlayingMelody.title
-                      : currentPlayingMelody.name,
-                  producer: currentPlayingMelody.producer,
-                  image: currentPlayingMelody.image,
-                  audioUrl: currentPlayingMelody.audioUrl || "",
-                  bpm: currentPlayingMelody.bpm,
-                  key: currentPlayingMelody.key,
-                  artistType: currentPlayingMelody.artistType || "",
-                }
-              : null
-          }
-          onClose={() => setIsAudioPlayerVisible(false)}
-        />
+        {isAudioPlayerVisible &&
+          (currentPlayingMelody || currentPlayingPack) && (
+            <AudioPlayer
+              key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
+              isVisible={isAudioPlayerVisible}
+              melody={currentPlayingMelody || currentPlayingPack}
+              shouldAutoPlay={shouldAutoPlay}
+              onClose={() => {
+                setCurrentPlayingMelody(null);
+                setCurrentPlayingPack(null);
+                setIsAudioPlayerVisible(false);
+                setShouldAutoPlay(false);
+              }}
+              isFavorite={
+                currentPlayingMelody
+                  ? isMelodyFavorite(currentPlayingMelody._id)
+                  : false
+              }
+              onFavoriteClick={(melodyId) => toogleFavorite(melodyId)}
+              playNextMelody={playNextMelody}
+              playPreviousMelody={playPreviousMelody}
+              onEnded={playNextMelody}
+              handleDownloadClick={handleDownloadClick}
+            />
+          )}
         {selectedMelody && (
           <CollabModal
             isOpen={isCollabModalOpen}

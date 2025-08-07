@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,6 +13,8 @@ import {
   Play,
   Pause,
   Loader2,
+  Download,
+  Heart,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,9 @@ import {
   useGetUserProfileQuery,
 } from "@/app/store/api/userManagementApis/userManagementApis";
 import { useParams } from "next/navigation";
+import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMutation } from "@/app/store/api/melodyApis/melodyApis";
+import { WaveformDisplay } from "@/components/waveform-display";
+import { useAudioContext } from "@/components/audio-context";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -56,6 +61,10 @@ export default function ProfilePage() {
   const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
     useFollowUnFollowProducerMutation();
 
+  const [melodyPlayCounter] = useMelodyPlayMutation();
+  const [melodyDownloadCounter] = useMelodyDownloadMutation();
+  const [favoriteMelody] = useFavoriteMelodyMutation();
+
   const isFollowing = user?.data?.following.includes(id as string);
 
   const userData = userProfile?.data?.userData;
@@ -65,6 +74,40 @@ export default function ProfilePage() {
   console.log("melodies", melodies);
   const premiumPacks = userProfile?.data?.packs;
   console.log("packs", premiumPacks);
+
+  const handlePlayClick = async (melody: any) => {
+    if (currentPlayingMelody?._id === melody._id) {
+      setCurrentPlayingMelody(null);
+      setCurrentPlayingPack(null);
+      setIsAudioPlayerVisible(false);
+      setShouldAutoPlay(false);
+    } else {
+      try {
+        const response = await melodyPlayCounter(melody._id).unwrap();
+        console.log("melodyPlayCounter", response);
+      } catch (error) {
+        console.log("error", error);
+      }
+      
+      const melodyToPlay = {
+        _id: melody._id,
+        name: melody.name,
+        producer: melody.producer,
+        image: melody.image,
+        audio: melody.audio_path || melody.audio || melody.audioUrl,
+        audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+        bpm: melody.bpm || 120,
+        key: melody.key || "C Maj",
+        genre: melody.genre || "Unknown",
+        artistType: melody.artistType || "Producer",
+      };
+
+      setCurrentPlayingMelody(melodyToPlay);
+      setCurrentPlayingPack(null);
+      setIsAudioPlayerVisible(true);
+      setShouldAutoPlay(true);
+    }
+  };
 
   const handlePackPlayClick = (pack: any) => {
     if (currentPlayingPack?._id === pack._id) {
@@ -93,15 +136,95 @@ export default function ProfilePage() {
     }
   };
 
+  const isMelodyFavorite = (melodyId: string) => {
+    return user?.data?.favourite_melodies?.includes(melodyId) || false;
+  };
+
+  const toggleFavorite = async (melodyId: string) => {
+    if (melodyId && userId) {
+      await favoriteMelody({ id: melodyId, userId: userId }).unwrap();
+      await Promise.all([refetchUser(), refetchUserProfile()]);
+    }
+  };
+
+  const handleDownloadClick = async (melody: any) => {
+    try {
+      const response = await melodyDownloadCounter(melody._id).unwrap();
+      console.log("melodyDownloadCounter", response);
+      
+      const audioUrl = melody.audioUrl;  
+      if (audioUrl) {
+        const link = document.createElement('a');
+        link.href = audioUrl;
+        link.download = audioUrl.split('/').pop(); 
+        link.click();
+      } else {
+        console.error("No audio URL found!");
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  const { currentTime, duration, currentMelodyId } = useAudioContext();
+
+  const playNextMelody = () => {
+    if (!currentPlayingMelody) return;
+
+    const currentIndex = melodies.findIndex(
+      (melody: any) => melody._id === currentPlayingMelody._id
+    );
+
+    if (currentIndex < melodies.length - 1) {
+      const nextMelody = melodies[currentIndex + 1];
+      handlePlayClick(nextMelody);
+    }
+  };
+
+  const playPreviousMelody = () => {
+    if (!currentPlayingMelody) return;
+
+    const currentIndex = melodies.findIndex(
+      (melody: any) => melody._id === currentPlayingMelody._id
+    );
+
+    if (currentIndex > 0) {
+      const previousMelody = melodies[currentIndex - 1];
+      handlePlayClick(previousMelody);
+    }
+  };
+
   const handleFollowUnFollowProducer = async () => {
     await followUnFollowProducer({ userId, producerId: id as string });
     refetchUser();
     refetchUserProfile();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isAudioPlayerVisible) return;
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          playNextMelody();
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          playPreviousMelody();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPlayingMelody, isAudioPlayerVisible]);
+
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
+      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
           {isUserProfileLoading && (
@@ -154,7 +277,9 @@ export default function ProfilePage() {
                       }`}
                       onClick={() => handleFollowUnFollowProducer()}
                     >
-                      {isFollowingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {isFollowingLoading && (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      )}
                       {isFollowing ? "Unfollow" : "Follow"}
                     </Button>
                   )}
@@ -265,7 +390,7 @@ export default function ProfilePage() {
               {premiumPacks?.map((pack: any) => (
                 <Link
                   key={pack._id}
-                  href=""
+                  href={`/product/${pack._id}`}
                   className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                 >
                   <div className="relative aspect-square">
@@ -278,16 +403,22 @@ export default function ProfilePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     {/* Play/Pause Button */}
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`h-8 w-8 flex-shrink-0 rounded-full ${
+                        currentPlayingPack?.id === pack._id
+                          ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                          : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                      }`}
                       onClick={() => handlePackPlayClick(pack)}
-                      className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform translate-y-1 group-hover:translate-y-0"
                     >
-                      {playingPackId === pack?._id ? (
-                        <Pause className="w-5 h-5" />
+                      {currentPlayingPack?.id === pack._id ? (
+                        <Pause className="h-4 w-4" />
                       ) : (
-                        <Play className="w-5 h-5 translate-x-0.5" />
+                        <Play className="h-4 w-4" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                   <div className="p-4">
                     <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">
@@ -301,24 +432,228 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-          <div className="mt-10 rounded-lg border border-zinc-800/30">
-            {melodies?.length > 0 && <MelodiesTable melodies={melodies} />}
-          </div>
+                     {/* Melodies Table */}
+           {melodies?.length > 0 && (
+             <div className="mt-10">
+               <h2 className="text-2xl font-bold text-white mb-6">
+                 <span className="capitalize">{userData?.producer_name}</span>'s Melodies
+               </h2>
+               <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
+                 <div className="overflow-x-auto">
+                   {/* Desktop Table */}
+                   <table className="w-full hidden md:table">
+                     <thead>
+                       <tr className="border-b border-zinc-800 bg-zinc-900/50">
+                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">NAME</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">WAVEFORM</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">BPM</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">KEY</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">GENRE</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">ARTIST TYPE</th>
+                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">ACTIONS</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {melodies.map((melody: any) => (
+                         <tr key={melody._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
+                           <td className="whitespace-nowrap px-4 py-3 text-center">
+                             <Button
+                               variant="ghost"
+                               size="icon"
+                               className={`h-8 w-8 rounded-full ${
+                                 currentPlayingMelody?._id === melody._id
+                                   ? 'bg-emerald-500 text-black hover:bg-emerald-600'
+                                   : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                               }`}
+                               onClick={() => handlePlayClick(melody)}
+                             >
+                               {currentPlayingMelody?._id === melody._id ? (
+                                 <Pause className="h-4 w-4" />
+                               ) : (
+                                 <Play className="h-4 w-4" />
+                               )}
+                             </Button>
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3">
+                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
+                               <Image
+                                 src={melody?.image || '/images/default-melody.png'}
+                                 alt={melody?.name}
+                                 fill
+                                 className="object-cover"
+                               />
+                             </div>
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
+                             {melody?.name}
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3">
+                             <WaveformDisplay
+                               audioUrl={melody.audioUrl}
+                               isPlaying={currentPlayingMelody?._id === melody._id}
+                               onPlayPause={() => handlePlayClick(melody)}
+                               height={30}
+                               width="200px"
+                               isControlled={true}
+                               currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                               duration={currentMelodyId === melody._id ? duration : 0}
+                             />
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                             {melody?.bpm}
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                             {melody?.key}
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                             {Array.isArray(melody?.genre) 
+                               ? melody.genre.join(', ') 
+                               : melody?.genre}
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                             {Array.isArray(melody?.artistType) 
+                               ? melody.artistType.join(', ') 
+                               : melody?.artistType}
+                           </td>
+                           <td className="whitespace-nowrap px-4 py-3 text-center">
+                             <div className="flex items-center justify-center gap-1">
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                                   isMelodyFavorite(melody?._id)
+                                     ? 'text-red-500'
+                                     : ''
+                                 }`}
+                                 onClick={() => toggleFavorite(melody?._id)}
+                               >
+                                 <Heart
+                                   className={`h-4 w-4 ${
+                                     isMelodyFavorite(melody._id)
+                                       ? 'fill-current'
+                                       : ''
+                                   }`}
+                                 />
+                               </Button>
+                               
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 className="h-8 w-8 text-zinc-400 hover:text-white"
+                                 onClick={() => handleDownloadClick(melody)}
+                               >
+                                 <Download className="h-4 w-4" />
+                               </Button>
+                             </div>
+                           </td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+
+                   {/* Mobile Table */}
+                   <table className="w-full md:hidden">
+                     <tbody>
+                       {melodies.map((melody: any) => (
+                         <tr key={melody?._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
+                           <td className="px-4 py-3 flex items-center gap-3">
+                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
+                               <Image
+                                 src={melody?.image || '/images/default-melody.png'}
+                                 alt={melody?.name}
+                                 fill
+                                 className="object-cover"
+                               />
+                             </div>
+                             <Button
+                               variant="ghost"
+                               size="icon"
+                               className={`h-8 w-8 flex-shrink-0 rounded-full ${
+                                 currentPlayingMelody?._id === melody._id
+                                   ? 'bg-emerald-500 text-black hover:bg-emerald-600'
+                                   : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                               }`}
+                               onClick={() => handlePlayClick(melody)}
+                             >
+                               {currentPlayingMelody?._id === melody._id ? (
+                                 <Pause className="h-4 w-4" />
+                               ) : (
+                                 <Play className="h-4 w-4" />
+                               )}
+                             </Button>
+                             <div className="flex-1 min-w-0">
+                               <p className="text-sm font-medium text-white truncate">
+                                 {melody.name}
+                               </p>
+                               <p className="text-xs text-zinc-400 truncate mt-0.5">
+                                 {melody?.producer}
+                               </p>
+                             </div>
+                             
+                             <div className="flex items-center gap-2">
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
+                                   isMelodyFavorite(melody?._id)
+                                     ? 'text-red-500'
+                                     : ''
+                                 }`}
+                                 onClick={() => toggleFavorite(melody?._id)}
+                               >
+                                 <Heart
+                                   className={`h-4 w-4 ${
+                                     isMelodyFavorite(melody?._id)
+                                       ? 'fill-current'
+                                       : ''
+                                   }`}
+                                 />
+                               </Button>
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
+                                 onClick={() => handleDownloadClick(melody)}
+                               >
+                                 <Download className="h-4 w-4" />
+                               </Button>
+                             </div>
+                           </td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 </div>
+               </div>
+             </div>
+           )}
         </div>
 
-        {/* Audio Player */}
-        <AudioPlayer
-          key={currentPlayingMelody?.audioUrl || currentPlayingPack?.audioUrl}
-          isVisible={isAudioPlayerVisible}
-          melody={currentPlayingMelody || currentPlayingPack}
-          shouldAutoPlay={shouldAutoPlay}
-          onClose={() => {
-            setCurrentPlayingMelody(null);
-            setCurrentPlayingPack(null);
-            setIsAudioPlayerVisible(false);
-            setShouldAutoPlay(false);
-          }}
-        />
+                                   {/* Audio Player */}
+          <AudioPlayer
+            key={currentPlayingMelody?.audioUrl || currentPlayingPack?.audioUrl}
+            isVisible={isAudioPlayerVisible}
+            melody={currentPlayingMelody || currentPlayingPack}
+            shouldAutoPlay={shouldAutoPlay}
+            onClose={() => {
+              setCurrentPlayingMelody(null);
+              setCurrentPlayingPack(null);
+              setIsAudioPlayerVisible(false);
+              setShouldAutoPlay(false);
+            }}
+            isFavorite={
+              currentPlayingMelody
+                ? isMelodyFavorite(currentPlayingMelody._id)
+                : false
+            }
+            onFavoriteClick={(melodyId) => toggleFavorite(melodyId)}
+            playNextMelody={playNextMelody}
+            playPreviousMelody={playPreviousMelody}
+            onEnded={playNextMelody}
+            handleDownloadClick={handleDownloadClick}
+          />
       </div>
     </Layout>
   );

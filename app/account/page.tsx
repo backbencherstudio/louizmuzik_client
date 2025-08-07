@@ -170,14 +170,15 @@ export default function AccountPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-zinc-400">
-                      PayPal Email
+                      Email
                     </Label>
                     <Input
+                      readOnly
                       id="email"
                       type="email"
-                      name="paypalEmail"
+                      name="email"
                       placeholder="your@email.com"
-                      defaultValue={user?.data?.paypalEmail || ""}
+                      defaultValue={user?.data?.email || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                     />
                   </div>

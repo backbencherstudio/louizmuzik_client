@@ -47,6 +47,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { useFavoriteMelodyMutation, useGetMelodiesQuery, useMelodyDownloadMutation, useMelodyPlayMutation } from '../store/api/melodyApis/melodyApis';
 import { toast } from 'sonner';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
+import { useAudioContext } from '@/components/audio-context';
 
 export default function BrowsePage() {
     const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -393,11 +394,12 @@ export default function BrowsePage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [currentPlayingMelody, isAudioPlayerVisible]);
 
+    const { currentTime, duration, currentMelodyId } = useAudioContext();
 
 
     return (
         <Layout>
-            <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
+            <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12`}>
                 <div className="flex flex-col items-center justify-center text-center mb-12">
                     <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 md:mb-6">
                         All Melodies
@@ -650,9 +652,9 @@ export default function BrowsePage() {
                                             />
                                         </div>
                                     </th>
-                                    {/* <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                                         WAVEFORM
-                                    </th> */}
+                                    </th>
                                     <th
                                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                                         onClick={() => handleSort('bpm')}
@@ -755,12 +757,14 @@ export default function BrowsePage() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                id={melody?._id}
                                                 className={`h-8 w-8 rounded-full ${
                                                     currentPlayingMelody?._id ===
                                                     melody._id
                                                         ? 'bg-emerald-500 text-black hover:bg-emerald-600'
                                                         : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                                                 }`}
+                                                // disabled={document.getElementById(`audio-${melody._id}`)?.onload ? false : true}
                                                 onClick={() =>
                                                     handlePlayClick(melody)
                                                 }
@@ -776,7 +780,7 @@ export default function BrowsePage() {
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                                 <Image
-                                                    src={melody?.image}
+                                                    src={melody?.image || '/images/default-melody.png'}
                                                     alt={melody?.name}
                                                     fill
                                                     className="object-cover"
@@ -796,15 +800,18 @@ export default function BrowsePage() {
                                                 {melody?.producer}
                                             </Link>
                                         </td>
-                                        {/* <td className="whitespace-nowrap px-4 py-3">
+                                        <td className="whitespace-nowrap px-4 py-3">
                                             <WaveformDisplay
                                                 audioUrl={melody.audioUrl}
                                                 isPlaying={currentPlayingMelody?._id === melody._id}
                                                 onPlayPause={() => handlePlayClick(melody)}
                                                 height={30}
                                                 width="200px"
+                                                isControlled={true}
+                                                currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                                                duration={currentMelodyId === melody._id ? duration : 0}
                                             />
-                                        </td> */}
+                                        </td>
                                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                                             {melody?.bpm}
                                         </td>
@@ -879,6 +886,7 @@ export default function BrowsePage() {
                                                 />
                                             </div>
                                             <Button
+                                                // id={melody?._id}
                                                 variant="ghost"
                                                 size="icon"
                                                 className={`h-8 w-8 flex-shrink-0 rounded-full ${
@@ -895,7 +903,7 @@ export default function BrowsePage() {
                                                 melody?._id ? (
                                                     <Pause className="h-4 w-4" />
                                                 ) : (
-                                                    <Play className="h-4 w-4" />
+                                                    <Play className="h-4 w-4"  />
                                                 )}
                                             </Button>
                                             <div className="flex-1 min-w-0">
@@ -970,6 +978,7 @@ export default function BrowsePage() {
                     (currentPlayingMelody || currentPlayingPack) && (
                         <AudioPlayer
                             key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
+                            
                             isVisible={isAudioPlayerVisible}
                             melody={currentPlayingMelody || currentPlayingPack}
                             shouldAutoPlay={shouldAutoPlay}

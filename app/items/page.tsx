@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useDeleteMelodyMutation, useGetMelodyByUserIdQuery } from '../store/api/melodyApis/melodyApis';
 import DeleteModal from '@/components/Modals/DeleteModal';
 import { useRouter } from 'next/navigation';
+import { useAudioContext } from '@/components/audio-context';
 
 export default function ItemsPage() {
     const router = useRouter();
@@ -36,7 +37,7 @@ export default function ItemsPage() {
     const { data: user } = useLoggedInUser();
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
     const userId = user?.data?._id;
-    
+    const { currentTime, duration, currentMelodyId } = useAudioContext();
     const { data: packData,refetch } = useGetProducerPackQuery(userId);
     const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
 
@@ -355,6 +356,9 @@ export default function ItemsPage() {
                                                 }
                                                 height={30}
                                                 width="200px"
+                                                isControlled={true}
+                                                currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                                                duration={currentMelodyId === melody._id ? duration : 0}
                                             />
                                             {/* <audio
                                                 src={melody?.audio_path || melody?.audio || melody?.audioUrl}
@@ -422,6 +426,7 @@ export default function ItemsPage() {
                                 setIsAudioPlayerVisible(false);
                                 setShouldAutoPlay(false);
                             }}
+                            
                         />
                     )}
             </div>
