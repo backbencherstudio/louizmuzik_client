@@ -138,7 +138,7 @@ export default function ProPage() {
 
                         {/* Stripe Form */}
                         <div className="bg-zinc-800/30 rounded-xl p-6">
-                          <SubscribeForm amount={50} />
+                          <SubscribeForm amount={9.99} />
                         </div>
                       </div>
 
