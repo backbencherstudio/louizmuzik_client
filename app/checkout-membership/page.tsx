@@ -15,8 +15,8 @@ export default function ProPage() {
   const [amount, setAmount] = useState("10");
   const [loading, setLoading] = useState(false);
 
-  // const email = "fozlerabbishuvo@gmail.com"; 
-  const email = "fozlerabbi9790@gmail.com"; 
+  const email = "fozlerabbishuvo@gmail.com"; 
+  // const email = "fozlerabbi9790@gmail.com"; 
 
   const handleSubscribe = async () => {
     setLoading(true);
@@ -43,7 +43,21 @@ export default function ProPage() {
     }
   };
 
-  const paypalSubscriptionId = "I-1PJAFMCDFXK1"
+  // === paypal
+  const paypalSubscriptionId = "I-RUV3WV2KM217";
+  
+  // === stripe
+  const customerId = "cus_Shu3jVVIbpezv3";
+
+  const handleStripeCancelSubscription = async () => {
+    try {
+      const res = await axios.post(`http://localhost:5000/api/v1/payment/cancel-subscription/${customerId}`);
+      console.log("Subscription cancelled successfully");
+      alert("Subscription cancelled successfully");
+    } catch (err) {
+      console.error("Failed to cancel subscription", err);
+    }
+  };
 
   const handleCancelSubscription = async () => {
     try {
@@ -226,13 +240,23 @@ export default function ProPage() {
                 </div>
 
                 <div>
+
+                  <button onClick={handleStripeCancelSubscription}
+                  className="border border-red-500 mt-4 rounded-xl p-4"
+                  >
+                    {" "}
+                    Stripe subscription cansel{" "}
+                  </button>
+
                   <button onClick={handleCancelSubscription}
                   className="border border-red-500 mt-4 rounded-xl p-4"
                   >
                     {" "}
                     paypal subscription cansel{" "}
                   </button>
+
                 </div>
+
               </div>
             </div>
           </div>
