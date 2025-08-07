@@ -11,11 +11,22 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import Layout from "@/components/layout";
-import { useUpdateUserPasswordMutation, useUpdateUserProfileMutation } from "../store/api/userManagementApis/userManagementApis";
+import {
+  useUpdateUserPasswordMutation,
+  useUpdateUserProfileMutation,
+} from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 import { useRef } from "react";
 import { toast } from "sonner";
+import { useAddPaypalEmailMutation } from "../store/api/paymentApis/paymentApis";
 
 export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,8 +34,11 @@ export default function AccountPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null); // New state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null); // For image preview
+  const [isPayPalModalOpen, setIsPayPalModalOpen] = useState(false);
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [isSubmittingPayPal, setIsSubmittingPayPal] = useState(false);
 
-  const { data: user } = useLoggedInUser();
+  const { data: user, refetch } = useLoggedInUser();
   const userId = user?.data?._id;
   console.log("userId 34", userId);
   const [updateUserProfile, { isLoading: isUpdatingProfile }] =
@@ -32,6 +46,8 @@ export default function AccountPage() {
 
   const [updateUserPassword, { isLoading: isUpdatingPassword }] =
     useUpdateUserPasswordMutation();
+
+  const [addPaypalEmail, { isLoading: isAddingPayPal }] = useAddPaypalEmailMutation();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,14 +62,17 @@ export default function AccountPage() {
     const formData = new FormData(form);
 
     try {
-     const response =  await updateUserProfile({ formData, id: userId }).unwrap();
-     if(response.success){
-      toast.success(response.message);
-     }else{
-      toast.error(response.message);
-     }
-    } catch (error:any) {
-      toast.error(error.data.message);  
+      const response = await updateUserProfile({
+        formData,
+        id: userId,
+      }).unwrap();
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error: any) {
+      toast.error(error.data.message);
       console.log("err 61", error);
     }
   };
@@ -61,40 +80,80 @@ export default function AccountPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const old_password = (form.elements.namedItem("old_password") as HTMLInputElement).value;
-    const new_password = (form.elements.namedItem("new_password") as HTMLInputElement).value;
+    const old_password = (
+      form.elements.namedItem("old_password") as HTMLInputElement
+    ).value;
+    const new_password = (
+      form.elements.namedItem("new_password") as HTMLInputElement
+    ).value;
     const data = { old_password, new_password };
     try {
       const response = await updateUserPassword({ data, id: userId }).unwrap();
-      if(response.success){
+      if (response.success) {
         toast.success(response.message);
-      }else{
+      } else {
         toast.error(response.message);
       }
-    } catch (error:any) {
+    } catch (error: any) {
       toast.error(error.data?.message || "Something went wrong");
       console.log("err", error);
     }
   };
 
-  //   const handleLinkPayPal = () => {
-  //     // This will redirect the producer to PayPal OAuth login page
-  //     window.location.href = "http://localhost:5000/payment/link-paypal";
-  //   };
 
-  // const userId = "686378d1394a32f019c80030"; // Producer's user ID
+  const handleLinkPayPal = () => {
+    setPaypalEmail(user?.data?.paypalEmail || "");
+    setIsPayPalModalOpen(true);
+  };
 
-  const handleLinkPayPal = async () => {
-    // Fetch the PayPal authorization URL from the backend API
-    const response = await fetch(
-      `http://localhost:5000/api/v1/payment/link-paypal?userId=${userId}`
-    );
-    const data = await response.json();
+  const handlePayPalEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingPayPal(true);
 
-    // If the data contains the PayPal OAuth URL, redirect the user
-    if (data && data.data) {
-      window.location.href = data.data; // Redirect the user to PayPal OAuth login page
+    if (!paypalEmail.trim()) {
+        toast.error("Please enter a valid PayPal email");
+        setIsSubmittingPayPal(false);
+        return;
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(paypalEmail)) {
+        toast.error("Please enter a valid email address");
+        setIsSubmittingPayPal(false);
+        return;
+    }
+
+    try {
+        const response = await addPaypalEmail({ 
+            paypalEmail, 
+            userId: userId as string 
+        }).unwrap();
+        
+        if (response.success) {
+            toast.success(response.message || "PayPal email updated successfully!");
+            setIsPayPalModalOpen(false);
+            setPaypalEmail("");
+            refetch();
+        } else {
+            toast.error(response.message || "Failed to update PayPal email");
+        }
+    } catch (error: any) {
+        console.error("PayPal email update error:", error);
+        toast.error(
+            error.data?.message || 
+            error.error || 
+            "Failed to update PayPal email. Please try again."
+        );
+    } finally {
+        setIsSubmittingPayPal(false);
+    }
+};
+
+  const handlePayPalModalClose = () => {
+    setIsPayPalModalOpen(false);
+    setPaypalEmail("");
+    setIsSubmittingPayPal(false);
   };
 
   // https://www.paypal.com/connect?client_id=AeMnBMlrboT2yZ77Ny1Zuwm-UnhJeeMzvE1D1ana1ZetUAzPfo7C-Px41iR4FijH5SN1FHEYrGokg3G2&response_type=code&scope=openid&redirect_uri=http://localhost:5000/api/v1/payment/paypal-callback
@@ -142,7 +201,7 @@ export default function AccountPage() {
                         previewUrl ||
                         user?.data?.profile_image ||
                         "/path/to/default-image.jpg"
-                      } 
+                      }
                       alt="Profile Preview"
                       className="h-20 w-20 rounded-full object-cover border-2 border-gray-300 shadow-lg"
                     />
@@ -427,15 +486,77 @@ export default function AccountPage() {
             <h2 className="text-2xl font-bold text-white mb-6">
               Payment (PayPal Setting)
             </h2>
+            
+            {/* Show current PayPal email if set */}
+            {user?.data?.paypalEmail && (
+              <div className="mb-4 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                <p className="text-zinc-400 text-sm mb-1">Current PayPal Email:</p>
+                <p className="text-white font-medium">{user.data.paypalEmail}</p>
+              </div>
+            )}
+            
             <Button
               onClick={handleLinkPayPal}
               className="w-full bg-emerald-500 text-black hover:bg-emerald-600"
+              disabled={isAddingPayPal}
             >
-              Link your PayPal Account
+              {user?.data?.paypalEmail ? "Update PayPal Account" : "Link your PayPal Account"}
             </Button>
           </Card>
         </div>
       </div>
+
+      {/* PayPal Email Modal */}
+      <Dialog open={isPayPalModalOpen} onOpenChange={handlePayPalModalClose}>
+        <DialogContent className="bg-[#0F0F0F] border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white">
+              {user?.data?.paypalEmail ? "Update PayPal Account" : "Link PayPal Account"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handlePayPalEmailSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="paypal-email" className="text-zinc-400">
+                PayPal Email Address
+              </Label>
+              <Input
+                id="paypal-email"
+                type="email"
+                name="paypalEmail"
+                placeholder="Enter your PayPal email"
+                value={paypalEmail}
+                onChange={(e) => setPaypalEmail(e.target.value)}
+                className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
+                required
+                disabled={isSubmittingPayPal}
+              />
+              <p className="text-xs text-zinc-500">
+                This email will be used to receive payments for your sales.
+              </p>
+            </div>
+
+            <DialogFooter className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePayPalModalClose}
+                className="border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                disabled={isSubmittingPayPal}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-emerald-500 text-black hover:bg-emerald-600"
+                disabled={isSubmittingPayPal}
+              >
+                {isSubmittingPayPal ? "Updating..." : (user?.data?.paypalEmail ? "Update Account" : "Link Account")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
