@@ -90,26 +90,15 @@ export default function CheckoutPage() {
                   Billing Information
                 </h2>
                 <div className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="text-zinc-400">
-                        First name
+                        Name
                       </Label>
                       <Input
                         id="firstName"
                         placeholder="John"
-                        value={userData?.name?.split(" ")[0] || ""}
-                        className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-zinc-400">
-                        Last name
-                      </Label>
-                      <Input
-                        id="lastName"
-                        placeholder="Doe"
-                        value={userData?.name?.split(" ")[2]}
+                        value={userData?.name}
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                       />
                     </div>
