@@ -73,6 +73,7 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
   const [uploadProgress, setUploadProgress] = useState(0); 
   const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
   const { data: user } = useLoggedInUser();
+  console.log("user", user);
   
   // Fetch pack details when editing
   const { data: packDetails, isLoading: isLoadingPack } = useGetPackDetailsQuery(editId || "", {
@@ -148,6 +149,10 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
     setIsLoading(true);
 
     try {
+      if(user?.data?.paypalEmail === "" || user?.data?.paypalEmail === null){
+        toast.error("Please link your PayPal account to continue");
+        return;
+      }
       if (!user?.data?._id) {
         toast.error("User not authenticated");
         return;
