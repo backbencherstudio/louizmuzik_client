@@ -195,7 +195,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                                         }`}
                                         onClick={() => setShowVideo(false)}
                                     >
-                                        <Image className="w-4 h-4 mr-2" />
+                                        {/* <Image className="w-4 h-4 mr-2" /> */}
                                         Cover
                                     </Button>
                                     <Button

@@ -16,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import Layout from "@/components/layout";
 import axios from "axios";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { useCart } from "@/components/cart-context";
+import { useLoggedInUser } from "../store/api/authApis/authApi";
 
 // Sample cart items data
 const cartItems = [
@@ -38,8 +40,10 @@ const cartItems = [
 ];
 
 export default function CheckoutPage() {
+  const { data: user, refetch } = useLoggedInUser();
+  const userData =  user?.data;
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const { cartItems } = useCart();
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const tax = subtotal * 0.07; // 7% tax
@@ -132,6 +136,7 @@ export default function CheckoutPage() {
                       <Input
                         id="firstName"
                         placeholder="John"
+                        value={userData?.name?.split(" ")[0] || ""}
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                       />
                     </div>
@@ -142,6 +147,7 @@ export default function CheckoutPage() {
                       <Input
                         id="lastName"
                         placeholder="Doe"
+                        value={userData?.name?.split(" ")[2]}
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                       />
                     </div>
@@ -155,6 +161,7 @@ export default function CheckoutPage() {
                       id="email"
                       type="email"
                       placeholder="john@example.com"
+                      value={userData?.email}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                     />
                   </div>
@@ -241,8 +248,7 @@ export default function CheckoutPage() {
 
                     <PayPalScriptProvider
                       options={{
-                        "client-id":
-                          "AVswCL11GjsPViCr50ojjbD8MR5rA-c9aJe_Z2gqKbe9wftYSC_soMsITBccidloPD-aCYR9e7g4kwS7",
+                        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
                       }}
                     >
                       <PayPalButtons
@@ -346,7 +352,7 @@ export default function CheckoutPage() {
                 </h2>
 
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
+                  {cartItems.map((item: any) => (
                     <div key={item.id} className="flex items-start gap-3">
                       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-900">
                         <Image

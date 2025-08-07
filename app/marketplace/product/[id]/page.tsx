@@ -255,7 +255,7 @@ export default function ProductPage() {
             </div>
 
             {/* Audio Player */}
-            <AudioPlayer
+            {/* <AudioPlayer
                 isVisible={isAudioPlayerVisible}
                 melody={{
                     id: product.id,
@@ -271,7 +271,7 @@ export default function ProductPage() {
                     setIsAudioPlayerVisible(false);
                     setIsPlaying(false);
                 }}
-            />
+            /> */}
         </Layout>
     );
 }

@@ -8,6 +8,8 @@ interface CartItem {
     producer: string;
     price: number;
     image: string;
+    userId: string;
+    producerId: string;
 }
 
 interface CartContextType {

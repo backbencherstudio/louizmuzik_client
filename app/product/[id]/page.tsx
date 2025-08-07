@@ -35,6 +35,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     error,
   } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
+  const producerId = pack?.userId?._id;
   const { data: user ,refetch} = useLoggedInUser();
   const userId = user?.data?._id;
   const [favoritePack, { isLoading: isFavoritePackLoading }] = useFavoritePackMutation();
@@ -137,6 +138,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         producer: product.producer,
         price: product.price,
         image: product.image,
+        userId: userId,
+        producerId: producerId,
       });
     }
   };
