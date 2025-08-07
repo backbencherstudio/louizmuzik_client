@@ -19,36 +19,17 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from "@/components/cart-context";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 
-// Sample cart items data
-const cartItems = [
-  {
-    id: 1,
-    title: "Bumper Pack Vol.1",
-    producer: "Thunder Beatz",
-    price: 35.0,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-  },
-  {
-    id: 2,
-    title: "Radio Lotto Pack",
-    producer: "Thunder Beatz",
-    price: 20.0,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-  },
-];
-
 export default function CheckoutPage() {
   const { data: user, refetch } = useLoggedInUser();
   const userData =  user?.data;
   const [isProcessing, setIsProcessing] = useState(false);
   const { cartItems } = useCart();
+  console.log("cartItems", cartItems);
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
-  const [amount, setAmount] = useState("100");
+  const [amount, setAmount] = useState(total);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,37 +42,18 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-  const selectedData = [
-    // this data send to paypal  ( when a user select pack then create 2 array at a time)
-    // {
-    //   selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-    //   price: 5,
-    // },
-    {
-      selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
-      price: 50,
-    },
-    {
-      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-      price: 50,
-    },
-  ];
 
-  const selectedPackData = [
-    // this data send to database  ( when a user select pack then create 2 array at a time)
-    {
-      userId: "686dfc892603236db91b7857", //current user id
-      packId: "686cde0353d31046dcb179ce",
-      selectedProducerId: "686cdd4853d31046dcb179c9", //( producer Id selected pack owner )
-      price: 50,
-    },
-    {
-      userId: "686dfc892603236db91b7857", //current user id
-      packId: "686cdc6853d31046dcb179c0",
-      selectedProducerId: "686378d1394a32f019c80030", //( producer Id selected pack owner )
-      price: 45,
-    },
-  ];
+  const selectedData = cartItems.map(item => ({
+    selectedProducerId: item.producerId,
+    price: item.price,
+  }));
+
+  const selectedPackData = cartItems.map(item => ({
+    userId: userData?._id, 
+    packId: item.id,
+    selectedProducerId: item.producerId, 
+    price: item.price,
+  }));
 
   const successFunction = async (data: any) => {
     console.log(81, data?.data?.id);
@@ -177,15 +139,6 @@ export default function CheckoutPage() {
                   <div className="rounded-lg border border-emerald-500 p-4">
                     <div className="flex items-center space-x-2">
                       <div className="flex items-center gap-2 cursor-pointer">
-                        <div className="h-5 w-10 relative">
-                          <Image
-                            src="/placeholder.svg?height=20&width=40"
-                            alt="PayPal"
-                            width={40}
-                            height={20}
-                            className="object-contain"
-                          />
-                        </div>
                         <span className="text-white">PayPal & Credit Card</span>
                       </div>
                     </div>
@@ -199,53 +152,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6">
-                    <Button
-                      type="submit"
-                      className="w-full bg-emerald-500 text-black hover:bg-emerald-600 h-12"
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <span className="flex items-center">
-                          <svg
-                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          Processing...
-                        </span>
-                      ) : (
-                        `Pay $${total.toFixed(2)}`
-                      )}
-                    </Button>
-
-                    <label>
-                      Amount (USD):{" "}
-                      <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                      />
-                    </label>
-
-                    <br />
-                    <br />
-
+                  <div className="mt-6 w-full h-16 p-1 overflow-hidden ml-5">
                     <PayPalScriptProvider
                       options={{
                         clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
@@ -288,56 +195,6 @@ export default function CheckoutPage() {
                           );
                         }}
                       />
-
-                      {/* <PayPalButtons
-                        createOrder={async () => {
-                          const res = await axios.post(
-                            "http://localhost:5000/api/v1/payment/create-order",
-                            { amount, selectedData }
-                          );
-                          return res.data.data.id;
-                        }}
-                        onApprove={async (data) => {
-                          const res = await axios.post(
-                            `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
-                          );
-
-                          alert("Payment successful!");
-                          await successFunction(res.data);
-                        }}
-                        onError={(err) => {
-                          console.error("❌ PayPal Error", err);
-                          alert("Something went wrong");
-                        }}
-                      /> */}
-
-                      {/* ===================================== */}
-                      {/* ===================================== */}
-                      {/* ===================================== */}
-
-                      {/* <PayPalButtons
-                        createOrder={async () => {
-                          const res = await axios.post(
-                            "http://localhost:5000/api/v1/payment/create-order",
-                            {
-                              amount,
-                              userId
-                            }
-                          );
-                          return res.data.id;
-                        }}
-                        onApprove={async (data, actions) => {
-                          const res = await axios.post(
-                            `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
-                          );
-                          alert("Payment successful!");
-                          console.log(222, res.data);
-                        }}
-                        onError={(err) => {
-                          console.error("PayPal Checkout onError", err);
-                          alert("Something went wrong");
-                        }}
-                      /> */}
                     </PayPalScriptProvider>
                   </div>
                 </form>

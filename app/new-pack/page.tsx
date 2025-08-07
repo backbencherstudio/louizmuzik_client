@@ -149,10 +149,13 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
     setIsLoading(true);
 
     try {
-      if(user?.data?.paypalEmail === "" || user?.data?.paypalEmail === null){
+
+      if(user?.data?.paypalEmail === "" || !user?.data?.paypalEmail ){
         toast.error("Please link your PayPal account to continue");
+        router.push("/account");
         return;
       }
+
       if (!user?.data?._id) {
         toast.error("User not authenticated");
         return;
