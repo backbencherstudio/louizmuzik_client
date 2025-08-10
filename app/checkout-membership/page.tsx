@@ -12,7 +12,7 @@ import Layout from "@/components/layout";
 import SubscribeForm from "../SubscribeForm/page";
 
 export default function ProPage() {
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState("9.99");
   const [loading, setLoading] = useState(false);
 
   const email = "fozlerabbishuvo@gmail.com";
