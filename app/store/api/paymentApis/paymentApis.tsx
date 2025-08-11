@@ -9,7 +9,20 @@ export const paymentApis = baseApi.injectEndpoints({
                 body: { paypalEmail },
             }),
         }),
+        cancelSubscription: builder.mutation({
+            query: ({ customerId }: { customerId: string }) => ({
+                url: `/payment/cancel-subscription/${customerId}`,
+                method: "POST",
+            }),
+        }),
+
+        cancelPaypalSubscription: builder.mutation({
+            query: ({ customerId }: { customerId: string }) => ({
+                url: `/payment/paypalSubscriptionCancel/${customerId}`,
+                method: "POST",
+            }),
+        }),
     }),
 });
 
-export const { useAddPaypalEmailMutation } = paymentApis;
+export const { useAddPaypalEmailMutation, useCancelSubscriptionMutation, useCancelPaypalSubscriptionMutation } = paymentApis;
