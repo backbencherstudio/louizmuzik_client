@@ -14,40 +14,53 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Layout from "@/components/layout";
 import axios from "axios";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
+import { useCancelPaypalSubscriptionMutation, useCancelSubscriptionMutation } from "../store/api/paymentApis/paymentApis";
+import { toast } from "sonner";
 
 export default function SubscriptionPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const { data: user } = useLoggedInUser();
+  const { data: user,refetch } = useLoggedInUser();
   const userData = user?.data;
   console.log(userData);
   const customerId = userData?.customerId;
-  console.log(customerId);
+  const paypalSubscriptionId = userData?.paypalSubscriptionId;
 
-  
+  const [cancelSubscription, { isLoading: isCancelling }] =
+    useCancelSubscriptionMutation();
+  const [cancelPaypalSubscription, { isLoading: isCancellingPaypal }] =
+    useCancelPaypalSubscriptionMutation();
 
   const handleStripeCancelSubscription = async () => {
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/payment/cancel-subscription/${customerId}`
-      );
-      console.log("Subscription cancelled successfully");
-      alert("Subscription cancelled successfully");
+      const res = await cancelSubscription(customerId);
+      if (res.data.success) {
+        toast.success("Subscription cancelled successfully");
+        setShowCancelModal(false);
+        refetch();
+      } else {
+        toast.error("Failed to cancel subscription");
+      }
     } catch (err) {
       console.error("Failed to cancel subscription", err);
+      toast.error("Failed to cancel subscription");
     }
   };
 
-//   const handleCancelSubscription = async () => {
-//     try {
-//       const res = await axios.post(
-//         `http://localhost:5000/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
-//       );
-//       console.log("Subscription cancelled successfully");
-//       alert("Subscription cancelled successfully");
-//     } catch (err) {
-//       console.error("Failed to cancel subscription", err);
-//     }
-//   };
+    const handleCancelSubscription = async () => {
+      try {
+        const res = await cancelPaypalSubscription(paypalSubscriptionId);
+        if (res.data.success) {
+          toast.success("Subscription cancelled successfully");
+          setShowCancelModal(false);
+          refetch();
+        } else {
+          toast.error("Failed to cancel subscription");
+        }
+      } catch (err) {
+        console.error("Failed to cancel subscription", err);
+        toast.error("Failed to cancel subscription");
+      }
+    };
   // Mock data - En producción esto vendría de tu backend
   const subscriptionData = {
     plan: "Pro Plan",
@@ -121,8 +134,8 @@ export default function SubscriptionPage() {
                   <h3 className="text-xl font-semibold text-white">
                     {subscriptionData.plan}
                   </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-500">
-                    Active
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${userData?.isPro ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                    {userData?.isPro ? "Active" : "Inactive"}
                   </span>
                 </div>
                 <p className="text-zinc-400">${subscriptionData.price}/month</p>
@@ -297,13 +310,25 @@ export default function SubscriptionPage() {
               >
                 Keep My Subscription
               </Button>
-              <Button
-                onClick={handleStripeCancelSubscription}
-                variant="destructive"
-                className="flex-1 bg-red-500 hover:bg-red-600"
-              >
-                Confirm Cancellation
-              </Button>
+              {
+                userData?.paymentMethod === "paypal" ? (
+                  <Button
+                    onClick={handleCancelSubscription}
+                    variant="destructive"
+                    className="flex-1 bg-red-500 hover:bg-red-600"
+                  >
+                    Cancel Subscription
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleStripeCancelSubscription}
+                    variant="destructive"
+                    className="flex-1 bg-red-500 hover:bg-red-600"
+                  >
+                    Cancel Subscription 
+                  </Button>
+                )
+              }
             </div>
           </div>
         </DialogContent>
