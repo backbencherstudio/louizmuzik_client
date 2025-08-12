@@ -14,7 +14,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Layout from "@/components/layout";
 import axios from "axios";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
-import { useCancelPaypalSubscriptionMutation, useCancelSubscriptionMutation } from "../store/api/paymentApis/paymentApis";
+import { useCancelPaypalSubscriptionMutation, useCancelSubscriptionMutation, useGetBillingHistoryQuery } from "../store/api/paymentApis/paymentApis";
 import { toast } from "sonner";
 
 export default function SubscriptionPage() {
@@ -24,7 +24,11 @@ export default function SubscriptionPage() {
   console.log(userData);
   const customerId = userData?.customerId;
   const paypalSubscriptionId = userData?.paypalSubscriptionId;
-
+  const { data: billingHistory, isLoading: isBillingHistoryLoading } =
+    useGetBillingHistoryQuery(userData?._id);
+  console.log(50, billingHistory);
+  const billingHistoryData = billingHistory?.data;
+  console.log(51, billingHistoryData);
   const [cancelSubscription, { isLoading: isCancelling }] =
     useCancelSubscriptionMutation();
   const [cancelPaypalSubscription, { isLoading: isCancellingPaypal }] =
@@ -218,21 +222,21 @@ export default function SubscriptionPage() {
                 <thead>
                   <tr className="text-left text-zinc-400 border-b border-zinc-800">
                     <th className="pb-4">Date</th>
-                    <th className="pb-4">Description</th>
+                    <th className="pb-4">Email</th>
                     <th className="pb-4">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {subscriptionData.billingHistory.map((item, index) => (
+                  {billingHistoryData?.map((item: any, index: number) => (
                     <tr key={index} className="border-b border-zinc-800">
                       <td className="py-4 text-zinc-400">
                         <div className="flex items-center">
                           <FileText className="w-4 h-4 mr-2" />
-                          {item.date}
+                          {item.createdAt}
                         </div>
                       </td>
-                      <td className="py-4 text-zinc-400">{item.description}</td>
-                      <td className="py-4 text-zinc-400">${item.amount}</td>
+                      <td className="py-4 text-zinc-400">{item?.email}</td>
+                      <td className="py-4 text-zinc-400">${item?.salesAmount}</td>
                     </tr>
                   ))}
                 </tbody>
