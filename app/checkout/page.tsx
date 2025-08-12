@@ -5,9 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CreditCard, Check, ChevronLeft } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import {  Check, ChevronLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
