@@ -48,6 +48,8 @@ export default function SubscriptionPage() {
 
     const handleCancelSubscription = async () => {
       try {
+        console.log(51, paypalSubscriptionId);
+        
         const res = await cancelPaypalSubscription(paypalSubscriptionId);
         if (res.data.success) {
           toast.success("Subscription cancelled successfully");
