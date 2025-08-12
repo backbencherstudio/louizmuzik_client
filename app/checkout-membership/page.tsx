@@ -10,12 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Layout from "@/components/layout";
 import SubscribeForm from "../SubscribeForm/page";
+import { useLoggedInUser } from "../store/api/authApis/authApi";
 
 export default function ProPage() {
+  const { data: user, refetch } = useLoggedInUser();
+  const userData = user?.data;
   const [amount, setAmount] = useState("9.99");
   const [loading, setLoading] = useState(false);
 
-  const email = "fozlerabbishuvo@gmail.com";
+  const email = userData?.email;
   // const email = "fozlerabbi9790@gmail.com";
 
   const handleSubscribe = async () => {
@@ -123,7 +126,14 @@ export default function ProPage() {
                                 height={24}
                                 className="h-6 w-auto hidden sm:block"
                               />
-                              With <Image src="/images/paypal.png" alt="PayPal" width={80} height={24} className="h- w-auto" />
+                              With{" "}
+                              <Image
+                                src="/images/paypal.png"
+                                alt="PayPal"
+                                width={80}
+                                height={24}
+                                className="h- w-auto"
+                              />
                             </div>
                           )}
                         </Button>
@@ -131,9 +141,10 @@ export default function ProPage() {
                         {/* Divider */}
                         <div className="relative grid grid-cols-3 items-center">
                           <hr className="w-full" />
-                          <p className="text-zinc-400 text-sm text-center bg-zinc-900/50 px-4 py-1">Or pay with card</p>
+                          <p className="text-zinc-400 text-sm text-center bg-zinc-900/50 px-4 py-1">
+                            Or pay with card
+                          </p>
                           <hr className="w-full" />
- 
                         </div>
 
                         {/* Stripe Form */}
