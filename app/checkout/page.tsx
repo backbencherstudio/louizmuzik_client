@@ -18,10 +18,15 @@ import axios from "axios";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from "@/components/cart-context";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
+import { usePurchasePackMutation } from "../store/api/paymentApis/paymentApis";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { data: user, refetch } = useLoggedInUser();
   const userData =  user?.data;
+  console.log(25, userData);
   const [isProcessing, setIsProcessing] = useState(false);
   const { cartItems } = useCart();
   console.log("cartItems", cartItems);
@@ -30,6 +35,7 @@ export default function CheckoutPage() {
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
   const [amount, setAmount] = useState(total);
+  const [purchasePack, { isLoading: isPurchasePackLoading }] = usePurchasePackMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +67,14 @@ export default function CheckoutPage() {
 
     if (data.data.id && data?.data?.status === "COMPLETED") {
       console.log(selectedPackData);
-      // ================================= after successful payment call here ( packPurchase post api ) and send the selected data
+      const res = await purchasePack(selectedPackData);
+      if (res.data.success) {
+        toast.success("Pack purchased successfully");
+        refetch();
+        router.push("/purchases");
+      } else {
+        toast.error("Pack purchase failed");
+      }
     }
   };
 
@@ -98,7 +111,7 @@ export default function CheckoutPage() {
                       <Input
                         id="firstName"
                         placeholder="John"
-                        value={userData?.name}
+                        value={userData?.name || userData?.producer_name}
                         className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                       />
                     </div>

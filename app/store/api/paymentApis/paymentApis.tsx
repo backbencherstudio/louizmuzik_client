@@ -15,19 +15,13 @@ export const paymentApis = baseApi.injectEndpoints({
         body: { paypalEmail },
       }),
     }),
+
     cancelSubscription: builder.mutation({
       query: (customerId) => ({
         url: `/payment/cancel-subscription/${customerId}`,
         method: "POST",
       }),
     }),
-
-    // cancelPaypalSubscription: builder.mutation({
-    //     query: ({ customerId }: { customerId: string }) => ({
-    //         url: `/payment/paypalSubscriptionCancel/${customerId}`,
-    //         method: "POST",
-    //     }),
-    // }),
 
     cancelPaypalSubscription: builder.mutation({
       query: (subscriptionId) => {
@@ -37,6 +31,16 @@ export const paymentApis = baseApi.injectEndpoints({
         };
       },
     }),
+
+    purchasePack: builder.mutation({
+      query: (data) => ({
+        url: `/pack/packPurchase`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+
   }),
 });
 
@@ -44,4 +48,5 @@ export const {
   useAddPaypalEmailMutation,
   useCancelSubscriptionMutation,
   useCancelPaypalSubscriptionMutation,
-} = paymentApis;
+  usePurchasePackMutation,
+  } = paymentApis;
