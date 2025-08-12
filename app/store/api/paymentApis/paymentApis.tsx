@@ -31,7 +31,6 @@ export const paymentApis = baseApi.injectEndpoints({
 
     cancelPaypalSubscription: builder.mutation({
       query: (subscriptionId) => {
-        console.log("Canceling PayPal Subscription ID:", subscriptionId);
         return {
           url: `/payment/paypalSubscriptionCancel/${subscriptionId}`,
           method: "POST",
