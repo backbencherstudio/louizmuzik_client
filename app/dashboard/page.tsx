@@ -26,6 +26,7 @@ import {
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useGetProducerPackQuery } from "../store/api/packApis/packApis";
 import { useRouter } from "next/navigation";
+import { usePackSalesHistoryQuery } from "../store/api/paymentApis/paymentApis";
 
 const formatedFollowers = (followers: number) => {
   if (followers >= 1000000) {
@@ -64,9 +65,9 @@ const processDownloadData = (rawData: any[]) => {
   }));
 };
 
-// Helper function to process sales data from packs
-const processSalesData = (packsData: any[], selectedTimeRange: string) => {
-  if (!packsData || !Array.isArray(packsData)) {
+// Helper function to process sales data from packSalesHistoryData
+const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: string) => {
+  if (!salesHistoryData || !Array.isArray(salesHistoryData)) {
     return [];
   }
 
@@ -118,26 +119,27 @@ const processSalesData = (packsData: any[], selectedTimeRange: string) => {
     }
   }
 
-  // Process each pack's sales
-  packsData.forEach(pack => {
-    if (pack.sales && pack.price && pack.createdAt) {
-      const createdDate = new Date(pack.createdAt);
+  // Process each sales history entry
+  salesHistoryData.forEach(salesEntry => {
+    if (salesEntry.salesCount && salesEntry.createdAt) {
+      const saleDate = new Date(salesEntry.createdAt);
       
-      // Check if the pack was created within our date range
-      if (createdDate >= startDate && createdDate <= now) {
-        const revenue = pack.sales * pack.price;
+      // Check if the sale was made within our date range
+      if (saleDate >= startDate && saleDate <= now) {
+        // Use salesCount as the sales value
+        const salesCount = salesEntry.salesCount;
         
         let dayKey;
         if (selectedTimeRange === '7days') {
-          dayKey = dayNames[createdDate.getDay()];
+          dayKey = dayNames[saleDate.getDay()];
         } else if (selectedTimeRange === 'month') {
-          dayKey = createdDate.getDate().toString();
+          dayKey = saleDate.getDate().toString();
         } else if (selectedTimeRange === 'ytd') {
-          dayKey = monthNames[createdDate.getMonth()];
+          dayKey = monthNames[saleDate.getMonth()];
         }
         
         if (salesByDay.has(dayKey)) {
-          salesByDay.set(dayKey, salesByDay.get(dayKey) + revenue);
+          salesByDay.set(dayKey, salesByDay.get(dayKey) + salesCount);
         }
       }
     }
@@ -146,7 +148,7 @@ const processSalesData = (packsData: any[], selectedTimeRange: string) => {
   // Convert map to array for chart
   return Array.from(salesByDay.entries()).map(([day, sales]) => ({
     day,
-    sales: Math.round(sales * 100) / 100 // Round to 2 decimal places
+    sales: sales // Keep as integer for sales count
   }));
 };
 
@@ -190,9 +192,14 @@ export default function DashboardPage() {
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
   const downloadData = processDownloadData(downloadChartData?.data || []);
+
+  const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
+    usePackSalesHistoryQuery(userId);
+  const packSalesHistoryData = packSalesHistory?.data;
   
-  // Process sales data
-  const salesData = processSalesData(packs || [], selectedSalesTimeRange);
+  // sales data
+  const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
+  console.log(salesData);
   const totalRevenue = calculateTotalRevenue(packs || []);
 
   // Calculate totals from melodies data
@@ -439,8 +446,8 @@ export default function DashboardPage() {
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                         }}
                         formatter={(value, name) => [
-                          formatCurrency(Number(value)),
-                          "Sales Revenue",
+                          Number(value),
+                          "Total Sales",
                         ]}
                         labelFormatter={(label) => `Day: ${label}`}
                       />

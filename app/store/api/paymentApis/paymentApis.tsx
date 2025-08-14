@@ -49,7 +49,14 @@ export const paymentApis = baseApi.injectEndpoints({
 
     getSalesHistory: builder.query({
       query: (userId) => ({
-        url: `auth/userManagement/singleUserSaleseHistory/${userId}`,
+        url: `/auth/userManagement/singleUserSaleseHistory/${userId}`,
+        method: "GET",
+      }),
+    }),
+
+    packSalesHistory: builder.query({
+      query: (userId) => ({
+        url: `/pack/dailyPackSealseForEachProducer/${userId}`,
         method: "GET",
       }),
     }),
@@ -63,4 +70,5 @@ export const {
   usePurchasePackMutation,
   useGetBillingHistoryQuery,
   useGetSalesHistoryQuery,
+  usePackSalesHistoryQuery,
 } = paymentApis;
