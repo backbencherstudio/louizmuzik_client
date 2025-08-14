@@ -290,7 +290,7 @@ export default function ProductAnalytics() {
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="relative h-10 w-10 overflow-hidden rounded-md">
                       <Image
-                        src={pack.image}
+                        src={pack.thumbnail_image}
                         alt={pack.title}
                         fill
                         className="object-cover"
@@ -303,13 +303,13 @@ export default function ProductAnalytics() {
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-white">
-                    {pack.sales}
+                    {pack.sales || 0}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-emerald-500">
-                    ${pack.profit}
+                    ${pack.profit || 0}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-white">
-                    {new Date(pack.releaseDate).toLocaleDateString()}
+                    {new Date(pack.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
