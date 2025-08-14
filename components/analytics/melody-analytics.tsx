@@ -226,16 +226,16 @@ export default function MelodyAnalytics() {
                                     <td className="whitespace-nowrap px-4 py-3">
                                         <div className="text-sm font-medium text-white">{melody.name}</div>
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-emerald-500">
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-emerald-500">
                                         {melody.genre.join(', ')}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-white">
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
                                         {melody.plays.toLocaleString()}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-white">
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
                                         {melody.downloads}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-medium text-white">
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
                                         {new Date(melody.createdAt).toLocaleDateString()}
                                     </td>
                                 </tr>
