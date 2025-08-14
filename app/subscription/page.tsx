@@ -14,12 +14,16 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Layout from "@/components/layout";
 import axios from "axios";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
-import { useCancelPaypalSubscriptionMutation, useCancelSubscriptionMutation, useGetBillingHistoryQuery } from "../store/api/paymentApis/paymentApis";
+import {
+  useCancelPaypalSubscriptionMutation,
+  useCancelSubscriptionMutation,
+  useGetBillingHistoryQuery,
+} from "../store/api/paymentApis/paymentApis";
 import { toast } from "sonner";
 
 export default function SubscriptionPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const { data: user,refetch } = useLoggedInUser();
+  const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
   console.log(userData);
   const customerId = userData?.customerId;
@@ -29,6 +33,7 @@ export default function SubscriptionPage() {
   console.log(50, billingHistory);
   const billingHistoryData = billingHistory?.data;
   console.log(51, billingHistoryData);
+
   const [cancelSubscription, { isLoading: isCancelling }] =
     useCancelSubscriptionMutation();
   const [cancelPaypalSubscription, { isLoading: isCancellingPaypal }] =
@@ -50,23 +55,23 @@ export default function SubscriptionPage() {
     }
   };
 
-    const handleCancelSubscription = async () => {
-      try {
-        console.log(51, paypalSubscriptionId);
-        
-        const res = await cancelPaypalSubscription(paypalSubscriptionId);
-        if (res.data.success) {
-          toast.success("Subscription cancelled successfully");
-          setShowCancelModal(false);
-          refetch();
-        } else {
-          toast.error("Failed to cancel subscription");
-        }
-      } catch (err) {
-        console.error("Failed to cancel subscription", err);
+  const handleCancelSubscription = async () => {
+    try {
+      console.log(51, paypalSubscriptionId);
+
+      const res = await cancelPaypalSubscription(paypalSubscriptionId);
+      if (res.data.success) {
+        toast.success("Subscription cancelled successfully");
+        setShowCancelModal(false);
+        refetch();
+      } else {
         toast.error("Failed to cancel subscription");
       }
-    };
+    } catch (err) {
+      console.error("Failed to cancel subscription", err);
+      toast.error("Failed to cancel subscription");
+    }
+  };
   // Mock data - En producción esto vendría de tu backend
   const subscriptionData = {
     plan: "Pro Plan",
@@ -140,7 +145,13 @@ export default function SubscriptionPage() {
                   <h3 className="text-xl font-semibold text-white">
                     {subscriptionData.plan}
                   </h3>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${userData?.isPro ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      userData?.isPro
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "bg-red-500/10 text-red-500"
+                    }`}
+                  >
                     {userData?.isPro ? "Active" : "Inactive"}
                   </span>
                 </div>
@@ -148,7 +159,14 @@ export default function SubscriptionPage() {
               </div>
               <div className="text-right">
                 <p className="text-sm text-zinc-400 mb-1">Next billing date</p>
-                <p className="text-white font-medium">April 15, 2025</p>
+                <p className="text-white font-medium">
+                  {userData?.nextBillingTime
+                    ? new Date(userData?.nextBillingTime).toLocaleDateString(
+                        "en-US",
+                        { year: "numeric", month: "long", day: "numeric" }
+                      )
+                    : "N/A"}
+                </p>
               </div>
             </div>
             <div className="bg-zinc-900 rounded-lg p-4">
@@ -185,12 +203,14 @@ export default function SubscriptionPage() {
                 Payment Method
               </h2>
               <div className="mb-4 md:mb-0">
-                <Button
-                  variant="outline"
-                  className="w-full md:w-auto bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white"
-                >
-                  Change Payment Method
-                </Button>
+                <Link href="/checkout-membership">
+                  <Button
+                    variant="outline"
+                    className="w-full md:w-auto bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white"
+                  >
+                    Change Payment Method
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="flex items-center">
@@ -232,11 +252,15 @@ export default function SubscriptionPage() {
                       <td className="py-4 text-zinc-400">
                         <div className="flex items-center">
                           <FileText className="w-4 h-4 mr-2" />
-                          {item.createdAt}
+                          {item.createdAt
+                            ? new Date(item.createdAt).toLocaleDateString()
+                            : "N/A"}
                         </div>
                       </td>
                       <td className="py-4 text-zinc-400">{item?.email}</td>
-                      <td className="py-4 text-zinc-400">${item?.salesAmount}</td>
+                      <td className="py-4 text-zinc-400">
+                        ${item?.subscriptionAmount}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -316,25 +340,23 @@ export default function SubscriptionPage() {
               >
                 Keep My Subscription
               </Button>
-              {
-                userData?.paymentMethod === "paypal" ? (
-                  <Button
-                    onClick={handleCancelSubscription}
-                    variant="destructive"
-                    className="flex-1 bg-red-500 hover:bg-red-600"
-                  >
-                    Cancel Subscription
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleStripeCancelSubscription}
-                    variant="destructive"
-                    className="flex-1 bg-red-500 hover:bg-red-600"
-                  >
-                    Cancel Subscription 
-                  </Button>
-                )
-              }
+              {userData?.paymentMethod === "paypal" ? (
+                <Button
+                  onClick={handleCancelSubscription}
+                  variant="destructive"
+                  className="flex-1 bg-red-500 hover:bg-red-600"
+                >
+                  Cancel Subscription
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleStripeCancelSubscription}
+                  variant="destructive"
+                  className="flex-1 bg-red-500 hover:bg-red-600"
+                >
+                  Cancel Subscription
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
