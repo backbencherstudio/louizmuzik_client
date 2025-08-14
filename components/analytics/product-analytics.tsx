@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useLoggedInUser } from '@/app/store/api/authApis/authApi';
 
 // Sample data for product analytics
 const productsData = [
@@ -77,6 +78,9 @@ export default function ProductAnalytics() {
     const [sortField, setSortField] = useState<SortField>('sales');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const [timeRange, setTimeRange] = useState<TimeRange>('all');
+
+    const { data: userData } = useLoggedInUser();
+    const userId = userData?.data?._id;
 
     // Helper function to filter products by date range
     const filterByDateRange = (products: typeof productsData) => {
