@@ -55,6 +55,9 @@ export default function ProductAnalytics() {
     useGetProducerPackQuery(userId);
   const packs = packsData?.data;
 
+  // Ensure the search query is a string and handle undefined values
+  const normalizedSearchQuery = searchQuery?.toLowerCase() || "";
+
   // Helper function to filter products by date range
   const filterByDateRange = (packs: Pack[]) => {
     const now = new Date();
@@ -92,8 +95,8 @@ export default function ProductAnalytics() {
     ? filterByDateRange(
         packs.filter(
           (pack: Pack) =>
-            pack.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            pack.artist.toLowerCase().includes(searchQuery.toLowerCase())
+            pack.title?.toLowerCase().includes(normalizedSearchQuery) ||
+            pack.artist?.toLowerCase().includes(normalizedSearchQuery)
         )
       )
     : [];
@@ -233,13 +236,11 @@ export default function ProductAnalytics() {
                 <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                   <button
                     className="flex items-center gap-1"
-                    onClick={() => handleSort("title")}     
+                    onClick={() => handleSort("title")}
                   >
                     Name
                     <ArrowUpDown
-                      className={`h-3 w-3 ${
-                        sortField === "title" ? "text-emerald-500" : ""
-                      }`}
+                      className={`h-3 w-3 ${sortField === "title" ? "text-emerald-500" : ""}`}
                     />
                   </button>
                 </th>
@@ -250,9 +251,7 @@ export default function ProductAnalytics() {
                   >
                     Sales
                     <ArrowUpDown
-                      className={`h-3 w-3 ${
-                        sortField === "sales" ? "text-emerald-500" : ""
-                      }`}
+                      className={`h-3 w-3 ${sortField === "sales" ? "text-emerald-500" : ""}`}
                     />
                   </button>
                 </th>
@@ -263,9 +262,7 @@ export default function ProductAnalytics() {
                   >
                     Profit
                     <ArrowUpDown
-                      className={`h-3 w-3 ${
-                        sortField === "profit" ? "text-emerald-500" : ""
-                      }`}
+                      className={`h-3 w-3 ${sortField === "profit" ? "text-emerald-500" : ""}`}
                     />
                   </button>
                 </th>
@@ -276,9 +273,7 @@ export default function ProductAnalytics() {
                   >
                     Release Date
                     <ArrowUpDown
-                      className={`h-3 w-3 ${
-                        sortField === "releaseDate" ? "text-emerald-500" : ""
-                      }`}
+                      className={`h-3 w-3 ${sortField === "releaseDate" ? "text-emerald-500" : ""}`}
                     />
                   </button>
                 </th>

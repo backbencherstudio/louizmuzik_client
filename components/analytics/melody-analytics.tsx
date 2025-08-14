@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { ArrowUpDown, Search, Play, Download, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -50,6 +50,7 @@ export default function MelodyAnalytics() {
 
     const { data: melodyData, isLoading: isLoadingMelodyData } = useGetMelodyByUserIdQuery(userId);
     const melodies = melodyData?.data;
+    console.log(melodies);
 
     // Helper function to filter melodies by date range
     const filterByDateRange = (melodies: Melody[]) => {
@@ -83,22 +84,78 @@ export default function MelodyAnalytics() {
         });
     };
 
-    // Filter melodies based on search query and time range
-    const filteredMelodies = melodies
-        ? melodies.filter(
-              (melody: Melody) =>
-                  melody.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  melody.genre.join(',').toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        : [];
+    // Comprehensive filtering and sorting using useMemo for performance
+    const filteredAndSortedMelodies = useMemo(() => {
+        if (!melodies || melodies.length === 0) return [];
 
-    const filteredAndSortedMelodies = [...filteredMelodies].sort((a, b) => {
-        if (sortDirection === 'asc') {
-            return a[sortField] > b[sortField] ? 1 : -1;
-        } else {
-            return a[sortField] < b[sortField] ? 1 : -1;
+        // First, filter by time range
+        let filtered = filterByDateRange(melodies);
+
+        // Then filter by search query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            filtered = filtered.filter((melody: Melody) => {
+                // Search in name
+                if (melody.name.toLowerCase().includes(query)) return true;
+                
+                // Search in genre array
+                if (melody.genre && Array.isArray(melody.genre)) {
+                    if (melody.genre.some(g => g.toLowerCase().includes(query))) return true;
+                }
+                
+                // Search in artist type array
+                if (melody.artistType && Array.isArray(melody.artistType)) {
+                    if (melody.artistType.some(at => at.toLowerCase().includes(query))) return true;
+                }
+                
+                // Search in producer name
+                if (melody.producer && melody.producer.toLowerCase().includes(query)) return true;
+                
+                // Search in key
+                if (melody.key && melody.key.toLowerCase().includes(query)) return true;
+                
+                return false;
+            });
         }
-    });
+
+        // Sort the filtered results
+        return filtered.sort((a, b) => {
+            let aValue: any;
+            let bValue: any;
+
+            switch (sortField) {
+                case 'name':
+                    aValue = a.name.toLowerCase();
+                    bValue = b.name.toLowerCase();
+                    break;
+                case 'plays':
+                    aValue = a.plays;
+                    bValue = b.plays;
+                    break;
+                case 'downloads':
+                    aValue = a.downloads;
+                    bValue = b.downloads;
+                    break;
+                case 'createdAt':
+                    aValue = new Date(a.createdAt).getTime();
+                    bValue = new Date(b.createdAt).getTime();
+                    break;
+                case 'genre':
+                    aValue = Array.isArray(a.genre) ? a.genre.join(', ').toLowerCase() : '';
+                    bValue = Array.isArray(b.genre) ? b.genre.join(', ').toLowerCase() : '';
+                    break;
+                default:
+                    aValue = a[sortField];
+                    bValue = b[sortField];
+            }
+
+            if (sortDirection === 'asc') {
+                return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+            } else {
+                return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+            }
+        });
+    }, [melodies, searchQuery, sortField, sortDirection, timeRange]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -109,10 +166,10 @@ export default function MelodyAnalytics() {
         }
     };
 
-    // Calculate total stats
-    const totalPlays = melodies ? melodies.reduce((sum: number, melody: Melody) => sum + melody.plays, 0) : 0;
-    const totalDownloads = melodies ? melodies.reduce((sum: number, melody: Melody) => sum + melody.downloads, 0) : 0;
-    const totalFavorites = melodies ? melodies.reduce((sum: number, melody: Melody) => sum + melody.favorites, 0) : 0;
+    // Calculate total stats from filtered melodies
+    const totalPlays = filteredAndSortedMelodies.reduce((sum: number, melody: Melody) => sum + melody.plays, 0);
+    const totalDownloads = filteredAndSortedMelodies.reduce((sum: number, melody: Melody) => sum + melody.downloads, 0);
+    const totalFavorites = filteredAndSortedMelodies.reduce((sum: number, melody: Melody) => sum + melody.favorites, 0);
 
     return (
         <div>
@@ -155,7 +212,7 @@ export default function MelodyAnalytics() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                     <Input
-                        placeholder="Search by melody name or genre..."
+                        placeholder="Search by melody name, genre, artist type, producer, or key..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9 border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
@@ -174,6 +231,11 @@ export default function MelodyAnalytics() {
                         <SelectItem value="yearToDate" className="text-white focus:bg-zinc-800 focus:text-white">Year to Date</SelectItem>
                     </SelectContent>
                 </Select>
+            </div>
+
+            {/* Results count */}
+            <div className="mb-4 text-sm text-zinc-400">
+                Showing {filteredAndSortedMelodies.length} of {melodies?.length || 0} melodies
             </div>
 
             {/* Melodies Table */}
@@ -227,7 +289,7 @@ export default function MelodyAnalytics() {
                                         <div className="text-sm font-medium text-white">{melody.name}</div>
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-emerald-500">
-                                        {melody.genre.join(', ')}
+                                        {Array.isArray(melody.genre) ? melody.genre.join(', ') : melody.genre}
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
                                         {melody.plays.toLocaleString()}
@@ -248,7 +310,11 @@ export default function MelodyAnalytics() {
             {/* Empty State */}
             {filteredAndSortedMelodies.length === 0 && (
                 <div className="mt-8 text-center">
-                    <p className="text-zinc-400">No melodies found matching your search criteria.</p>
+                    <p className="text-zinc-400">
+                        {melodies && melodies.length > 0 
+                            ? "No melodies found matching your search criteria." 
+                            : "No melodies uploaded yet."}
+                    </p>
                 </div>
             )}
         </div>
