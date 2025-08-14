@@ -110,8 +110,7 @@ export default function SalesPage() {
     const filteredSales = transformedSalesData.filter((sale: TransformedSalesData) => {
         const matchesSearch =
             sale.buyer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sale.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sale.id.toLowerCase().includes(searchQuery.toLowerCase());
+            sale.product.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesDate = selectedDate
             ? sale.date.split('T')[0] === format(selectedDate, 'yyyy-MM-dd')
@@ -196,7 +195,7 @@ export default function SalesPage() {
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                             <Input
-                                placeholder="Search by transaction ID, buyer name or product..."
+                                placeholder="Search by buyer name or product..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-9 border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
@@ -272,7 +271,7 @@ export default function SalesPage() {
                                     filteredSales.map((sale) => (
                                         <tr
                                             key={sale.id}
-                                            className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                                            className=" odd:bg-zinc-900 even:bg-zinc-900/50 hover:bg-zinc-900/30 duration-300"
                                             onClick={() =>
                                                 handleTransactionClick(sale)
                                             }
