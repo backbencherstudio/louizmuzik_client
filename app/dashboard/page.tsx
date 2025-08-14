@@ -47,6 +47,10 @@ const formatedPlays = (plays: number) => {
   }
 };
 
+const formatCurrency = (amount: number) => {
+  return `$${amount.toFixed(2)}`;
+};
+
 // Helper function to process download chart data
 const processDownloadData = (rawData: any[]) => {
   if (!rawData || !Array.isArray(rawData)) {
@@ -60,8 +64,108 @@ const processDownloadData = (rawData: any[]) => {
   }));
 };
 
+// Helper function to process sales data from packs
+const processSalesData = (packsData: any[], selectedTimeRange: string) => {
+  if (!packsData || !Array.isArray(packsData)) {
+    return [];
+  }
+
+  // Get the date range based on selected time range
+  const now = new Date();
+  const startDate = new Date();
+  
+  switch (selectedTimeRange) {
+    case '7days':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+    case 'ytd':
+      startDate.setMonth(0, 1); // January 1st of current year
+      break;
+    default:
+      startDate.setDate(now.getDate() - 7);
+  }
+
+  // Create a map to store sales per day
+  const salesByDay = new Map();
+  
+  // Initialize days with 0 sales
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  if (selectedTimeRange === '7days') {
+    // For 7 days, show day names
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(now.getDate() - i);
+      const dayName = dayNames[date.getDay()];
+      salesByDay.set(dayName, 0);
+    }
+  } else if (selectedTimeRange === 'month') {
+    // For month, show last 30 days with date numbers
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(now.getDate() - i);
+      const dayKey = date.getDate().toString();
+      salesByDay.set(dayKey, 0);
+    }
+  } else if (selectedTimeRange === 'ytd') {
+    // For YTD, show months
+    for (let i = 0; i <= now.getMonth(); i++) {
+      salesByDay.set(monthNames[i], 0);
+    }
+  }
+
+  // Process each pack's sales
+  packsData.forEach(pack => {
+    if (pack.sales && pack.price && pack.createdAt) {
+      const createdDate = new Date(pack.createdAt);
+      
+      // Check if the pack was created within our date range
+      if (createdDate >= startDate && createdDate <= now) {
+        const revenue = pack.sales * pack.price;
+        
+        let dayKey;
+        if (selectedTimeRange === '7days') {
+          dayKey = dayNames[createdDate.getDay()];
+        } else if (selectedTimeRange === 'month') {
+          dayKey = createdDate.getDate().toString();
+        } else if (selectedTimeRange === 'ytd') {
+          dayKey = monthNames[createdDate.getMonth()];
+        }
+        
+        if (salesByDay.has(dayKey)) {
+          salesByDay.set(dayKey, salesByDay.get(dayKey) + revenue);
+        }
+      }
+    }
+  });
+
+  // Convert map to array for chart
+  return Array.from(salesByDay.entries()).map(([day, sales]) => ({
+    day,
+    sales: Math.round(sales * 100) / 100 // Round to 2 decimal places
+  }));
+};
+
+// Helper function to calculate total revenue from packs
+const calculateTotalRevenue = (packsData: any[]) => {
+  if (!packsData || !Array.isArray(packsData)) {
+    return 0;
+  }
+
+  return packsData.reduce((total, pack) => {
+    const sales = pack.sales || 0;
+    const price = pack.price || 0;
+    return total + (sales * price);
+  }, 0);
+};
+
 export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("7days");
+  const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState("7days");
   const router = useRouter();
 
   const {
@@ -78,14 +182,18 @@ export default function DashboardPage() {
   const melodies = melodiesData?.data;
   
 
-  const { data: packsData, refetch: refetchPacks } =useGetProducerPackQuery(userId)
+  const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId);
   const packs = packsData?.data;
+  console.log(packs);
  
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
   const downloadData = processDownloadData(downloadChartData?.data || []);
- 
+  
+  // Process sales data
+  const salesData = processSalesData(packs || [], selectedSalesTimeRange);
+  const totalRevenue = calculateTotalRevenue(packs || []);
 
   // Calculate totals from melodies data
   const calculateTotals = () => {
@@ -106,17 +214,6 @@ export default function DashboardPage() {
   };
 
   const { totalPlays, totalDownloads } = calculateTotals();
-
-  // Sample data for sales chart (keep this for now)
-  const salesData = [
-    { day: "Mon", sales: 0 },
-    { day: "Tue", sales: 50 },
-    { day: "Wed", sales: 30 },
-    { day: "Thu", sales: 80 },
-    { day: "Fri", sales: 20 },
-    { day: "Sat", sales: 40 },
-    { day: "Sun", sales: 60 },
-  ];
 
   if (isLoadingUser || isLoadingDownloadChart) {
     return (
@@ -173,7 +270,9 @@ export default function DashboardPage() {
                   <div className="text-sm font-medium text-emerald-500">
                     Sales Revenue
                   </div>
-                  <div className="mt-2 text-3xl font-bold text-white">$0</div>
+                  <div className="mt-2 text-3xl font-bold text-white">
+                    {formatCurrency(totalRevenue)}
+                  </div>
                 </div>
                 <Link
                   href="/sales"
@@ -295,7 +394,11 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-medium text-white">
                   Sales Overview
                 </h3>
-                <Tabs defaultValue="7days" className="space-y-4">
+                <Tabs 
+                  value={selectedSalesTimeRange} 
+                  onValueChange={setSelectedSalesTimeRange}
+                  className="space-y-4"
+                >
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
                     <TabsTrigger
                       value="7days"
@@ -322,47 +425,65 @@ export default function DashboardPage() {
                 </Tabs>
               </div>
               <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="day" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "none",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="sales"
-                      stroke="#10b981"
-                      fill="url(#salesGradient)"
-                    />
-                    <defs>
-                      <linearGradient
-                        id="salesGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#10b981"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#10b981"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                  </AreaChart>
-                </ResponsiveContainer>
+                {salesData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={salesData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                      <XAxis dataKey="day" stroke="#666" />
+                      <YAxis stroke="#666" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#18181b",
+                          border: "none",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        }}
+                        formatter={(value, name) => [
+                          formatCurrency(Number(value)),
+                          "Sales Revenue",
+                        ]}
+                        labelFormatter={(label) => `Day: ${label}`}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="sales"
+                        stroke="#10b981"
+                        fill="url(#salesGradient)"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="salesGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#10b981"
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#10b981"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-zinc-400 text-center">
+                      <div className="text-lg font-medium mb-2">
+                        No Sales Data
+                      </div>
+                      <div className="text-sm">
+                        Start selling packs to see your sales statistics
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -390,16 +511,6 @@ export default function DashboardPage() {
                     key={melody._id}
                     className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-zinc-800/50"
                   >
-                    {/* <div className="flex-1 text-sm font-medium text-zinc-400 w-1/3 h-10">
-                      <Image
-                        src={melody.image}
-                        alt={melody.name}
-                        width={200}
-                        height={200}
-                        className="w-10 h-10 object-cover"
-                      />
-                    </div> */}
-
                     <Button
                       variant="ghost"
                       size="icon"
@@ -409,7 +520,6 @@ export default function DashboardPage() {
                     </Button>
                     <div className="flex-1 text-sm font-medium text-zinc-400 w-1/4">
                       <WaveformDisplay
-                        // waveform={melody.waveform}
                         audioUrl={melody.audioUrl}
                       />
                     </div>
@@ -417,7 +527,7 @@ export default function DashboardPage() {
                       {melody.name}
                     </div>
                     <div className="text-sm text-zinc-500">
-                      {melody.thumbnail_image}
+                      {melody.plays || 0} plays
                     </div>
                   </div>
                 ))}
@@ -440,23 +550,26 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {packs?.map((pack:any) => (
+                {packs?.slice(0, 6).map((pack:any) => (
                   <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
                     <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
                       <Image
                         src={pack.thumbnail_image || "/placeholder.svg"}
-                        alt={pack.title}
+                        alt={pack.title || pack.name}
                         width={200}
                         height={200}
                         className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
                       />
                     </div>
                     <div className="mt-2">
-                      <div className="text-sm font-medium text-white group-hover:text-emerald-500 transition-colors">
-                        {pack.name}
+                      <div className="text-sm font-medium text-white group-hover:text-emerald-500 transition-colors truncate">
+                        {pack.title || pack.name}
                       </div>
                       <div className="text-xs text-emerald-500">
-                        {pack.producer}
+                        {formatCurrency(pack.price || 0)}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {pack.sales || 0} sales
                       </div>
                     </div>
                   </Link>
