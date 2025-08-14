@@ -46,6 +46,13 @@ export const paymentApis = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    getSalesHistory: builder.query({
+      query: (userId) => ({
+        url: `auth/userManagement/singleUserSaleseHistory/${userId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -55,4 +62,5 @@ export const {
   useCancelPaypalSubscriptionMutation,
   usePurchasePackMutation,
   useGetBillingHistoryQuery,
+  useGetSalesHistoryQuery,
 } = paymentApis;

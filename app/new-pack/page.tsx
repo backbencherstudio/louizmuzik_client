@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Camera, FileArchive, Play, Plus, X } from "lucide-react";
+import { Camera, FileArchive, Loader2, Play, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -176,10 +176,10 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
           toast.error("Thumbnail image is required");
           return;
         }
-        if (!samplePackFile) {
-          toast.error("Sample pack file is required");
-          return;
-        }
+        // if (!samplePackFile) {
+        //   toast.error("Sample pack file is required");
+        //   return;
+        // }
         if (!audioFile) {
           toast.error("Audio demo is required");
           return;
@@ -574,7 +574,7 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
                 to get everything clear to you.
               </Label>
             </div>
-            
+
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="relative">
                 <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
