@@ -15,7 +15,7 @@ import {
 import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 import { useGetProducerPackQuery } from "@/app/store/api/packApis/packApis";
 
-type SortField = "name" | "sales" | "profit" | "releaseDate";
+type SortField = "title" | "sales" | "profit" | "releaseDate";
 type SortDirection = "asc" | "desc";
 type TimeRange =
   | "all"
@@ -39,6 +39,7 @@ type Pack = {
   createdAt: string;
   updatedAt: string;
   audioPath: string;
+  thumbnail_image: string;      
 };
 
 export default function ProductAnalytics() {
@@ -88,10 +89,12 @@ export default function ProductAnalytics() {
 
   // Filter packs based on search query and time range
   const filteredPacks = packs
-    ? packs.filter(
-        (pack: Pack) =>
-          pack.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pack.artist.toLowerCase().includes(searchQuery.toLowerCase())
+    ? filterByDateRange(
+        packs.filter(
+          (pack: Pack) =>
+            pack.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            pack.artist.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       )
     : [];
 
@@ -230,12 +233,12 @@ export default function ProductAnalytics() {
                 <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                   <button
                     className="flex items-center gap-1"
-                    onClick={() => handleSort("name")}
+                    onClick={() => handleSort("title")}     
                   >
                     Name
                     <ArrowUpDown
                       className={`h-3 w-3 ${
-                        sortField === "name" ? "text-emerald-500" : ""
+                        sortField === "title" ? "text-emerald-500" : ""
                       }`}
                     />
                   </button>
