@@ -80,7 +80,15 @@ export const packApis = baseApi.injectEndpoints({
         }),
         providesTags: ["Pack"],
       }),
+
+      getPurchasedPacks: builder.query({
+        query: (userId: string) => ({
+          url: `/pack/packPurchase/${userId}`,
+          method: "GET",
+        }),
+      }),
   }),
+  
   overrideExisting: true,
 });
 
@@ -95,4 +103,5 @@ export const {
   useUpdatePackMutation,
   useFavoritePackMutation,
   useGetFavoritePackQuery,
+  useGetPurchasedPacksQuery,
     } = packApis;

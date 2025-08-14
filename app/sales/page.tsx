@@ -31,50 +31,49 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Copy, FileText, ArrowDownToLine } from 'lucide-react';
 import Image from 'next/image';
+import { useLoggedInUser } from '../store/api/authApis/authApi';
+import { useGetSalesHistoryQuery } from '../store/api/paymentApis/paymentApis';
 
-// Sample sales data
-const salesData = [
-    {
-        id: 'INV-001',
-        date: '2024-03-01',
-        buyer: 'John Doe',
-        buyerEmail: 'john.doe@example.com',
-        product: 'Summer Vibes Melody Pack',
-        amount: 29.99,
-    },
-    {
-        id: 'INV-002',
-        date: '2024-03-01',
-        buyer: 'Jane Smith',
-        buyerEmail: 'jane.smith@example.com',
-        product: 'Urban Flow',
-        amount: 19.99,
-    },
-    {
-        id: 'INV-003',
-        date: '2024-02-28',
-        buyer: 'Mike Johnson',
-        buyerEmail: 'mike.johnson@example.com',
-        product: 'Trap Essentials Vol. 1',
-        amount: 39.99,
-    },
-    {
-        id: 'INV-004',
-        date: '2024-02-27',
-        buyer: 'Sarah Williams',
-        buyerEmail: 'sarah.williams@example.com',
-        product: 'Lo-Fi Dreams',
-        amount: 24.99,
-    },
-    {
-        id: 'INV-005',
-        date: '2024-02-26',
-        buyer: 'David Brown',
-        buyerEmail: 'david.brown@example.com',
-        product: 'Hip Hop Essentials',
-        amount: 34.99,
-    },
-];
+
+interface PackData {
+    _id: string;
+    price: number;
+    title: string;
+}
+
+interface UserData {
+    _id: string;
+    email: string;
+    name: string;
+}
+
+interface SalesTransaction {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+    price: number;
+    selectedProducerId: string;
+    packId: PackData;
+    userId: UserData;
+}
+
+interface TransformedSalesData {
+    id: string;
+    date: string;
+    buyer: string;
+    buyerEmail: string;
+    product: string;
+    amount: number;
+    producerId: string;
+    packId: string;
+    updatedAt: string;
+}
+
+interface SalesHistoryResponse {
+    data: SalesTransaction[];
+    success: boolean;
+    message?: string;
+}
 
 export default function SalesPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -82,39 +81,71 @@ export default function SalesPage() {
     const [selectedStatus, setSelectedStatus] = useState('all');
 
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-    const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+    const [selectedTransaction, setSelectedTransaction] = useState<TransformedSalesData | null>(null);
 
-    // Calculate summary statistics
-    const totalSales = salesData.reduce((sum, sale) => sum + sale.amount, 0);
-    const totalTransactions = salesData.length;
-    const averageOrderValue = totalSales / totalTransactions;
+    const { data: userData, refetch: refetchUser } = useLoggedInUser();
+    const userId = userData?.data?._id;
 
-    // Filter sales data based on search query and filters
-    const filteredSales = salesData.filter((sale) => {
+    const { data: salesHistory, isLoading: isLoadingSalesHistory } =
+        useGetSalesHistoryQuery(userId);
+
+    // Transform the real data to match our display format
+    const transformedSalesData: TransformedSalesData[] = salesHistory?.data?.map((transaction: SalesTransaction) => ({
+        id: transaction._id,
+        date: transaction.createdAt,
+        buyer: transaction.userId.name,
+        buyerEmail: transaction.userId.email,
+        product: transaction.packId.title,
+        amount: transaction.price,
+        producerId: transaction.selectedProducerId,
+        packId: transaction.packId._id,
+        updatedAt: transaction.updatedAt,
+    })) || [];
+
+    // Calculate summary statistics from real data
+    const totalSales = transformedSalesData.reduce((sum: number, sale: TransformedSalesData) => sum + sale.amount, 0);
+    const totalTransactions = transformedSalesData.length;
+    const averageOrderValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+
+    const filteredSales = transformedSalesData.filter((sale: TransformedSalesData) => {
         const matchesSearch =
             sale.buyer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sale.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sale.id.toLowerCase().includes(searchQuery.toLowerCase());
+            sale.product.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesDate = selectedDate
-            ? sale.date === format(selectedDate, 'yyyy-MM-dd')
+            ? sale.date.split('T')[0] === format(selectedDate, 'yyyy-MM-dd')
             : true;
 
-        const matchesStatus =
-            selectedStatus === 'all' ? true : sale.status === selectedStatus;
+        const matchesStatus = selectedStatus === 'all';
 
         return matchesSearch && matchesDate && matchesStatus;
     });
 
     const handleExport = () => {
-        // Handle exporting sales data
         console.log('Exporting sales data...');
     };
 
-    const handleTransactionClick = (transaction: any) => {
+    const handleTransactionClick = (transaction: TransformedSalesData) => {
         setSelectedTransaction(transaction);
         setIsTransactionModalOpen(true);
     };
+
+    if (isLoadingSalesHistory) {
+        return (
+            <Layout>
+                <div className="p-8">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-white">
+                            Sales History
+                        </h1>
+                        <p className="mt-2 text-zinc-400">
+                            Loading your sales data...
+                        </p>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -164,7 +195,7 @@ export default function SalesPage() {
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                             <Input
-                                placeholder="Search by invoice ID, buyer name or product..."
+                                placeholder="Search by buyer name or product..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-9 border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
@@ -227,35 +258,46 @@ export default function SalesPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredSales.map((sale) => (
-                                    <tr
-                                        key={sale.id}
-                                        className="border-b border-zinc-800 hover:bg-zinc-900/30"
-                                        onClick={() =>
-                                            handleTransactionClick(sale)
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {format(
-                                                new Date(sale.date),
-                                                'MMM d, yyyy'
-                                            )}
-                                        </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-white">
-                                            {sale.buyer}
-                                        </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {sale.buyerEmail}
-                                        </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                                            {sale.product}
-                                        </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-white">
-                                            ${sale.amount.toFixed(2)}
+                                {filteredSales.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
+                                            {transformedSalesData.length === 0 
+                                                ? 'No sales transactions found' 
+                                                : 'No transactions match your search criteria'
+                                            }
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredSales.map((sale) => (
+                                        <tr
+                                            key={sale.id}
+                                            className=" odd:bg-zinc-900 even:bg-zinc-900/50 hover:bg-zinc-900/30 duration-300"
+                                            onClick={() =>
+                                                handleTransactionClick(sale)
+                                            }
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                                                {format(
+                                                    new Date(sale.date),
+                                                    'MMM d, yyyy'
+                                                )}
+                                            </td>
+                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-white">
+                                                {sale.buyer}
+                                            </td>
+                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                                                {sale.buyerEmail}
+                                            </td>
+                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                                                {sale.product}
+                                            </td>
+                                            <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-white">
+                                                ${sale.amount.toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -326,16 +368,12 @@ export default function SalesPage() {
                                             Email
                                         </h4>
                                         <div className="flex items-center gap-1">
-                                            <p className="text-white">{`${selectedTransaction.buyer
-                                                .toLowerCase()
-                                                .replace(
-                                                    ' ',
-                                                    '.'
-                                                )}@example.com`}</p>
+                                            <p className="text-white">{selectedTransaction.buyerEmail}</p>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-6 w-6 text-zinc-400 hover:text-white"
+                                                onClick={() => navigator.clipboard.writeText(selectedTransaction.buyerEmail)}
                                             >
                                                 <Copy className="h-3.5 w-3.5" />
                                             </Button>
@@ -343,19 +381,18 @@ export default function SalesPage() {
                                     </div>
                                     <div>
                                         <h4 className="text-xs text-zinc-500">
-                                            Country
+                                            Transaction ID
                                         </h4>
                                         <p className="text-white">
-                                            United States
+                                            {selectedTransaction.id}
                                         </p>
                                     </div>
                                     <div>
                                         <h4 className="text-xs text-zinc-500">
-                                            IP Address
+                                            Producer ID
                                         </h4>
                                         <p className="text-white">
-                                            192.168.1.
-                                            {Math.floor(Math.random() * 255)}
+                                            {selectedTransaction.producerId}
                                         </p>
                                     </div>
                                 </div>
@@ -385,10 +422,7 @@ export default function SalesPage() {
                                             License: Standard License
                                         </p>
                                         <p className="text-xs text-zinc-400">
-                                            Product ID: PRD-
-                                            {Math.floor(Math.random() * 10000)
-                                                .toString()
-                                                .padStart(4, '0')}
+                                            Product ID: {selectedTransaction.packId}
                                         </p>
                                     </div>
                                 </div>
