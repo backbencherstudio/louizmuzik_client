@@ -50,6 +50,7 @@ export default function CheckoutPage() {
   const selectedData = cartItems.map(item => ({
     selectedProducerId: item.producerId,
     price: item.price,
+    userId: userData?._id,
   }));
 
   const selectedPackData = cartItems.map(item => ({

@@ -4,8 +4,9 @@ import { inter } from "./fonts";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ReduxProvider } from "./reduxProvider";
-import { Toaster, toast } from 'sonner';
-import { AudioProvider } from '@/components/audio-context';
+import { Toaster } from "sonner";
+import { AudioProvider } from "@/components/audio-context";
+import { Auth0ProviderWithConfig } from "./Auth0ProviderWithConfig";
 
 export const metadata: Metadata = {
   title: "MelodyCollab - Collaborate with Top Music Producers",
@@ -24,11 +25,19 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${inter.className}`} suppressHydrationWarning>
-        <AudioProvider>
+        {/* <AudioProvider>
           <ReduxProvider>
             <Providers>{children}</Providers>
           </ReduxProvider>
           <Toaster position="top-center" richColors />
+        </AudioProvider> */}
+        <AudioProvider>
+          <Auth0ProviderWithConfig>
+            <ReduxProvider>
+              <Providers>{children}</Providers>
+            </ReduxProvider>
+            <Toaster position="top-center" richColors />
+          </Auth0ProviderWithConfig>
         </AudioProvider>
       </body>
     </html>
