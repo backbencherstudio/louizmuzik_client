@@ -53,7 +53,8 @@ export default function ProductAnalytics() {
 
   const { data: packsData, isLoading: isLoadingPacksData } =
     useGetProducerPackQuery(userId);
-  const packs = packsData?.data;
+  const packs = packsData?.data;+
+  console.log(packs);
 
   // Ensure the search query is a string and handle undefined values
   const normalizedSearchQuery = searchQuery?.toLowerCase() || "";
