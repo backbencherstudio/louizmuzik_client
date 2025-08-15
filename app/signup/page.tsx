@@ -54,6 +54,8 @@ export default function SignUpPage() {
 
   console.log("current User", user);
 
+  
+
   const countries = [
     "United States",
     "Spain",
