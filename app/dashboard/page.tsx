@@ -53,15 +53,80 @@ const formatCurrency = (amount: number) => {
 };
 
 // Helper function to process download chart data
-const processDownloadData = (rawData: any[]) => {
+const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
   if (!rawData || !Array.isArray(rawData)) {
     return [];
   }
 
-  return rawData.map((item) => ({
-    day: item.day,
-    downloads: item.downloads,
-    date: item.date,
+  // Get current date
+  const now = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Create a map to store downloads by day
+  const downloadsByDay = new Map();
+
+  // Initialize days with 0 downloads based on selected time range
+  if (selectedTimeRange === '7days') {
+    // For 7 days, show last 7 days with day names
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(now.getDate() - i);
+      const dayName = dayNames[date.getDay()];
+      downloadsByDay.set(dayName, 0);
+    }
+  } else if (selectedTimeRange === 'month') {
+    // For month, show last 30 days with date numbers
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(now.getDate() - i);
+      const dayKey = date.getDate().toString();
+      downloadsByDay.set(dayKey, 0);
+    }
+  } else if (selectedTimeRange === 'ytd') {
+    // For YTD, show months from January to current month
+    for (let i = 0; i <= now.getMonth(); i++) {
+      downloadsByDay.set(monthNames[i], 0);
+    }
+  }
+
+  // Process each download entry
+  rawData.forEach(item => {
+    if (item.date) {
+      const downloadDate = new Date(item.date);
+      let dayKey;
+
+      if (selectedTimeRange === '7days') {
+        // Check if within last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        if (downloadDate >= sevenDaysAgo) {
+          dayKey = dayNames[downloadDate.getDay()];
+        }
+      } else if (selectedTimeRange === 'month') {
+        // Check if within last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        if (downloadDate >= thirtyDaysAgo) {
+          dayKey = downloadDate.getDate().toString();
+        }
+      } else if (selectedTimeRange === 'ytd') {
+        // Check if within current year
+        if (downloadDate.getFullYear() === now.getFullYear()) {
+          dayKey = monthNames[downloadDate.getMonth()];
+        }
+      }
+
+      if (dayKey && downloadsByDay.has(dayKey)) {
+        downloadsByDay.set(dayKey, downloadsByDay.get(dayKey) + (item.downloads || 0));
+      }
+    }
+  });
+
+  // Convert map to array for chart
+  return Array.from(downloadsByDay.entries()).map(([day, downloads]) => ({
+    day,
+    downloads
   }));
 };
 
@@ -191,7 +256,8 @@ export default function DashboardPage() {
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
-  const downloadData = processDownloadData(downloadChartData?.data || []);
+  const downloadData = processDownloadData(downloadChartData?.data || [], selectedTimeRange);
+  console.log(downloadData);
 
   const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
     usePackSalesHistoryQuery(userId);
