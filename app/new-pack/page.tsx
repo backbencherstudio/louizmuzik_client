@@ -74,6 +74,11 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
   const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
   const { data: user } = useLoggedInUser();
   console.log("user", user);
+
+  const userData = user?.data;
+
+  
+
   
   // Fetch pack details when editing
   const { data: packDetails, isLoading: isLoadingPack } = useGetPackDetailsQuery(editId || "", {
@@ -147,6 +152,18 @@ export default function NewPackPage({params}: {params: {edit: string}}) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if(userData?.payementMethod === "stripe" && userData?.isPro === false){
+      toast.error("Please upgrade to a Pro membership to continue");
+      router.push("/checkout-membership");
+      return;
+    }
+
+    if(userData?.payementMethod === "paypal" && userData?.subscriptionEndDate <= new Date().toISOString()){
+      toast.error("Please upgrade to a Pro membership to continue");
+      router.push("/checkout-membership");
+      return;
+    }
 
     try {
 
