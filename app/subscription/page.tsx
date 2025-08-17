@@ -160,7 +160,7 @@ export default function SubscriptionPage() {
               <div className="text-right">
                 <p className="text-sm text-zinc-400 mb-1">Next billing date</p>
                 <p className="text-white font-medium">
-                  {userData?.nextBillingTime
+                  {userData?.nextBillingTime === ""
                     ? new Date(userData?.nextBillingTime).toLocaleDateString(
                         "en-US",
                         { year: "numeric", month: "long", day: "numeric" }
@@ -279,7 +279,8 @@ export default function SubscriptionPage() {
             </p>
             <Button
               variant="destructive"
-              className="bg-red-500 hover:bg-red-600"
+              className={`${userData?.cancelRequest === true ? "cursor-not-allowed bg-gray-500 border-gray-600 hover:bg-gray-800 text-white" : "bg-red-500 hover:bg-red-600"}`}
+              disabled={userData?.cancelRequest === true}
               onClick={() => setShowCancelModal(true)}
             >
               Cancel Subscription

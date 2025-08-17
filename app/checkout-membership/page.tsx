@@ -110,7 +110,7 @@ export default function ProPage() {
                         <Button
                           onClick={handleSubscribe}
                           disabled={loading}
-                          className="w-full h-14 bg-[#000000] hover:bg-[#000000] text-white font-semibold text-lg transition-all duration-200 transform hover:scale-[1.02]"
+                          className="w-full h-14 bg-yellow-600 hover:bg-yellow-600 text-white font-semibold text-lg transition-all duration-200 transform hover:scale-[1.02]"
                         >
                           {loading ? (
                             <div className="flex items-center gap-3">
