@@ -579,7 +579,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="space-y-4">
-                {melodies?.map((melody:any) => (
+                {melodies?.slice(0, 3).map((melody:any) => (
                   <div
                     key={melody._id}
                     className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-zinc-800/50"
@@ -623,7 +623,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {packs?.slice(0, 6).map((pack:any) => (
+                {packs?.slice(0, 3).map((pack:any) => (
                   <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
                     <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
                       <Image
