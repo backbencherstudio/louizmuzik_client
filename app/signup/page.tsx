@@ -1,13 +1,5 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,7 +12,9 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { useSignupMutation } from "../store/api/authApis/authApi";
+import {
+  useSignupMutation,
+} from "../store/api/authApis/authApi";
 import OtpVerification from "@/components/otp-verification";
 import { toast } from "sonner";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -32,14 +26,10 @@ export default function SignUpPage() {
   const [userEmail, setUserEmail] = useState("");
 
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
+ 
 
   const {
-    isLoading,
-    isAuthenticated,
-    error,
     loginWithRedirect: login,
-    logout: auth0Logout,
-    user,
   } = useAuth0();
 
   const googleSignUp = () =>
@@ -49,12 +39,9 @@ export default function SignUpPage() {
       },
     });
 
-  const logout = () =>
-    auth0Logout({ logoutParams: { returnTo: window.location.origin } });
 
-  console.log("current User", user);
 
-  
+
 
   const countries = [
     "United States",
@@ -280,7 +267,7 @@ export default function SignUpPage() {
             </Link>
           </p>
         </form>
-
+{/* 
         <div>
           {isAuthenticated ? (
             <>
@@ -299,8 +286,9 @@ export default function SignUpPage() {
               <button onClick={googleSignUp}>Signup</button>
             </>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
 }
+

@@ -41,11 +41,17 @@ import { useCart } from "@/components/cart-context";
 import ProtectedRoute from "@/Private/ProtectedRoute";
 import { toast } from "sonner";
 import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 
+  const {
+    logout: auth0Logout,
+  } = useAuth0();
+
   const logout = () => {
     localStorage.removeItem("token");
+    auth0Logout();
     window.location.href = "/";
     toast.success("Logged out successfully");
   };

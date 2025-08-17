@@ -7,6 +7,18 @@
   resolved "https://registry.yarnpkg.com/@alloc/quick-lru/-/quick-lru-5.2.0.tgz#7bf68b20c0a350f936915fcae06f58e32007ce30"
   integrity sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==
 
+"@auth0/auth0-react@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-react/-/auth0-react-2.4.0.tgz#a0209635cd756adb9d471ad0e8c929d62eeaffdb"
+  integrity sha512-5bt3sO9FVupNM15IpqyYu/2OPHpLI5El7RgWLQXZOPbnCBbtl+VgdHR+H2NfhNQ4SqQtC/5uKbHWafcVcsxkiw==
+  dependencies:
+    "@auth0/auth0-spa-js" "^2.2.0"
+
+"@auth0/auth0-spa-js@^2.2.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.3.0.tgz#fcbbe31e31e8e98c4e7b25a8d043eac8c01f73bf"
+  integrity sha512-zAW6w79UO+G1+3AxboVQIUIZy05xluSOb1ymGg2dqG0pIi0JxEtZGec05BOf2LJ9SehzW4WeCYUQsYD9BjrVpQ==
+
 "@babel/runtime@^7.26.7", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.27.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.27.4.tgz#a91ec580e6c00c67118127777c316dfd5a5a6abf"

@@ -7,6 +7,7 @@ import { ReduxProvider } from "./reduxProvider";
 import { Toaster } from "sonner";
 import { AudioProvider } from "@/components/audio-context";
 import { Auth0ProviderWithConfig } from "./Auth0ProviderWithConfig";
+import { GoogleProvider } from "@/components/Provider/GoogleProvider";
 
 export const metadata: Metadata = {
   title: "MelodyCollab - Collaborate with Top Music Producers",
@@ -33,9 +34,11 @@ export default function RootLayout({
         </AudioProvider> */}
         <AudioProvider>
           <Auth0ProviderWithConfig>
-            <ReduxProvider>
-              <Providers>{children}</Providers>
-            </ReduxProvider>
+              <ReduxProvider>
+            <GoogleProvider>
+                <Providers>{children}</Providers>
+            </GoogleProvider>
+              </ReduxProvider>
             <Toaster position="top-center" richColors />
           </Auth0ProviderWithConfig>
         </AudioProvider>

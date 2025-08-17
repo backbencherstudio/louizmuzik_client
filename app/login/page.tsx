@@ -15,11 +15,24 @@ import Image from 'next/image';
 import { useLoginMutation } from '../store/api/authApis/authApi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useAuth0 } from '@auth0/auth0-react';
 
 export default function LoginPage() {
 
     const [login, { isLoading: isLoggingIn }] = useLoginMutation();
     const router = useRouter();
+    const {
+        loginWithRedirect: googleLogin,
+      } = useAuth0();
+    
+      const googleSignUp = () =>
+        googleLogin({
+          authorizationParams: {
+            connection: "google-oauth2",
+          },
+        });
+    
+    
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
@@ -134,10 +147,7 @@ export default function LoginPage() {
                         type="button"
                         variant="outline"
                         className="w-full bg-black/50 border-zinc-800 text-white hover:bg-black/70 hover:border-emerald-500/50"
-                        onClick={() => {
-                            // TODO: Implement Google Sign-In
-                            console.log('Google Sign-In to be implemented');
-                        }}
+                        onClick={googleSignUp}
                     >
                         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                             <path

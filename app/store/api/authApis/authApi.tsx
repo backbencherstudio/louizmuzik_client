@@ -45,6 +45,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    googleLogin: builder.mutation({
+      query: ({email,producer_name}) => ({
+        url: "/auth/googleLogin",
+        method: "POST",
+        body: {email,producer_name},
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     login: builder.mutation({
       query: (data) => ({
         url: "/auth/login",
@@ -108,6 +117,7 @@ export const {
   useResetPasswordMutation,
   useLoggedInUserQuery,
   useOtpForResetPasswordMutation,
+  useGoogleLoginMutation,
 } = authApi;
 
 // Custom hook to safely get logged in user
