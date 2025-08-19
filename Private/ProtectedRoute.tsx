@@ -7,6 +7,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { data: userData, error, isLoading } = useLoggedInUserQuery(null);
+  
 
   useEffect(() => {
     if (error) {

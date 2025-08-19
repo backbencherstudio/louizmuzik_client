@@ -73,17 +73,17 @@ export function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
               <Link
-                href="/login"
+                href={user ? "/browse" : "/login"}
                 className="text-white hover:text-primary transition-colors"
               >
                 Melodies
               </Link>
-              <Link
-                href="/login"
+              {<Link
+                href={user ? "/feed" : "/login"}
                 className="text-white hover:text-primary transition-colors"
               >
                 Feed
-              </Link>
+              </Link>}
               <Link
                 href="#pricing"
                 className="text-white hover:text-primary transition-colors"
