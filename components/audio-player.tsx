@@ -118,13 +118,12 @@ export function AudioPlayer({
     const audio = audioRef.current;
     if (!audio) return;
 
-    setAudioState((prev: any) => ({
-      ...prev,
+    setAudioState({
       currentTime: audio.currentTime,
       duration: audio.duration,
       isPlaying,
       currentMelodyId: melody?._id || null,
-    }));
+    });
   };
 
   const handleSeek = (value: number[]) => {
@@ -133,10 +132,12 @@ export function AudioPlayer({
     const newTime = value[0];
     audio.currentTime = newTime;
 
-    setAudioState((prev) => ({
-      ...prev,
+    setAudioState({
       currentTime: newTime,
-    }));
+      duration: audio.duration,
+      isPlaying,
+      currentMelodyId: melody?._id || null,
+    });
   };
 
   const handleVolumeChange = (value: number[]) => {
@@ -159,10 +160,12 @@ export function AudioPlayer({
     if (!audio) return;
 
     setIsLoading(false);
-    setAudioState((prev: any) => ({
-      ...prev,
+    setAudioState({
+      currentTime: audio.currentTime,
       duration: audio.duration,
-    }));
+      isPlaying,
+      currentMelodyId: melody?._id || null,
+    });
   };
 
   const handleAudioError = () => {

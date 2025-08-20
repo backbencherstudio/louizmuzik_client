@@ -8,14 +8,14 @@ export const adminApis = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
-    createAdmin: builder.mutation({
+    getAdminOverview: builder.query({
       query: () => ({
-        url: "/auth/create-admin",
-        method: "POST",
+        url: "/admin/adminOverview",
+        method: "GET",
       }),
     }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery, useCreateAdminMutation } = adminApis;
+export const { useGetUsersQuery, useGetAdminOverviewQuery } = adminApis;

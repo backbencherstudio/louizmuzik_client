@@ -6,13 +6,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
+import { useLoggedInUser, useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
 import { useAuth } from "./Provider/GoogleProvider";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { data: user,} = useLoggedInUserQuery(null);
+  const { data: user,} = useLoggedInUser();
+  console.log(user?.data?.role);
+  const isAdmin = user?.data?.role === "admin";
+  console.log(isAdmin);
 
   const { isAuthenticated } = useAuth();
 
@@ -45,7 +48,7 @@ export function Header() {
             {/* Right - Login and Try Now buttons */}
             <div className="flex items-center gap-3">
               {user ? (
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href={isAdmin ? "/admin" : "/dashboard"}>Dashboard</Link>
               ) : (
                 <Link href="/login">Log In</Link>
               )}
@@ -100,7 +103,7 @@ export function Header() {
                 className="border-primary text-white hover:bg-primary hover:text-black"
               >
                 {user || isAuthenticated ? (
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href={isAdmin ? "/admin" : "/dashboard"}>Dashboard</Link>
                 ) : (
                   <Link href="/login">Log In</Link>
                 )}
