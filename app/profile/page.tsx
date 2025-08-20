@@ -26,13 +26,14 @@ import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMuta
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
-
-
+import { Pagination } from "@/components/ui/pagination";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleImageLoad = () => {
     setIsImageLoaded(true);
@@ -56,6 +57,17 @@ export default function ProfilePage() {
 
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
+
+  // Pagination logic
+  const totalItems = melodies?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentMelodies = melodies?.slice(startIndex, endIndex) || [];
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const handlePlayClick = async (melody: any) => {
     if (currentPlayingMelody?._id === melody._id) {
@@ -89,7 +101,6 @@ export default function ProfilePage() {
       setShouldAutoPlay(true);
     }
   };
-
 
   const isMelodyFavorite = (melodyId: string) => {
     return user?.data?.favourite_melodies?.includes(melodyId) || false;
@@ -361,7 +372,7 @@ export default function ProfilePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {melodies.map((melody: any) => (
+                      {currentMelodies.map((melody: any) => (
                         <tr key={melody._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
                           <td className="whitespace-nowrap px-4 py-3 text-center">
                             <Button
@@ -461,7 +472,7 @@ export default function ProfilePage() {
                   {/* Mobile Table */}
                   <table className="w-full md:hidden">
                     <tbody>
-                      {melodies.map((melody: any) => (
+                      {currentMelodies.map((melody: any) => (
                         <tr key={melody?._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
                           <td className="px-4 py-3 flex items-center gap-3">
                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
@@ -531,6 +542,17 @@ export default function ProfilePage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+              
+              {/* Pagination */}
+              <div className="mt-6 mb-24">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                />
               </div>
             </div>
           )}
