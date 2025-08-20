@@ -33,6 +33,9 @@ interface BillingHistoryItem {
     createdAt: string;
     updatedAt: string;
     invoiceURL: string;
+    packId?: {
+        title: string;
+    };
 }
 
 interface Payment {
@@ -54,6 +57,7 @@ interface Payment {
             name: string;
             email: string;
         };
+        
     };
     created_at: string;
 }
@@ -73,6 +77,7 @@ function PaymentsPage() {
     const { data: billingHistory, isLoading: isBillingHistoryLoading } = useGetBillingHistoryQuery(null);
 
     const allBillingHistory = billingHistory?.data || [];
+    console.log(allBillingHistory);
 
     // Transform billing history data to payments format
     const transformBillingHistoryToPayments = (billingData: BillingHistoryItem[]): Payment[] => {
@@ -111,7 +116,7 @@ function PaymentsPage() {
                     },
                     details: {
                         productId: item._id,
-                        productTitle: 'Sample Pack', // You might want to fetch actual product titles
+                        productTitle: item?.packId?.title || 'Sample Pack',
                         seller: {
                             id: item.userId,
                             name: item.name,

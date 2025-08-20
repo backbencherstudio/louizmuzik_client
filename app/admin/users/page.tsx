@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Check,
   X,
@@ -15,6 +16,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { ClientPagination } from "@/components/admin/ClientPagination";
 import {
     useDeleteUserMutation,
   useFreeSubscriptionMutation,
@@ -51,6 +53,9 @@ interface User {
 }
 
 export default function UsersPage() {
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = 20;
   const [pendingRoleChanges, setPendingRoleChanges] = useState<{
     [key: string]: boolean;
   }>({});
@@ -154,6 +159,13 @@ export default function UsersPage() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Calculate pagination
+  const totalUsers = filteredUsers.length;
+  const totalPages = Math.ceil(totalUsers / limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
   // Function to calculate user stats (you might get these from the API in a real scenario)
   const getUserStats = (user: User): UserStats => {
     return {
@@ -214,7 +226,20 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user: User) => {
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="text-center p-4 text-zinc-400">
+                    Loading users...
+                  </td>
+                </tr>
+              ) : paginatedUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center p-4 text-zinc-400">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                paginatedUsers.map((user: User) => {
                 const userStats = getUserStats(user);
                 return (
                   <>
@@ -391,11 +416,15 @@ export default function UsersPage() {
                     )}
                   </>
                 );
-              })}
+              })
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      <ClientPagination total={totalUsers} limit={limit} />
     </div>
   );
 }
