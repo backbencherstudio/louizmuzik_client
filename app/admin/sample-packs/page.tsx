@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState} from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Package,
   Search,
   MoreVertical,
   DollarSign,
   ShoppingCart,
-  Pencil,
   Trash2,
   X,
   Download,
@@ -54,10 +53,8 @@ type SamplePack = {
 };
 
 export default function SamplePacksPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingPack, setEditingPack] = useState<SamplePack | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [packToDelete, setPackToDelete] = useState<SamplePack | null>(null);
   const page = Number(searchParams.get("page")) || 1;
@@ -108,12 +105,6 @@ export default function SamplePacksPage() {
     }
   };
 
-  const handleEditDetails = async (pack: SamplePack) => {
-    setEditingPack(pack);
-    // Here you would typically open a modal with a form to edit details
-    console.log("Editing pack:", pack);
-  };
-
   const handleDownload = async (pack: SamplePack) => {
     try {
       if (!pack.zip_path) {
@@ -141,8 +132,7 @@ export default function SamplePacksPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
-        // Dismiss loading toast and show success
+
         toast.dismiss(loadingToast);
         toast.success(`Downloaded ${pack.title} successfully`);
       } else {
