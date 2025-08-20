@@ -52,31 +52,36 @@ type SamplePack = {
 export default function SamplePacksPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [packs, setPacks] = useState<SamplePack[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [editingPack, setEditingPack] = useState<SamplePack | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [packToDelete, setPackToDelete] = useState<SamplePack | null>(null);
 
     const page = Number(searchParams.get('page')) || 1;
-    const limit = 10;
+    const limit = 20;
 
     const { data: packsData, isLoading, error } = useGetPacksQuery(null);
 
     const allPacks = packsData?.data || [];
     console.log('All packs from backend:', allPacks);
 
-    useEffect(() => {
-        if (allPacks.length > 0) {
-            setPacks(allPacks);
-            setTotal(allPacks.length);
-            setLoading(false);
-        }
-    }, [allPacks]);
+    // Filter packs based on search term
+    const filteredPacks = allPacks.filter(
+        (pack: SamplePack) =>
+            pack.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            pack.userId.producer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            pack.genre.some((g) =>
+                g.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+    );
 
-    // Remove the fetchPacks function since we're using RTK Query data
+    // Calculate pagination
+    const totalPacks = filteredPacks.length;
+    const totalPages = Math.ceil(totalPacks / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedPacks = filteredPacks.slice(startIndex, endIndex);
+
 
     const handleDeleteClick = (pack: SamplePack) => {
         setPackToDelete(pack);
@@ -198,16 +203,16 @@ export default function SamplePacksPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
+                            {isLoading ? (
                                 <tr>
                                     <td
                                         colSpan={5}
                                         className="text-center p-4 text-zinc-400"
                                     >
-                                        Loading...
+                                        Loading sample packs...
                                     </td>
                                 </tr>
-                            ) : packs.length === 0 ? (
+                            ) : paginatedPacks.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={5}
@@ -217,7 +222,7 @@ export default function SamplePacksPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                packs.map((pack) => (
+                                paginatedPacks.map((pack: SamplePack) => (
                                     <tr
                                         key={pack._id}
                                         className="border-b border-zinc-800"
@@ -333,7 +338,7 @@ export default function SamplePacksPage() {
             </div>
 
             {/* Pagination */}
-            <ClientPagination total={total} />
+            <ClientPagination total={totalPacks} limit={limit} />
 
             {/* Delete Confirmation Modal */}
             {deleteModalOpen && packToDelete && (
