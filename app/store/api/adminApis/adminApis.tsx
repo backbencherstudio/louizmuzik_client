@@ -43,6 +43,14 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
+    deletePack: builder.mutation({
+      query: (packId) => ({
+        url: `/pack/${packId}`,
+        method: "DELETE",
+      }),
+    }),
+    
+
     freeSubscription: builder.mutation({
       query: (userId) => ({
         url: `/auth/userManagement/directSubscription/${userId}`,
@@ -61,4 +69,5 @@ export const {
   useGetMelodiesQuery,
   useDeleteMelodyMutation,
   useGetPacksQuery,
+  useDeletePackMutation,
 } = adminApis;
