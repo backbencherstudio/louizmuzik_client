@@ -988,6 +988,7 @@ export default function BrowsePage() {
                     )}
                 {selectedMelody && (
                     <CollabModal
+                        melodyDownloadCounter={melodyDownloadCounter}
                         isOpen={isCollabModalOpen}
                         onClose={() => setIsCollabModalOpen(false)}
                         melodyData={selectedMelody}

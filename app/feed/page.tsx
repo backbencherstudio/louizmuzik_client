@@ -35,7 +35,11 @@ import {
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import { useFollowingProducerContentQuery } from "../store/api/userManagementApis/userManagementApis";
-import { useFavoriteMelodyMutation, useMelodyDownloadMutation, useMelodyPlayMutation } from "../store/api/melodyApis/melodyApis";
+import {
+  useFavoriteMelodyMutation,
+  useMelodyDownloadMutation,
+  useMelodyPlayMutation,
+} from "../store/api/melodyApis/melodyApis";
 import { toast } from "sonner";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
@@ -131,8 +135,6 @@ export default function FeedPage() {
   const [favoriteMelody, { isLoading: isFavoriteMelodyLoading }] =
     useFavoriteMelodyMutation();
 
-  
-
   const isMelodyFavorite = (melodyId: string) => {
     return user?.data?.favourite_melodies?.includes(melodyId) || false;
   };
@@ -148,25 +150,13 @@ export default function FeedPage() {
   const [melodyPlayCounter] = useMelodyPlayMutation();
 
   const handleDownloadClick = async (melody: any) => {
-    try {
-        const response = await melodyDownloadCounter(melody._id).unwrap();
-        console.log("melodyDownloadCounter", response);
-        
-        const audioUrl = melody.audioUrl;  
-        if (audioUrl) {
-            const link = document.createElement('a');
-            link.href = audioUrl;
-            link.download = audioUrl.split('/').pop(); 
-            link.click();
-        } else {
-            toast.error("No audio URL found!");
-        }
-    } catch (error) {
-        console.log("error", error);
-    }
-};
+    setSelectedMelody(melody);
+    setIsCollabModalOpen(true);
+  };
 
-const { currentTime, duration, currentMelodyId } = useAudioContext();
+
+
+  const { currentTime, duration, currentMelodyId } = useAudioContext();
 
   const playNextMelody = () => {
     if (!currentPlayingMelody) return;
@@ -180,7 +170,7 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
       handlePlayClick(nextMelody);
     }
   };
-  
+
   const playPreviousMelody = () => {
     if (!currentPlayingMelody) return;
 
@@ -199,11 +189,11 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
       if (!isAudioPlayerVisible) return;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
           playNextMelody();
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
           playPreviousMelody();
           break;
@@ -212,11 +202,9 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPlayingMelody, isAudioPlayerVisible]);
-
-
 
   const itemsPerPage = 5;
   const melodiesPerPage = 10;
@@ -282,7 +270,6 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
     return filteredAndSortedMelodies.slice(start, start + melodiesPerPage);
   };
 
-
   const handlePlayClick = async (melody: any) => {
     if (currentPlayingMelody?._id === melody._id) {
       setCurrentPlayingMelody(null);
@@ -296,20 +283,20 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
       } catch (error) {
         console.log("error", error);
       }
-      
+
       const melodyToPlay = {
-        _id: melody._id, 
+        _id: melody._id,
         name: melody.name,
         producer: melody.producer,
         image: melody.image,
         audio: melody.audio_path || melody.audio || melody.audioUrl,
         audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
         bpm: melody.bpm || 120,
-        key: melody.key || 'C Maj',
-        genre: melody.genre || 'Unknown',
-        artistType: melody.artistType || 'Producer',
+        key: melody.key || "C Maj",
+        genre: melody.genre || "Unknown",
+        artistType: melody.artistType || "Producer",
       };
-      
+
       setCurrentPlayingMelody(melodyToPlay);
       setCurrentPlayingPack(null);
       setIsAudioPlayerVisible(true);
@@ -326,8 +313,6 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
           : "asc",
     }));
   };
-
- 
 
   // Filter and sort melodies
   const filteredAndSortedMelodies = useMemo(() => {
@@ -838,8 +823,12 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
                 <table className="w-full hidden md:table">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">#</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">Thumbnail</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+                        #
+                      </th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                        Thumbnail
+                      </th>
                       <th
                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                         onClick={() => handleSort("name")}
@@ -860,7 +849,9 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
                           />
                         </div>
                       </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">Waveform</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                        Waveform
+                      </th>
                       <th
                         className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                         onClick={() => handleSort("producer")}
@@ -1005,14 +996,22 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
                         </td>
                         <td className="whitespace-nowrap px-4 py-3">
                           <WaveformDisplay
-                            audioUrl={melody.audio_path || melody.audio || melody.audioUrl}
+                            audioUrl={
+                              melody.audio_path ||
+                              melody.audio ||
+                              melody.audioUrl
+                            }
                             isPlaying={currentPlayingMelody?._id === melody._id}
                             onPlayPause={() => handlePlayClick(melody)}
                             height={30}
                             width="200px"
                             isControlled={true}
-                            currentTime={currentMelodyId === melody._id ? currentTime : 0}
-                            duration={currentMelodyId === melody._id ? duration : 0}
+                            currentTime={
+                              currentMelodyId === melody._id ? currentTime : 0
+                            }
+                            duration={
+                              currentMelodyId === melody._id ? duration : 0
+                            }
                           />
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
@@ -1113,9 +1112,7 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
                               variant="ghost"
                               size="icon"
                               className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                isMelodyFavorite(melody._id)
-                                  ? ""
-                                  : ""
+                                isMelodyFavorite(melody._id) ? "" : ""
                               }`}
                               onClick={() => toogleFavorite(melody._id)}
                             >
@@ -1179,7 +1176,10 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
         {isAudioPlayerVisible &&
           (currentPlayingMelody || currentPlayingPack) && (
             <AudioPlayer
-              key={(currentPlayingMelody || currentPlayingPack)?.audioUrl || (currentPlayingMelody || currentPlayingPack)?._id}
+              key={
+                (currentPlayingMelody || currentPlayingPack)?.audioUrl ||
+                (currentPlayingMelody || currentPlayingPack)?._id
+              }
               isVisible={isAudioPlayerVisible}
               melody={currentPlayingMelody || currentPlayingPack}
               shouldAutoPlay={shouldAutoPlay}
@@ -1203,6 +1203,7 @@ const { currentTime, duration, currentMelodyId } = useAudioContext();
           )}
         {selectedMelody && (
           <CollabModal
+            melodyDownloadCounter={melodyDownloadCounter}
             isOpen={isCollabModalOpen}
             onClose={() => setIsCollabModalOpen(false)}
             melodyData={selectedMelody}

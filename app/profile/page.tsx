@@ -90,31 +90,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePackPlayClick = (pack: any) => {
-    if (currentPlayingPack?._id === pack._id) {
-      setCurrentPlayingPack(null);
-      setCurrentPlayingMelody(null);
-      setIsAudioPlayerVisible(false);
-    } else {
-      const packToPlay = {
-        id: pack._id,
-        _id: pack._id,
-        name: pack.title,
-        producer: pack.producer,
-        image: pack.thumbnail_image,
-        audio: pack.audio_path || pack.audio,
-        audioUrl: pack.audio_path || pack.audio,
-        bpm: pack.bpm || 120,
-        key: pack.key || "C Maj",
-        genre: pack.genre || "Unknown",
-        artistType: "Producer",
-      };
-
-      setCurrentPlayingPack(packToPlay);
-      setCurrentPlayingMelody(null);
-      setIsAudioPlayerVisible(true);
-    }
-  };
 
   const isMelodyFavorite = (melodyId: string) => {
     return user?.data?.favourite_melodies?.includes(melodyId) || false;
@@ -587,6 +562,7 @@ export default function ProfilePage() {
       </div>
       {selectedMelody && (
         <CollabModal
+          melodyDownloadCounter={melodyDownloadCounter}
           isOpen={isCollabModalOpen}
           onClose={() => setIsCollabModalOpen(false)}
           melodyData={selectedMelody}

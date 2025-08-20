@@ -17,23 +17,18 @@ interface CollabModalProps {
     isOpen: boolean;
     onClose: () => void;
     melodyData: any;
+    melodyDownloadCounter: (melodyId: string) => Promise<any>;
 }
 
-export function CollabModal({ isOpen, onClose, melodyData }: CollabModalProps) {
+export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter }: CollabModalProps) {
     const [isChecked, setIsChecked] = useState(false);
 
     const handleDownloadMelody = async () => {
         try {
             // First, increment the download counter
-            const response = await fetch(`/api/melodies/download`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ melodyId: melodyData._id }),
-            });
+            const response = await melodyDownloadCounter(melodyData._id);
 
-            if (!response.ok) {
+            if (response) {
                 console.error('Failed to increment download counter');
             }
 

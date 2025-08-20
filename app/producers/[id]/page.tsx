@@ -32,9 +32,12 @@ import { useParams } from "next/navigation";
 import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMutation } from "@/app/store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
+import { CollabModal } from "@/components/collab-modal";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
+  const [selectedMelody, setSelectedMelody] = useState<any>(null);
 
   const handleImageLoad = () => {
     setIsImageLoaded(true);
@@ -48,7 +51,6 @@ export default function ProfilePage() {
   );
   const [playingPackId, setPlayingPackId] = useState<number | null>(null);
   const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
-  console.log("user", user);
   const userId = user?.data?._id;
   const { id } = useParams();
 
@@ -57,7 +59,6 @@ export default function ProfilePage() {
     isLoading: isUserProfileLoading,
     refetch: refetchUserProfile,
   } = useGetUserProfileQuery(id as string);
-  console.log("userProfile", userProfile);
   const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
     useFollowUnFollowProducerMutation();
 
@@ -68,12 +69,9 @@ export default function ProfilePage() {
   const isFollowing = user?.data?.following.includes(id as string);
 
   const userData = userProfile?.data?.userData;
-  console.log("userData", userData);
 
   const melodies = userProfile?.data?.melodies;
-  console.log("melodies", melodies);
   const premiumPacks = userProfile?.data?.packs;
-  console.log("packs", premiumPacks);
 
   const handlePlayClick = async (melody: any) => {
     if (currentPlayingMelody?._id === melody._id) {
@@ -84,9 +82,8 @@ export default function ProfilePage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
       } catch (error) {
-        console.log("error", error);
+        console.error("Error playing melody:", error);
       }
       
       const melodyToPlay = {
@@ -148,22 +145,8 @@ export default function ProfilePage() {
   };
 
   const handleDownloadClick = async (melody: any) => {
-    try {
-      const response = await melodyDownloadCounter(melody._id).unwrap();
-      console.log("melodyDownloadCounter", response);
-      
-      const audioUrl = melody.audioUrl;  
-      if (audioUrl) {
-        const link = document.createElement('a');
-        link.href = audioUrl;
-        link.download = audioUrl.split('/').pop(); 
-        link.click();
-      } else {
-        console.error("No audio URL found!");
-      }
-    } catch (error) {
-      console.log("error", error);
-    }
+    setSelectedMelody(melody);
+    setIsCollabModalOpen(true);
   };
 
   const { currentTime, duration, currentMelodyId } = useAudioContext();
@@ -654,7 +637,15 @@ export default function ProfilePage() {
             onEnded={playNextMelody}
             handleDownloadClick={handleDownloadClick}
           />
-      </div>
+          {selectedMelody && (
+            <CollabModal
+              melodyDownloadCounter={melodyDownloadCounter}
+              isOpen={isCollabModalOpen}
+              onClose={() => setIsCollabModalOpen(false)}
+              melodyData={selectedMelody}
+            />
+          )}
+        </div>
     </Layout>
   );
-}
+  }
