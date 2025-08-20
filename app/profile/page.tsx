@@ -17,58 +17,22 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { AudioPlayer } from "@/components/audio-player";
 import Layout from "@/components/layout";
 import { useGetUserProfileQuery } from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
-import { MelodiesTable } from "@/components/melodies-table";
 import Skeleton from "react-loading-skeleton";
 import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMutation } from "@/app/store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
+import { CollabModal } from "@/components/collab-modal";
 
-// Sample data for Recent Releases
-const premiumPacks = [
-  {
-    id: 1,
-    title: "Thunder Sample Pack",
-    producer: "Thunder Beatz",
-    price: 29.0,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AlbedoBase_XL_colorful_music_sample_pack_square_cover_0%201-qogxcWag2VJauGOf0wg17yNh1prb26.png",
-    audioUrl: "/audio/sample1.mp3",
-  },
-  {
-    id: 2,
-    title: "Galactic Music",
-    producer: "Thunder Beatz",
-    price: 6.0,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/CleanShot%202025-02-23%20at%2016.11.02@2x.png-uMzA2yeNJF4OgzSMCF1RP8uwEaGZuK.jpeg",
-    audioUrl: "/audio/sample2.mp3",
-  },
-  {
-    id: 3,
-    title: "Phonk Sample Pack",
-    producer: "Thunder Beatz",
-    price: 37.0,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bannerslider%201-kA6rfkEQT1gk8DeTUrNWjTVB14yhbZ.png",
-    audioUrl: "/audio/sample3.mp3",
-  },
-  {
-    id: 4,
-    title: "True Tech House",
-    producer: "Thunder Beatz",
-    price: 25.0,
-    image: "/true-tech-house.jpg",
-    audioUrl: "/audio/sample4.mp3",
-  },
-];
+
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
+  const [selectedMelody, setSelectedMelody] = useState<any>(null);
 
   const handleImageLoad = () => {
     setIsImageLoaded(true);
@@ -77,13 +41,9 @@ export default function ProfilePage() {
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
-  const [activeSection, setActiveSection] = useState<"packs" | "discography">(
-    "packs"
-  );
-  const [playingPackId, setPlayingPackId] = useState<number | null>(null);
+
   const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
   const userId = user?.data?._id;
-  console.log("user", user);
 
   const { data: userProfile, isLoading: isUserProfileLoading, refetch: refetchUserProfile } =
     useGetUserProfileQuery(userId);
@@ -93,12 +53,9 @@ export default function ProfilePage() {
   const [favoriteMelody] = useFavoriteMelodyMutation();
 
   const userData = userProfile?.data?.userData;
-  console.log("userData", userData);
 
   const melodies = userProfile?.data?.melodies;
-  console.log("melodies", melodies);
   const premiumPacks = userProfile?.data?.packs;
-  console.log("packs", premiumPacks);
 
   const handlePlayClick = async (melody: any) => {
     if (currentPlayingMelody?._id === melody._id) {
@@ -109,9 +66,8 @@ export default function ProfilePage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
       } catch (error) {
-        console.log("error", error);
+        console.error("Error playing melody:", error);
       }
       
       const melodyToPlay = {
@@ -154,7 +110,6 @@ export default function ProfilePage() {
         artistType: "Producer",
       };
 
-      console.log("Playing pack:", packToPlay);
       setCurrentPlayingPack(packToPlay);
       setCurrentPlayingMelody(null);
       setIsAudioPlayerVisible(true);
@@ -173,22 +128,8 @@ export default function ProfilePage() {
   };
 
   const handleDownloadClick = async (melody: any) => {
-    try {
-      const response = await melodyDownloadCounter(melody._id).unwrap();
-      console.log("melodyDownloadCounter", response);
-      
-      const audioUrl = melody.audioUrl;  
-      if (audioUrl) {
-        const link = document.createElement('a');
-        link.href = audioUrl;
-        link.download = audioUrl.split('/').pop(); 
-        link.click();
-      } else {
-        console.error("No audio URL found!");
-      }
-    } catch (error) {
-      console.log("error", error);
-    }
+    setSelectedMelody(melody);
+    setIsCollabModalOpen(true);
   };
 
   const { currentTime, duration, currentMelodyId } = useAudioContext();
@@ -644,6 +585,13 @@ export default function ProfilePage() {
           handleDownloadClick={handleDownloadClick}
         />
       </div>
+      {selectedMelody && (
+        <CollabModal
+          isOpen={isCollabModalOpen}
+          onClose={() => setIsCollabModalOpen(false)}
+          melodyData={selectedMelody}
+        />
+      )}
     </Layout>
   );
 }
