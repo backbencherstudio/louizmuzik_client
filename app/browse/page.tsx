@@ -120,22 +120,8 @@ export default function BrowsePage() {
     ));
 
     const handleDownloadClick = async (melody: any) => {
-        try {
-            const response = await melodyDownloadCounter(melody._id).unwrap();
-            console.log("melodyDownloadCounter", response);
-            
-            const audioUrl = melody.audioUrl;  
-            if (audioUrl) {
-                const link = document.createElement('a');
-                link.href = audioUrl;
-                link.download = audioUrl.split('/').pop(); 
-                link.click();
-            } else {
-                toast.error("No audio URL found!");
-            }
-        } catch (error) {
-            console.log("error", error);
-        }
+        setSelectedMelody(melody);
+        setIsCollabModalOpen(true);
     };
 
     const handlePlayClick =  async (melody: any) => {

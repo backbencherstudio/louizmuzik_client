@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,28 +16,49 @@ import {
 interface CollabModalProps {
     isOpen: boolean;
     onClose: () => void;
-    melodyData: {
-        name: string;
-        splitPercentage: string;
-        producerName: string;
-        beatstarsUsername: string;
-        soundeeUsername?: string;
-        instagramUsername: string;
-        youtubeChannel: string;
-    };
+    melodyData: any;
 }
 
 export function CollabModal({ isOpen, onClose, melodyData }: CollabModalProps) {
     const [isChecked, setIsChecked] = useState(false);
 
-    const handleDownloadMelody = () => {
-        // Handle melody download
-        console.log('Downloading melody...');
+    const handleDownloadMelody = async () => {
+        try {
+            // First, increment the download counter
+            const response = await fetch(`/api/melodies/download`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ melodyId: melodyData._id }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to increment download counter');
+            }
+
+            // Then download the file
+            const audioUrl = melodyData.audioUrl || melodyData.audio_path || melodyData.audio;
+            if (audioUrl) {
+                const link = document.createElement('a');
+                link.href = audioUrl;
+                link.download = audioUrl.split('/').pop() || `${melodyData.name}.wav`;
+                link.click();
+                toast.success('Melody downloaded successfully!');
+                onClose();
+            } else {
+                toast.error("No audio URL found!");
+            }
+        } catch (error) {
+            console.error("Error downloading melody:", error);
+            toast.error("Failed to download melody. Please try again.");
+        }
     };
 
     const handleDownloadLicence = () => {
-        // Handle licence download
+        // Handle licence download - this would typically generate a PDF
         console.log('Downloading licence...');
+        onClose();
     };
 
     return (
@@ -52,49 +74,42 @@ export function CollabModal({ isOpen, onClose, melodyData }: CollabModalProps) {
 
                 <div className="mt-4">
                     <h3 className="text-lg font-medium text-white mb-6">
-                        {melodyData.name}
+                        {melodyData?.name || 'Melody'}
                     </h3>
 
                     <div className="space-y-4">
                         <div className="flex items-center gap-3 text-zinc-300">
                             <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                             <span>
-                                Split Percentage : {melodyData.splitPercentage}
+                                Producer: {melodyData?.producer || 'Unknown'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-zinc-300">
                             <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                             <span>
-                                Producer name: {melodyData.producerName}
+                                BPM: {melodyData?.bpm || 'Unknown'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-zinc-300">
                             <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                             <span>
-                                Beatstars Username :{' '}
-                                {melodyData.beatstarsUsername}
-                            </span>
-                        </div>
-                        {melodyData.soundeeUsername && (
-                            <div className="flex items-center gap-3 text-zinc-300">
-                                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                                <span>
-                                    Soundee Username :{' '}
-                                    {melodyData.soundeeUsername}
-                                </span>
-                            </div>
-                        )}
-                        <div className="flex items-center gap-3 text-zinc-300">
-                            <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                            <span>
-                                Instagram Username :{' '}
-                                {melodyData.instagramUsername}
+                                Key: {melodyData?.key || 'Unknown'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-zinc-300">
                             <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                             <span>
-                                YouTube Channel : {melodyData.youtubeChannel}
+                                Genre: {Array.isArray(melodyData?.genre) 
+                                    ? melodyData.genre.join(', ') 
+                                    : melodyData?.genre || 'Unknown'}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-zinc-300">
+                            <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                            <span>
+                                Artist Type: {Array.isArray(melodyData?.artistType) 
+                                    ? melodyData.artistType.join(', ') 
+                                    : melodyData?.artistType || 'Unknown'}
                             </span>
                         </div>
                     </div>
