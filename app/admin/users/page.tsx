@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
+    useDeleteUserMutation,
   useFreeSubscriptionMutation,
   useGetUsersQuery,
 } from "@/app/store/api/adminApis/adminApis";
@@ -65,6 +66,7 @@ export default function UsersPage() {
   console.log(users);
 
   const [freeSubscription] = useFreeSubscriptionMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const handleRoleChange = (userId: string, checked: boolean) => {
     setPendingRoleChanges((prev) => ({
@@ -110,10 +112,13 @@ export default function UsersPage() {
 
     try {
       setLoading({ ...loading, [`delete-${userId}`]: true });
-      // In a real application, this would make an API call to delete the user
-      // await fetch(`/api/admin/users/${userId}`, {
-      //     method: 'DELETE',
-      // });
+      const response = await deleteUser(userId).unwrap();
+      if (response) {
+        toast.success("User deleted successfully");
+        refetch();
+      } else {
+        toast.error("Failed to delete user");
+      }
 
       // Clear any pending changes for the deleted user
       if (pendingRoleChanges[userId]) {
