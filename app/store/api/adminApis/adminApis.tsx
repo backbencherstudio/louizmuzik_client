@@ -29,7 +29,13 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
-    
+    deleteMelody: builder.mutation({
+      query: ({ melodyId, userId }) => ({
+        url: `/melody/${melodyId}?userId=${userId}`,
+        method: "DELETE",
+      }),
+    }),
+
     freeSubscription: builder.mutation({
       query: (userId) => ({
         url: `/auth/userManagement/directSubscription/${userId}`,
@@ -46,4 +52,5 @@ export const {
   useDeleteUserMutation,
   useFreeSubscriptionMutation,
   useGetMelodiesQuery,
+  useDeleteMelodyMutation,
 } = adminApis;

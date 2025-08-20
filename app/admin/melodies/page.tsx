@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Music2, Search, Play, Download, Trash2 } from "lucide-react";
 import { ClientPagination } from "@/components/admin/ClientPagination";
-import { useGetMelodiesQuery } from "@/app/store/api/adminApis/adminApis";
+import {
+  useDeleteMelodyMutation,
+  useGetMelodiesQuery,
+} from "@/app/store/api/adminApis/adminApis";
+import { toast } from "sonner";
 
 type Melody = {
   _id: string;
@@ -25,6 +29,7 @@ type Melody = {
   email: string;
   userId: {
     email: string;
+    _id: string;
   };
 };
 
@@ -46,6 +51,8 @@ export default function MelodiesPage() {
   const allMelodies = melodiesData?.data || [];
   console.log(allMelodies);
 
+  const [deleteMelody, { isLoading: isDeleting }] = useDeleteMelodyMutation();
+
   // Filter melodies based on search term
   const filteredMelodies = allMelodies.filter(
     (melody: Melody) =>
@@ -63,7 +70,7 @@ export default function MelodiesPage() {
   const endIndex = startIndex + limit;
   const paginatedMelodies = filteredMelodies.slice(startIndex, endIndex);
 
-  const handleDeleteMelody = async (melodyId: string) => {
+  const handleDeleteMelody = async (melodyId: string, userId: string) => {
     if (
       !confirm(
         "Are you sure you want to delete this melody? This action cannot be undone."
@@ -74,16 +81,15 @@ export default function MelodiesPage() {
 
     try {
       setLoading((prev) => ({ ...prev, [`delete-${melodyId}`]: true }));
-      // In a real application, this would make an API call to delete the melody
-      // await fetch(`/api/admin/melodies/${melodyId}`, {
-      //     method: 'DELETE',
-      // });
-
-      // For now, just show success message
-      alert("Melody deleted successfully");
+      const res = await deleteMelody({ melodyId, userId });
+      if (res) {
+        toast.success("Melody deleted successfully");
+      } else {
+        toast.error("Failed to delete melody. Please try again.");
+      }
     } catch (error) {
       console.error("Error deleting melody:", error);
-      alert("Failed to delete melody. Please try again.");
+      toast.error("Failed to delete melody. Please try again.");
     } finally {
       setLoading((prev) => ({ ...prev, [`delete-${melodyId}`]: false }));
     }
@@ -249,7 +255,9 @@ export default function MelodiesPage() {
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteMelody(melody._id)}
+                          onClick={() =>
+                            handleDeleteMelody(melody._id, melody.userId._id)
+                          }
                           disabled={loading[`delete-${melody._id}`]}
                           className="p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-zinc-700 transition-colors"
                           title="Delete Melody"
