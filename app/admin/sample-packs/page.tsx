@@ -62,10 +62,11 @@ export default function SamplePacksPage() {
   const [packToDelete, setPackToDelete] = useState<SamplePack | null>(null);
   const page = Number(searchParams.get("page")) || 1;
   const limit = 20;
-
+  const [isDownloading, setIsDownloading] = useState(false);
   const { data: packsData, isLoading, error } = useGetPacksQuery(null);
 
   const allPacks = packsData?.data || [];
+  console.log(allPacks);
 
   const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
 
@@ -115,7 +116,19 @@ export default function SamplePacksPage() {
 
   const handleDownload = async (pack: SamplePack) => {
     try {
-      // Use the zip_path from the backend data for direct download
+      if (!pack.zip_path) {
+        toast.error("Download link not available for this pack");
+        return;
+      }
+
+      if (isDownloading) {
+        toast.error("Download already in progress");
+        return;
+      }
+
+      setIsDownloading(true);
+      const loadingToast = toast.loading("Downloading sample pack...");
+
       const response = await fetch(pack.zip_path);
 
       if (response.ok) {
@@ -123,16 +136,25 @@ export default function SamplePacksPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${pack.title}.zip`; // Set the filename
+        a.download = `${pack.title.replace(/[^a-zA-Z0-9]/g, '_')}.zip`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToast);
+        toast.success(`Downloaded ${pack.title} successfully`);
       } else {
-        console.error("Error downloading sample pack");
+        console.error("Error downloading sample pack:", response.status, response.statusText);
+        toast.dismiss(loadingToast);
+        toast.error("Failed to download sample pack. Please try again.");
       }
     } catch (error) {
       console.error("Error downloading sample pack:", error);
+      toast.error("Failed to download sample pack. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
