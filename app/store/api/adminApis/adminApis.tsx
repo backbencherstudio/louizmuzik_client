@@ -14,8 +14,15 @@ export const adminApis = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    freeSubscription: builder.mutation({
+      query: (userId) => ({
+        url: `/auth/userManagement/directSubscription/${userId}`,
+        method: "PATCH",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery, useGetAdminOverviewQuery } = adminApis;
+export const { useGetUsersQuery, useGetAdminOverviewQuery, useFreeSubscriptionMutation } = adminApis;
