@@ -49,7 +49,13 @@ export const adminApis = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
-    
+
+    getBillingHistory: builder.query({
+      query: () => ({
+        url: "/admin/billingHistoryForAdmin",
+        method: "GET",
+      }),
+    }),
 
     freeSubscription: builder.mutation({
       query: (userId) => ({
@@ -70,4 +76,5 @@ export const {
   useDeleteMelodyMutation,
   useGetPacksQuery,
   useDeletePackMutation,
+  useGetBillingHistoryQuery,
 } = adminApis;

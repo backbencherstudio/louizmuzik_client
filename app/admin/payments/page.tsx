@@ -18,8 +18,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ClientPagination } from '@/components/admin/ClientPagination';
+import { useGetBillingHistoryQuery } from '@/app/store/api/adminApis/adminApis';
 
 type PaymentType = 'subscription' | 'marketplace';
+
+interface BillingHistoryItem {
+    _id: string;
+    userId: string;
+    email: string;
+    name: string;
+    salesAmount: number;
+    subscriptionAmount: number;
+    commission: number;
+    createdAt: string;
+    updatedAt: string;
+    invoiceURL: string;
+}
 
 interface Payment {
     id: string;
@@ -56,35 +70,102 @@ function PaymentsPage() {
     const page = Number(searchParams.get('page')) || 1;
     const limit = 10;
 
-    useEffect(() => {
-        fetchPayments();
-    }, [page, searchTerm, typeFilter]);
+    const { data: billingHistory, isLoading: isBillingHistoryLoading } = useGetBillingHistoryQuery(null);
 
-    const fetchPayments = async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                page: String(page),
-                limit: String(limit),
-                ...(searchTerm && { search: searchTerm }),
-                ...(typeFilter && { type: typeFilter }),
-            });
+    const allBillingHistory = billingHistory?.data || [];
 
-            const response = await fetch(`/api/admin/payments?${params}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                setPayments(data.payments);
-                setTotal(data.pagination.total);
-            } else {
-                console.error('Error fetching payments:', data.error);
+    // Transform billing history data to payments format
+    const transformBillingHistoryToPayments = (billingData: BillingHistoryItem[]): Payment[] => {
+        return billingData.flatMap((item) => {
+            const payments: Payment[] = [];
+            
+            // Add subscription payment if subscriptionAmount > 0
+            if (item.subscriptionAmount > 0) {
+                payments.push({
+                    id: `${item._id}-subscription`,
+                    type: 'subscription',
+                    amount: item.subscriptionAmount,
+                    user: {
+                        id: item.userId,
+                        name: item.name,
+                        email: item.email,
+                    },
+                    details: {
+                        subscriptionId: item._id,
+                    },
+                    created_at: item.createdAt,
+                });
             }
-        } catch (error) {
-            console.error('Error fetching payments:', error);
-        } finally {
+            
+            // Add marketplace payment if salesAmount > 0
+            if (item.salesAmount > 0) {
+                payments.push({
+                    id: `${item._id}-marketplace`,
+                    type: 'marketplace',
+                    amount: item.salesAmount,
+                    commission: item.commission,
+                    user: {
+                        id: item.userId,
+                        name: item.name,
+                        email: item.email,
+                    },
+                    details: {
+                        productId: item._id,
+                        productTitle: 'Sample Pack', // You might want to fetch actual product titles
+                        seller: {
+                            id: item.userId,
+                            name: item.name,
+                            email: item.email,
+                        },
+                    },
+                    created_at: item.createdAt,
+                });
+            }
+            
+            return payments;
+        });
+    };
+
+    useEffect(() => {
+        if (!isBillingHistoryLoading && allBillingHistory.length > 0) {
+            const allPayments = transformBillingHistoryToPayments(allBillingHistory);
+            
+            // Apply filters
+            let filteredPayments = allPayments;
+            
+            if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase();
+                filteredPayments = filteredPayments.filter(
+                    (payment) =>
+                        payment.user.name.toLowerCase().includes(searchLower) ||
+                        payment.user.email.toLowerCase().includes(searchLower) ||
+                        (payment.type === 'marketplace' &&
+                            payment.details.productTitle
+                                ?.toLowerCase()
+                                .includes(searchLower))
+                );
+            }
+            
+            if (typeFilter) {
+                filteredPayments = filteredPayments.filter(
+                    (payment) => payment.type === typeFilter
+                );
+            }
+            
+            // Apply pagination
+            const start = (page - 1) * limit;
+            const end = start + limit;
+            const paginatedPayments = filteredPayments.slice(start, end);
+            
+            setPayments(paginatedPayments);
+            setTotal(filteredPayments.length);
+            setLoading(false);
+        } else if (!isBillingHistoryLoading) {
+            setPayments([]);
+            setTotal(0);
             setLoading(false);
         }
-    };
+    }, [allBillingHistory, isBillingHistoryLoading, page, searchTerm, typeFilter]);
 
     const handlePaymentAction = async (
         paymentId: string,
@@ -103,7 +184,8 @@ function PaymentsPage() {
             });
 
             if (response.ok) {
-                fetchPayments(); // Refresh the payment list
+                // Refresh the data by refetching billing history
+                window.location.reload();
             } else {
                 const data = await response.json();
                 console.error('Error updating payment:', data.error);
@@ -119,6 +201,21 @@ function PaymentsPage() {
             currency: 'USD',
         }).format(amount);
     };
+
+    if (isBillingHistoryLoading) {
+        return (
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-semibold text-white">
+                        Transactions
+                    </h2>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-8">
+                    <div className="text-center text-zinc-400">Loading transactions...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6">
