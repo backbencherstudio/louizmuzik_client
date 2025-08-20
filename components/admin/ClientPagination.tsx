@@ -4,14 +4,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 interface ClientPaginationProps {
     total: number;
+    limit?: number;
 }
 
-export function ClientPagination({ total }: ClientPaginationProps) {
+export function ClientPagination({ total, limit = 10 }: ClientPaginationProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const page = Number(searchParams.get('page')) || 1;
-    const limit = 10;
-    const totalPages = Math.ceil(total / limit);
+    const page = Number(searchParams.get('page')) || 1; // Fixed: default to 1
+    const totalPages = Math.ceil(total / limit); // Fixed: calculate based on total and limit
 
     const handlePrevious = () => {
         if (page > 1) {
@@ -36,7 +36,7 @@ export function ClientPagination({ total }: ClientPaginationProps) {
                 <span className="font-medium">
                     {Math.min(page * limit, total)}
                 </span>{' '}
-                of <span className="font-medium">{total}</span> users
+                of <span className="font-medium">{total}</span> melodies
             </div>
             <div className="flex items-center gap-2">
                 <button

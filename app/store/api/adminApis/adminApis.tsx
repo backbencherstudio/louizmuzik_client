@@ -22,6 +22,13 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
+    getMelodies: builder.query({
+      query: () => ({
+        url: "/melody",
+        method: "GET",
+      }),
+    }),
+
     
     freeSubscription: builder.mutation({
       query: (userId) => ({
@@ -38,4 +45,5 @@ export const {
   useGetUsersQuery,
   useDeleteUserMutation,
   useFreeSubscriptionMutation,
+  useGetMelodiesQuery,
 } = adminApis;

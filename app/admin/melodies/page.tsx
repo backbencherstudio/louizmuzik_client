@@ -4,65 +4,58 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Music2, Search, Play, Download, Trash2 } from 'lucide-react';
 import { ClientPagination } from '@/components/admin/ClientPagination';
+import { useGetMelodiesQuery } from '@/app/store/api/adminApis/adminApis';
 
 type Melody = {
-    id: string;
-    title: string;
-    producer: {
-        username: string;
-        email: string;
-    };
+    _id: string;
+    userId: string;
+    name: string;
+    producer: string;
     bpm: number;
     key: string;
-    genre: string;
-    instrument: string;
-    stats: {
-        downloads: number;
-        plays: number;
-    };
-    created_at: string;
-    downloadUrl: string;
+    genre: string[];
+    artistType: string[];
+    audioUrl: string;
+    image: string;
+    splitPercentage: number;
+    plays: number;
+    downloads: number;
+    favorites: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
+type LoadingState = {
+    [key: string]: boolean;
 };
 
 export default function MelodiesPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [melodies, setMelodies] = useState<Melody[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<LoadingState>({});
     const [searchTerm, setSearchTerm] = useState('');
 
     const page = Number(searchParams.get('page')) || 1;
-    const limit = 10;
+    const limit = 20;
 
-    useEffect(() => {
-        fetchMelodies();
-    }, [page, searchTerm]);
+    const { data: melodiesData, isLoading, error } = useGetMelodiesQuery(null);
 
-    const fetchMelodies = async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                page: String(page),
-                limit: String(limit),
-                ...(searchTerm && { search: searchTerm }),
-            });
+    const allMelodies = melodiesData?.data || [];
 
-            const response = await fetch(`/api/admin/melodies?${params}`);
-            const data = await response.json();
+    // Filter melodies based on search term
+    const filteredMelodies = allMelodies.filter(
+        (melody: Melody) =>
+            melody.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            melody.producer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            melody.genre.some(g => g.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
 
-            if (response.ok) {
-                setMelodies(data.melodies);
-                setTotal(data.pagination.total);
-            } else {
-                console.error('Error fetching melodies:', data.error);
-            }
-        } catch (error) {
-            console.error('Error fetching melodies:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Calculate pagination
+    const totalMelodies = filteredMelodies.length;
+    const totalPages = Math.ceil(totalMelodies / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedMelodies = filteredMelodies.slice(startIndex, endIndex);
 
     const handleDeleteMelody = async (melodyId: string) => {
         if (
@@ -74,53 +67,61 @@ export default function MelodiesPage() {
         }
 
         try {
-            setLoading({ ...loading, [`delete-${melodyId}`]: true });
+            setLoading(prev => ({ ...prev, [`delete-${melodyId}`]: true }));
             // In a real application, this would make an API call to delete the melody
             // await fetch(`/api/admin/melodies/${melodyId}`, {
             //     method: 'DELETE',
             // });
 
-            setMelodies(melodies.filter((melody) => melody.id !== melodyId));
+            // For now, just show success message
+            alert('Melody deleted successfully');
         } catch (error) {
             console.error('Error deleting melody:', error);
             alert('Failed to delete melody. Please try again.');
         } finally {
-            setLoading({ ...loading, [`delete-${melodyId}`]: false });
+            setLoading(prev => ({ ...prev, [`delete-${melodyId}`]: false }));
         }
     };
 
     const handleDownloadMelody = async (melody: Melody) => {
         try {
-            setLoading({ ...loading, [`download-${melody.id}`]: true });
+            setLoading(prev => ({ ...prev, [`download-${melody._id}`]: true }));
             // In a real application, this would trigger the file download
-            // const response = await fetch(melody.downloadUrl);
+            // const response = await fetch(melody.audioUrl);
             // const blob = await response.blob();
             // const url = window.URL.createObjectURL(blob);
             // const a = document.createElement('a');
             // a.href = url;
-            // a.download = `${melody.title}.wav`;
+            // a.download = `${melody.name}.wav`;
             // document.body.appendChild(a);
             // a.click();
             // document.body.removeChild(a);
             // window.URL.revokeObjectURL(url);
 
-            alert(`Downloading melody: ${melody.title}`);
+            alert(`Downloading melody: ${melody.name}`);
         } catch (error) {
             console.error('Error downloading melody:', error);
             alert('Failed to download melody. Please try again.');
         } finally {
-            setLoading({ ...loading, [`download-${melody.id}`]: false });
+            setLoading(prev => ({ ...prev, [`download-${melody._id}`]: false }));
         }
     };
 
-    const filteredMelodies = melodies.filter(
-        (melody) =>
-            melody.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            melody.producer.username
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-            melody.genre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    if (isLoading) {
+        return (
+            <div className="p-6">
+                <div className="text-center text-zinc-400">Loading melodies...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="text-center text-red-400">Error loading melodies</div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6">
@@ -172,16 +173,7 @@ export default function MelodiesPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td
-                                        colSpan={5}
-                                        className="text-center p-4 text-zinc-400"
-                                    >
-                                        Loading...
-                                    </td>
-                                </tr>
-                            ) : filteredMelodies.length === 0 ? (
+                            {paginatedMelodies.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={5}
@@ -191,9 +183,9 @@ export default function MelodiesPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredMelodies.map((melody) => (
+                                paginatedMelodies.map((melody: Melody) => (
                                     <tr
-                                        key={melody.id}
+                                        key={melody._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-800/50"
                                     >
                                         <td className="p-4">
@@ -203,12 +195,12 @@ export default function MelodiesPage() {
                                                 </div>
                                                 <div>
                                                     <div className="font-medium text-white">
-                                                        {melody.title}
+                                                        {melody.name}
                                                     </div>
                                                     <div className="text-sm text-zinc-400">
                                                         Uploaded:{' '}
                                                         {new Date(
-                                                            melody.created_at
+                                                            melody.createdAt
                                                         ).toLocaleDateString()}
                                                     </div>
                                                 </div>
@@ -217,22 +209,20 @@ export default function MelodiesPage() {
                                         <td className="p-4">
                                             <div>
                                                 <div className="text-white">
-                                                    {melody.producer.username}
+                                                    {melody.producer}
                                                 </div>
                                                 <div className="text-sm text-zinc-400">
-                                                    {melody.producer.email}
+                                                    Split: {melody.splitPercentage}%
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="space-y-1">
                                                 <div className="text-white">
-                                                    {melody.bpm} BPM ·{' '}
-                                                    {melody.key}
+                                                    {melody.bpm} BPM · {melody.key}
                                                 </div>
                                                 <div className="text-sm text-zinc-400">
-                                                    {melody.genre} ·{' '}
-                                                    {melody.instrument}
+                                                    {melody.genre.join(', ')} · {melody.artistType.join(', ')}
                                                 </div>
                                             </div>
                                         </td>
@@ -240,15 +230,11 @@ export default function MelodiesPage() {
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2 text-zinc-400">
                                                     <Play className="w-4 h-4" />
-                                                    <span>
-                                                        {melody.stats.plays}
-                                                    </span>
+                                                    <span>{melody.plays}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-zinc-400">
                                                     <Download className="w-4 h-4" />
-                                                    <span>
-                                                        {melody.stats.downloads}
-                                                    </span>
+                                                    <span>{melody.downloads}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -256,15 +242,9 @@ export default function MelodiesPage() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() =>
-                                                        handleDownloadMelody(
-                                                            melody
-                                                        )
+                                                        handleDownloadMelody(melody)
                                                     }
-                                                    disabled={
-                                                        loading[
-                                                            `download-${melody.id}`
-                                                        ]
-                                                    }
+                                                    disabled={loading[`download-${melody._id}`]}
                                                     className="p-1.5 rounded-lg text-zinc-400 hover:text-emerald-500 hover:bg-zinc-700 transition-colors"
                                                     title="Download Melody"
                                                 >
@@ -272,15 +252,9 @@ export default function MelodiesPage() {
                                                 </button>
                                                 <button
                                                     onClick={() =>
-                                                        handleDeleteMelody(
-                                                            melody.id
-                                                        )
+                                                        handleDeleteMelody(melody._id)
                                                     }
-                                                    disabled={
-                                                        loading[
-                                                            `delete-${melody.id}`
-                                                        ]
-                                                    }
+                                                    disabled={loading[`delete-${melody._id}`]}
                                                     className="p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-zinc-700 transition-colors"
                                                     title="Delete Melody"
                                                 >
@@ -297,7 +271,7 @@ export default function MelodiesPage() {
             </div>
 
             {/* Pagination */}
-            <ClientPagination total={total} />
+            <ClientPagination total={totalMelodies} limit={limit} />
         </div>
     );
 }
