@@ -21,23 +21,32 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ClientPagination } from '@/components/admin/ClientPagination';
+import { useGetPacksQuery } from '@/app/store/api/adminApis/adminApis';
 
 type SamplePack = {
-    id: string;
+    _id: string;
     title: string;
-    producer: {
-        username: string;
-        email: string;
-    };
     price: number;
     description: string;
-    coverArt: string;
-    demoAudio: string;
-    stats: {
-        sales: number;
-        revenue: number;
+    thumbnail_image: string;
+    audio_path: string;
+    video_path?: string;
+    zip_path: string;
+    genre: string[];
+    highlight: boolean;
+    favorites: number;
+    sales: number;
+    profit: number;
+    createdAt: string;
+    updatedAt: string;
+    userId: {
+        _id: string;
+        email: string;
+        producer_name: string;
+        country: string;
+        profile_image: string;
+        role: string;
     };
-    created_at: string;
 };
 
 export default function SamplePacksPage() {
@@ -54,34 +63,20 @@ export default function SamplePacksPage() {
     const page = Number(searchParams.get('page')) || 1;
     const limit = 10;
 
+    const { data: packsData, isLoading, error } = useGetPacksQuery(null);
+
+    const allPacks = packsData?.data || [];
+    console.log('All packs from backend:', allPacks);
+
     useEffect(() => {
-        fetchPacks();
-    }, [page, searchTerm]);
-
-    const fetchPacks = async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                page: String(page),
-                limit: String(limit),
-                ...(searchTerm && { search: searchTerm }),
-            });
-
-            const response = await fetch(`/api/admin/sample-packs?${params}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                setPacks(data.packs);
-                setTotal(data.pagination.total);
-            } else {
-                console.error('Error fetching sample packs:', data.error);
-            }
-        } catch (error) {
-            console.error('Error fetching sample packs:', error);
-        } finally {
+        if (allPacks.length > 0) {
+            setPacks(allPacks);
+            setTotal(allPacks.length);
             setLoading(false);
         }
-    };
+    }, [allPacks]);
+
+    // Remove the fetchPacks function since we're using RTK Query data
 
     const handleDeleteClick = (pack: SamplePack) => {
         setPackToDelete(pack);
@@ -98,13 +93,14 @@ export default function SamplePacksPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    packId: packToDelete.id,
+                    packId: packToDelete._id,
                     action: 'delete',
                 }),
             });
 
             if (response.ok) {
-                fetchPacks(); // Refresh the pack list
+                // Refresh the data by refetching from RTK Query
+                // The RTK Query cache will be invalidated and refetched
                 setDeleteModalOpen(false);
                 setPackToDelete(null);
             } else {
@@ -124,10 +120,8 @@ export default function SamplePacksPage() {
 
     const handleDownload = async (pack: SamplePack) => {
         try {
-            // In a real application, this would make an API call to get the download URL
-            const response = await fetch(
-                `/api/admin/sample-packs/${pack.id}/download`
-            );
+            // Use the zip_path from the backend data for direct download
+            const response = await fetch(pack.zip_path);
 
             if (response.ok) {
                 const blob = await response.blob();
@@ -225,15 +219,15 @@ export default function SamplePacksPage() {
                             ) : (
                                 packs.map((pack) => (
                                     <tr
-                                        key={pack.id}
+                                        key={pack._id}
                                         className="border-b border-zinc-800"
                                     >
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center">
-                                                    {pack.coverArt ? (
+                                                    {pack.thumbnail_image ? (
                                                         <img
-                                                            src={pack.coverArt}
+                                                            src={pack.thumbnail_image}
                                                             alt={pack.title}
                                                             className="w-full h-full object-cover rounded-lg"
                                                         />
@@ -248,19 +242,24 @@ export default function SamplePacksPage() {
                                                     <div className="text-sm text-zinc-400">
                                                         Uploaded:{' '}
                                                         {new Date(
-                                                            pack.created_at
+                                                            pack.createdAt
                                                         ).toLocaleDateString()}
                                                     </div>
+                                                    {pack.genre && pack.genre.length > 0 && (
+                                                        <div className="text-xs text-emerald-500">
+                                                            {pack.genre.join(', ')}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-4">
                                             <div>
                                                 <div className="text-white">
-                                                    {pack.producer.username}
+                                                    {pack.userId.producer_name}
                                                 </div>
                                                 <div className="text-sm text-zinc-400">
-                                                    {pack.producer.email}
+                                                    {pack.userId.email}
                                                 </div>
                                             </div>
                                         </td>
@@ -274,17 +273,18 @@ export default function SamplePacksPage() {
                                                 <div className="flex items-center gap-2 text-zinc-400">
                                                     <ShoppingCart className="w-4 h-4" />
                                                     <span>
-                                                        {pack.stats.sales}
+                                                        {pack.sales} sales
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-zinc-400">
                                                     <DollarSign className="w-4 h-4" />
                                                     <span>
                                                         {formatCurrency(
-                                                            pack.stats.revenue
-                                                        )}
+                                                            pack.profit
+                                                        )} profit
                                                     </span>
                                                 </div>
+                                               
                                             </div>
                                         </td>
                                         <td className="p-4">
@@ -309,17 +309,6 @@ export default function SamplePacksPage() {
                                                     >
                                                         <Download className="w-4 h-4 mr-2" />
                                                         Download
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() =>
-                                                            handleEditDetails(
-                                                                pack
-                                                            )
-                                                        }
-                                                        className="text-white hover:text-white hover:bg-zinc-800"
-                                                    >
-                                                        <Pencil className="w-4 h-4 mr-2" />
-                                                        Edit Details
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() =>

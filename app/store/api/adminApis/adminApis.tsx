@@ -36,6 +36,13 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
+    getPacks: builder.query({
+      query: () => ({
+        url: "/pack",
+        method: "GET",
+      }),
+    }),
+
     freeSubscription: builder.mutation({
       query: (userId) => ({
         url: `/auth/userManagement/directSubscription/${userId}`,
@@ -53,4 +60,5 @@ export const {
   useFreeSubscriptionMutation,
   useGetMelodiesQuery,
   useDeleteMelodyMutation,
+  useGetPacksQuery,
 } = adminApis;
