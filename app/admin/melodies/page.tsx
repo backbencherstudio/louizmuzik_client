@@ -41,6 +41,7 @@ export default function MelodiesPage() {
     const { data: melodiesData, isLoading, error } = useGetMelodiesQuery(null);
 
     const allMelodies = melodiesData?.data || [];
+    console.log(allMelodies);
 
     // Filter melodies based on search term
     const filteredMelodies = allMelodies.filter(
@@ -86,19 +87,21 @@ export default function MelodiesPage() {
     const handleDownloadMelody = async (melody: Melody) => {
         try {
             setLoading(prev => ({ ...prev, [`download-${melody._id}`]: true }));
-            // In a real application, this would trigger the file download
-            // const response = await fetch(melody.audioUrl);
-            // const blob = await response.blob();
-            // const url = window.URL.createObjectURL(blob);
-            // const a = document.createElement('a');
-            // a.href = url;
-            // a.download = `${melody.name}.wav`;
-            // document.body.appendChild(a);
-            // a.click();
-            // document.body.removeChild(a);
-            // window.URL.revokeObjectURL(url);
-
-            alert(`Downloading melody: ${melody.name}`);
+            const response = await fetch(melody.audioUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${melody.name}.mp3`; 
+            a.style.display = 'none';
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Error downloading melody:', error);
             alert('Failed to download melody. Please try again.');
