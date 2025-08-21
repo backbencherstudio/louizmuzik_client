@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {  Check, ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: user, refetch } = useLoggedInUser();
-  const userData =  user?.data;
+  const userData = user?.data;
   console.log(25, userData);
   const [isProcessing, setIsProcessing] = useState(false);
   const { cartItems } = useCart();
@@ -33,7 +33,8 @@ export default function CheckoutPage() {
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
   const [amount, setAmount] = useState(total);
-  const [purchasePack, { isLoading: isPurchasePackLoading }] = usePurchasePackMutation();
+  const [purchasePack, { isLoading: isPurchasePackLoading }] =
+    usePurchasePackMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,17 +47,17 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-
-  const selectedData = cartItems.map(item => ({
-    selectedProducerId: item.producerId,
-    price: item.price,
+  const selectedData = cartItems.map((item) => ({
+    // selectedProducerId: item.producerId,
+    // price: item.price,
     userId: userData?._id,
+    packId: item.id,
   }));
 
-  const selectedPackData = cartItems.map(item => ({
-    userId: userData?._id, 
+  const selectedPackData = cartItems.map((item) => ({
+    userId: userData?._id,
     packId: item.id,
-    selectedProducerId: item.producerId, 
+    selectedProducerId: item.producerId,
     price: item.price,
   }));
 
@@ -156,7 +157,8 @@ export default function CheckoutPage() {
                   <div className="mt-6 w-full h-16 p-1 overflow-hidden ml-5">
                     <PayPalScriptProvider
                       options={{
-                        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
+                        clientId:
+                          process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
                       }}
                     >
                       <PayPalButtons
