@@ -15,7 +15,7 @@ import {
     Filter,
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 
 const menuItems = [
     {
@@ -68,13 +68,15 @@ const menuItems = [
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
+    const handleSignOut = async () => {
+        const supabaseClient = await supabase;
+        await supabaseClient.auth.signOut();
         router.push('/');
         router.refresh();
     };
+
 
     return (
         <div className="flex h-screen flex-col justify-between border-r border-zinc-800 bg-zinc-950 w-64 fixed left-0 top-0">
@@ -109,7 +111,7 @@ export function Sidebar() {
             </div>
             <div className="border-t border-zinc-800 p-4">
                 <button
-                    onClick={handleLogout}
+                    onClick={handleSignOut}
                     className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-white hover:bg-zinc-900"
                 >
                     <LogOut className="h-5 w-5" />

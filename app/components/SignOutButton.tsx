@@ -1,16 +1,17 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 export function SignOutButton() {
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
+        const supabaseClient = await supabase;
+        await supabaseClient.auth.signOut();
         router.push('/');
         router.refresh();
     };

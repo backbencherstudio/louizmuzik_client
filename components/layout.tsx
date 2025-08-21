@@ -669,7 +669,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Main Content */}
-      <ProtectedRoute>
+      <ProtectedRoute role="user">
         <main className="lg:ml-64 pt-16">{children}</main>
       </ProtectedRoute>
     </div>

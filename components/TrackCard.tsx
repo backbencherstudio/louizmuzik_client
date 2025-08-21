@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
 import { WaveformDisplay } from './waveform-display';
+import { PauseIcon, PlayIcon } from 'lucide-react';
 
 interface TrackCardProps {
     title: string;

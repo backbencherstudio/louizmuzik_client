@@ -277,23 +277,14 @@ export default function ProductAltPage() {
             </div>
 
             {/* Audio Player */}
-            <AudioPlayer
+            {/* <AudioPlayer
                 isVisible={isAudioPlayerVisible}
-                melody={{
-                    id: product.id,
-                    name: product.title,
-                    producer: product.producer,
-                    image: product.image,
-                    waveform: '▂▃▅▂▇▂▅▃▂',
-                    bpm: 120,
-                    key: 'C Maj',
-                    artistType: 'Producer',
-                }}
+               
                 onClose={() => {
                     setIsAudioPlayerVisible(false);
                     setIsPlaying(false);
                 }}
-            />
+            /> */}
         </Layout>
     );
 }

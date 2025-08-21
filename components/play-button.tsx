@@ -2,7 +2,7 @@
 
 import { Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAudio } from "@/components/audio-context"
+import { useAudioContext } from "@/components/audio-context"
 
 interface PlayButtonProps {
   track: {
@@ -16,6 +16,7 @@ interface PlayButtonProps {
   size?: "default" | "sm" | "lg" | "icon"
   className?: string
   showText?: boolean
+  onPlay?: () => void
 }
 
 export default function PlayButton({
@@ -24,11 +25,18 @@ export default function PlayButton({
   size = "default",
   className = "",
   showText = true,
+  onPlay,
 }: PlayButtonProps) {
-  const { playTrack } = useAudio()
+  const { setAudioState } = useAudioContext()
 
   const handlePlay = () => {
-    playTrack(track)
+    setAudioState({
+      currentTime: 0,
+      duration: 0,
+      isPlaying: true,
+      currentMelodyId: track.id,
+    })
+    onPlay?.()
   }
 
   return (

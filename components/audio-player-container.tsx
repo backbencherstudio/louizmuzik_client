@@ -1,19 +1,21 @@
 "use client"
 
-import { useAudio } from "@/components/audio-context"
+import { useAudioContext } from "@/components/audio-context"
 import AudioPlayer from "@/components/audio-player"
 
 export default function AudioPlayerContainer() {
-  const { isPlayerOpen, currentTrack, playlist, nextTrack, previousTrack, closePlayer } = useAudio()
+  const { currentMelodyId, setAudioState } = useAudioContext()
 
   return (
     <AudioPlayer
-      isOpen={isPlayerOpen}
-      onClose={closePlayer}
-      currentTrack={currentTrack}
-      playlist={playlist}
-      onNext={nextTrack}
-      onPrevious={previousTrack}
+      isVisible={!!currentMelodyId}
+      melody={null} // You'll need to pass the actual melody data here
+      onClose={() => setAudioState({
+        currentTime: 0,
+        duration: 0,
+        isPlaying: false,
+        currentMelodyId: null,
+      })}
     />
   )
 }

@@ -193,14 +193,15 @@ const CheckoutForm = ({ totalPrice }: CheckoutFormProps) => {
   );
 };
 
-interface SubscribeFormProps {
-  amount: number;
-}
-
-const SubscribeForm = ({ amount }: SubscribeFormProps) => (
-  <Elements stripe={stripePromise}>
-    <CheckoutForm totalPrice={amount} />
-  </Elements>
-);
+const SubscribeForm = () => {
+  // Default amount or get from URL params/state
+  const amount = 9.99; // Default subscription amount
+  
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm totalPrice={amount} />
+    </Elements>
+  );
+};
 
 export default SubscribeForm;

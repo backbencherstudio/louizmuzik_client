@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -23,7 +23,7 @@ export function CategorySection({ title, type, items }: CategorySectionProps) {
     const [isAdding, setIsAdding] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,7 +33,8 @@ export function CategorySection({ title, type, items }: CategorySectionProps) {
         setError('');
 
         try {
-            const { error } = await supabase.from('categories').insert({
+            const supabaseClient = await supabase;
+            const { error } = await supabaseClient.from('categories').insert({
                 name: newItem.trim(),
                 type,
             });
@@ -51,7 +52,8 @@ export function CategorySection({ title, type, items }: CategorySectionProps) {
 
     const handleDelete = async (id: string) => {
         try {
-            const { error } = await supabase
+            const supabaseClient = await supabase;
+            const { error } = await supabaseClient
                 .from('categories')
                 .delete()
                 .eq('id', id);

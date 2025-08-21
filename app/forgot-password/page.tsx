@@ -26,7 +26,10 @@ export default function ForgotPasswordPage() {
         const password = formData.get('password') as string;
 
         try {
-            const response = await resetPassword({ email, password }).unwrap();
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            const response = await resetPassword(formData).unwrap();
             console.log(response);
             setUserEmail(email);
             setIsEmailSent(true);
@@ -223,7 +226,10 @@ export default function ForgotPasswordPage() {
                                         // Resend OTP by calling the reset password again
                                         setIsLoading(true);
                                         try {
-                                            const response = await resetPassword({ email: userEmail, password: '' }).unwrap();
+                                            const formData = new FormData();
+                                            formData.append('email', userEmail);
+                                            formData.append('password', '');
+                                            const response = await resetPassword(formData).unwrap();
                                             toast.success('Verification code resent to your email');
                                         } catch (error: any) {
                                             console.error('Error resending OTP:', error);

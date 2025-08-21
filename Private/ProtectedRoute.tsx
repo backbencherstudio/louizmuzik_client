@@ -3,7 +3,7 @@ import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children, role }: { children: React.ReactNode, role: string }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { data: userData, error, isLoading } = useLoggedInUserQuery(null);

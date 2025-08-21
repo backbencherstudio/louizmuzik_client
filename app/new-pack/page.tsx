@@ -49,7 +49,7 @@ const AVAILABLE_GENRES = [
   "Lo-Fi",
 ];
 
-export default function NewPackPage({params}: {params: {edit: string}}) {
+export default function NewPackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");

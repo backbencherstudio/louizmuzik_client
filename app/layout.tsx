@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { AudioProvider } from "@/components/audio-context";
 import { Auth0ProviderWithConfig } from "./Auth0ProviderWithConfig";
 import { GoogleProvider } from "@/components/Provider/GoogleProvider";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "MelodyCollab - Collaborate with Top Music Producers",
@@ -32,16 +33,18 @@ export default function RootLayout({
           </ReduxProvider>
           <Toaster position="top-center" richColors />
         </AudioProvider> */}
-        <AudioProvider>
-          <Auth0ProviderWithConfig>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AudioProvider>
+            <Auth0ProviderWithConfig>
               <ReduxProvider>
-            <GoogleProvider>
-                <Providers>{children}</Providers>
-            </GoogleProvider>
+                <GoogleProvider>
+                  <Providers>{children}</Providers>
+                </GoogleProvider>
               </ReduxProvider>
-            <Toaster position="top-center" richColors />
-          </Auth0ProviderWithConfig>
-        </AudioProvider>
+              <Toaster position="top-center" richColors />
+            </Auth0ProviderWithConfig>
+          </AudioProvider>
+        </Suspense>
       </body>
     </html>
   );

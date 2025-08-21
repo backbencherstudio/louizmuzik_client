@@ -37,8 +37,8 @@ export function WaveformDisplay({
                 barRadius: 2,
                 height: height,
                 normalize: true,
-                responsive: true,
-                interact: false, // Disable user interaction to prevent conflicts
+                // responsive: true,
+                interact: false, 
             });
 
             wavesurfer.load(audioUrl);
@@ -50,7 +50,7 @@ export function WaveformDisplay({
         }
     }, [audioUrl, height]);
 
-    // Update progress based on external audio player
+    
     useEffect(() => {
         const wavesurfer = wavesurferRef.current;
         if (wavesurfer && duration > 0) {
