@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { Play, Pause, Download, Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,11 +22,17 @@ import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import {
   useDownloadChartMelodyQuery,
   useGetMelodyByUserIdQuery,
+  useMelodyPlayMutation,
+  useMelodyDownloadMutation,
+  useFavoriteMelodyMutation,
 } from "../store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useGetProducerPackQuery } from "../store/api/packApis/packApis";
 import { useRouter } from "next/navigation";
 import { usePackSalesHistoryQuery } from "../store/api/paymentApis/paymentApis";
+import { AudioPlayer } from "@/components/audio-player";
+import { useAudioContext } from "@/components/audio-context";
+import { CollabModal } from "@/components/collab-modal";
 
 const formatedFollowers = (followers: number) => {
   if (followers >= 1000000) {
@@ -233,6 +239,11 @@ const calculateTotalRevenue = (packsData: any[]) => {
 export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("7days");
   const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState("7days");
+  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
+  const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
+  const [selectedMelody, setSelectedMelody] = useState<any>(null);
   const router = useRouter();
 
   const {
@@ -268,6 +279,64 @@ export default function DashboardPage() {
   console.log(salesData);
   const totalRevenue = calculateTotalRevenue(packs || []);
 
+  // Mutations
+  const [melodyPlayCounter] = useMelodyPlayMutation();
+  const [melodyDownloadCounter] = useMelodyDownloadMutation();
+  const [favoriteMelody] = useFavoriteMelodyMutation();
+
+  // Audio context
+  const { currentTime, duration, currentMelodyId } = useAudioContext();
+
+  // Check if melody is favorite
+  const isMelodyFavorite = (melodyId: string) => {
+    return userData?.data?.favourite_melodies?.includes(melodyId) || false;
+  };
+
+  // Toggle favorite
+  const toggleFavorite = async (melodyId: string) => {
+    if (melodyId && userId) {
+      await favoriteMelody({ id: melodyId, userId: userId }).unwrap();
+      refetchMelodies();
+    }
+  };
+
+  const handlePlayClick = async (melody: any) => {
+    if (currentPlayingMelody?._id === melody._id) {
+      setCurrentPlayingMelody(null);
+      setIsAudioPlayerVisible(false);
+      setShouldAutoPlay(false);
+    } else {
+      try {
+        const response = await melodyPlayCounter(melody._id).unwrap();
+        console.log("melodyPlayCounter", response);
+      } catch (error) {
+        console.log("error", error);
+      }
+      
+      const melodyToPlay = {
+        _id: melody._id, 
+        name: melody.name,
+        producer: melody.producer,
+        image: melody.image,
+        audio: melody.audio_path || melody.audio || melody.audioUrl,
+        audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+        bpm: melody.bpm || 120,
+        key: melody.key || 'C Maj',
+        genre: melody.genre || 'Unknown',
+        artistType: melody.artistType || 'Producer',
+      };
+      
+      setCurrentPlayingMelody(melodyToPlay);
+      setIsAudioPlayerVisible(true);
+      setShouldAutoPlay(true);
+    }
+  };
+
+  const handleDownloadClick = async (melody: any) => {
+    setSelectedMelody(melody);
+    setIsCollabModalOpen(true);
+  };
+
   // Calculate totals from melodies data
   const calculateTotals = () => {
     if (!melodies || !Array.isArray(melodies)) {
@@ -300,7 +369,7 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto space-y-8 px-4 py-8">
+      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} container mx-auto space-y-8 px-4 py-8`}>
         {/* Stats Overview */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="relative overflow-hidden border-0 bg-[#0F0F0F] shadow-xl transition-all hover:translate-y-[-2px]">
@@ -587,13 +656,29 @@ export default function DashboardPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-12 w-12 rounded-full bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-500 transition-all"
+                      className={`h-12 w-12 rounded-full transition-all ${
+                        currentPlayingMelody?._id === melody._id
+                          ? 'bg-emerald-500 text-black hover:bg-emerald-600'
+                          : 'bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-500'
+                      }`}
+                      onClick={() => handlePlayClick(melody)}
                     >
-                      <Play className="h-5 w-5 text-white" />
+                      {currentPlayingMelody?._id === melody._id ? (
+                        <Pause className="h-5 w-5" />
+                      ) : (
+                        <Play className="h-5 w-5 text-white" />
+                      )}
                     </Button>
                     <div className="flex-1 text-sm font-medium text-zinc-400 w-1/4">
                       <WaveformDisplay
                         audioUrl={melody.audioUrl}
+                        isPlaying={currentPlayingMelody?._id === melody._id}
+                        onPlayPause={() => handlePlayClick(melody)}
+                        height={30}
+                        width="200px"
+                        isControlled={true}
+                        currentTime={currentMelodyId === melody._id ? currentTime : 0}
+                        duration={currentMelodyId === melody._id ? duration : 0}
                       />
                     </div>
                     <div className="flex-1 text-sm font-medium text-zinc-400">
@@ -601,6 +686,35 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-sm text-zinc-500">
                       {melody.plays || 0} plays
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                          isMelodyFavorite(melody._id)
+                            ? 'text-red-500'
+                            : ''
+                        }`}
+                        onClick={() => toggleFavorite(melody._id)}
+                      >
+                        <Heart
+                          className={`h-4 w-4 ${
+                            isMelodyFavorite(melody._id)
+                              ? 'fill-current'
+                              : ''
+                          }`}
+                        />
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-zinc-400 hover:text-white"
+                        onClick={() => handleDownloadClick(melody)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -651,6 +765,41 @@ export default function DashboardPage() {
             </div>
           </Card>
         </div>
+
+        {/* Audio Player */}
+        {isAudioPlayerVisible && currentPlayingMelody && (
+          <AudioPlayer
+            key={currentPlayingMelody?.audioUrl || currentPlayingMelody?._id}
+            isVisible={isAudioPlayerVisible}
+            melody={currentPlayingMelody}
+            shouldAutoPlay={shouldAutoPlay}
+            onClose={() => {
+              setCurrentPlayingMelody(null);
+              setIsAudioPlayerVisible(false);
+              setShouldAutoPlay(false);
+            }}
+            isFavorite={isMelodyFavorite(currentPlayingMelody._id)}
+            onFavoriteClick={(melodyId) => toggleFavorite(melodyId)}
+            playNextMelody={() => {}}
+            playPreviousMelody={() => {}}
+            onEnded={() => {
+              setCurrentPlayingMelody(null);
+              setIsAudioPlayerVisible(false);
+              setShouldAutoPlay(false);
+            }}
+            handleDownloadClick={handleDownloadClick}
+          />
+        )}
+
+        {/* Collaboration Modal */}
+        {selectedMelody && (
+          <CollabModal
+            melodyDownloadCounter={melodyDownloadCounter}
+            isOpen={isCollabModalOpen}
+            onClose={() => setIsCollabModalOpen(false)}
+            melodyData={selectedMelody}
+          />
+        )}
       </div>
     </Layout>
   );
