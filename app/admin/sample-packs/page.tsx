@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState} from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Package,
@@ -11,7 +11,6 @@ import {
   Trash2,
   X,
   Download,
-  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,7 +23,6 @@ import { ClientPagination } from "@/components/admin/ClientPagination";
 import {
   useGetPacksQuery,
   useDeletePackMutation,
-  useAddHighlightMutation,
 } from "@/app/store/api/adminApis/adminApis";
 import { toast } from "sonner";
 
@@ -62,20 +60,12 @@ export default function SamplePacksPage() {
   const page = Number(searchParams.get("page")) || 1;
   const limit = 20;
   const [isDownloading, setIsDownloading] = useState(false);
-  const {
-    data: packsData,
-    isLoading,
-    error,
-    refetch: refreshPacks,
-  } = useGetPacksQuery(null);
+  const { data: packsData, isLoading, error } = useGetPacksQuery(null);
 
   const allPacks = packsData?.data || [];
   console.log(allPacks);
 
   const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
-
-  const [addHighlightPack, { isLoading: isHighlighting }] =
-    useAddHighlightMutation();
 
   // Filter packs based on search term
   const filteredPacks = allPacks.filter(
@@ -97,17 +87,6 @@ export default function SamplePacksPage() {
   const handleDeleteClick = (pack: SamplePack) => {
     setPackToDelete(pack);
     setDeleteModalOpen(true);
-  };
-
-  const handleHighlightClick = async (pack: SamplePack) => {
-    try {
-      await addHighlightPack(pack._id).unwrap();
-      toast.success("Sample pack highlighted successfully");
-      refreshPacks();
-    } catch (error) {
-      console.error("Error highlighting sample pack:", error);
-      toast.error("Failed to highlight sample pack. Please try again.");
-    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -148,7 +127,7 @@ export default function SamplePacksPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${pack.title.replace(/[^a-zA-Z0-9]/g, "_")}.zip`;
+        a.download = `${pack.title.replace(/[^a-zA-Z0-9]/g, '_')}.zip`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -157,11 +136,7 @@ export default function SamplePacksPage() {
         toast.dismiss(loadingToast);
         toast.success(`Downloaded ${pack.title} successfully`);
       } else {
-        console.error(
-          "Error downloading sample pack:",
-          response.status,
-          response.statusText
-        );
+        console.error("Error downloading sample pack:", response.status, response.statusText);
         toast.dismiss(loadingToast);
         toast.error("Failed to download sample pack. Please try again.");
       }
@@ -313,7 +288,7 @@ export default function SamplePacksPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className=" bg-zinc-900 border-zinc-800"
+                          className="w-[160px] bg-zinc-900 border-zinc-800"
                         >
                           <DropdownMenuItem
                             onClick={() => handleDownload(pack)}
@@ -324,23 +299,11 @@ export default function SamplePacksPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteClick(pack)}
-                            className="text-blue-500 hover:text-blue-500 hover:bg-zinc-800"
+                            className="text-red-500 hover:text-red-500 hover:bg-zinc-800"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
-
-                          {pack?.highlight === true ? (
-                            ""
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => handleHighlightClick(pack)}
-                              className="text-yellow-500 hover:text-yellow-500 hover:bg-zinc-800"
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add Highlight
-                            </DropdownMenuItem>
-                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>

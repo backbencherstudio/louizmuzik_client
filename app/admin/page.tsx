@@ -2,18 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import {
-  Users,
-  Music2,
-  Package,
-  DollarSign,
-  UserMinus,
-  Star,
-  Search,
-  X,
-  UserPlus,
-  Download,
-} from "lucide-react";
+import { Users, Music2, Package, DollarSign, UserMinus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FeaturedProducts from "./featured-products";
 import {
@@ -48,7 +37,7 @@ interface FeaturedProduct {
 
 interface User {
   cancelRequest: boolean;
-  paymentMethod:string;
+  paymentMethod: string;
 }
 
 export default function AdminPage() {
@@ -70,22 +59,24 @@ export default function AdminPage() {
   const allPacks = packsData?.data || [];
   console.log(allPacks);
 
-  const highlightedPacks = allPacks.filter((pack: any) => pack?.highlight === true);
+  const highlightedPacks = allPacks.filter(
+    (pack: any) => pack?.highlight === true
+  );
   const totalHighlights = highlightedPacks.length;
 
   const [addHighlightPack, { isLoading: isHighlighting }] =
     useAddHighlightMutation();
 
-    const removeHighlightPack = async (packId: string) => {
-      try {
-        await addHighlightPack(packId).unwrap();
-        toast.success("Sample pack removed from highlight successfully");
-        refreshPacks();
-      } catch (error) {
-        console.error("Error removing highlight:", error);
-        toast.error("Failed to remove highlight. Please try again.");
-      }
+  const toggleHighlightPack = async (packId: string) => {
+    try {
+      await addHighlightPack(packId).unwrap();
+      toast.success("Sample pack removed from highlight successfully");
+      refreshPacks();
+    } catch (error) {
+      console.error("Error removing highlight:", error);
+      toast.error("Failed to remove highlight. Please try again.");
     }
+  };
 
   const { data: users, isLoading: isUsersLoading } = useGetUsersQuery(null);
   console.log(users?.data);
@@ -244,10 +235,11 @@ export default function AdminPage() {
       </div>
 
       {/* Featured Products Section */}
-      <FeaturedProducts 
+      <FeaturedProducts
+        totalHighlights={totalHighlights}
         highlightedPacks={highlightedPacks}
         allPacks={allPacks}
-        onToggleHighlight={removeHighlightPack}
+        onToggleHighlight={toggleHighlightPack}
       />
     </div>
   );

@@ -5,7 +5,7 @@ import { Search, X, Star, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface Product {
-    id: string;
+    _id: string;
     title: string;
     producer: string;
     genre: string;
@@ -15,7 +15,7 @@ interface Product {
 }
 
 interface HighlightedPack {
-    id: string;
+    _id: string;
     title: string;
     producer: string;
     price: number;
@@ -32,6 +32,7 @@ interface FeaturedProductsProps {
     highlightedPacks: HighlightedPack[];
     allPacks: HighlightedPack[];
     onToggleHighlight?: (packId: string) => void;
+    totalHighlights: number;
 }
 
 const MAX_FEATURED_PRODUCTS = 5;
@@ -39,14 +40,15 @@ const MAX_FEATURED_PRODUCTS = 5;
 export default function FeaturedProducts({ 
     highlightedPacks, 
     allPacks, 
-    onToggleHighlight 
+    onToggleHighlight,
+    totalHighlights
 }: FeaturedProductsProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [showResults, setShowResults] = useState(false);
 
     // Convert highlighted packs to the format expected by the component
     const featuredProducts: Product[] = highlightedPacks.map(pack => ({
-        id: pack.id,
+        _id: pack._id,
         title: pack.title,
         producer: pack.userId?.producer_name || pack.producer,
         genre: Array.isArray(pack.genre) ? pack.genre[0] : pack.genre || 'Unknown',
@@ -57,7 +59,7 @@ export default function FeaturedProducts({
 
     // Convert all packs to searchable format
     const allProducts: Product[] = allPacks.map(pack => ({
-        id: pack.id,
+        _id: pack._id,
         title: pack.title,
         producer: pack.userId?.producer_name || pack.producer,
         genre: Array.isArray(pack.genre) ? pack.genre[0] : pack.genre || 'Unknown',
@@ -84,7 +86,7 @@ export default function FeaturedProducts({
     const toggleFeatured = async (packId: string) => {
         if (
             featuredProducts.length >= MAX_FEATURED_PRODUCTS &&
-            !allProducts.find((p) => p.id === packId)?.isFeatured
+            !allProducts.find((p) => p._id === packId)?.isFeatured
         ) {
             alert(
                 `You can only feature up to ${MAX_FEATURED_PRODUCTS} products.`
@@ -93,7 +95,7 @@ export default function FeaturedProducts({
         }
 
         try {
-            // Call the parent component's toggle function if provided
+            
             if (onToggleHighlight) {
                 onToggleHighlight(packId);
             }
@@ -114,7 +116,7 @@ export default function FeaturedProducts({
                         Featured Products
                     </h2>
                     <p className="text-sm text-zinc-400 mt-1">
-                        {featuredProducts.length} of {MAX_FEATURED_PRODUCTS}{' '}
+                        {totalHighlights} of {MAX_FEATURED_PRODUCTS}{' '}
                         products featured in the marketplace banner
                     </p>
                 </div>
@@ -149,9 +151,9 @@ export default function FeaturedProducts({
                     <div className="absolute z-10 mt-2 w-full bg-zinc-800 rounded-lg border border-zinc-700 shadow-lg">
                         {searchResults.map((product) => (
                             <div
-                                key={product.id}
+                                key={product._id}
                                 className="p-3 hover:bg-zinc-700 cursor-pointer flex items-center justify-between"
-                                onClick={() => toggleFeatured(product.id)}
+                                onClick={() => toggleFeatured(product._id)}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -187,7 +189,7 @@ export default function FeaturedProducts({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {featuredProducts.map((product) => (
                     <div
-                        key={product.id}
+                        key={product._id}
                         className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10"
                     >
                         <div className="flex items-center gap-3 mb-3">
@@ -221,7 +223,7 @@ export default function FeaturedProducts({
                                 </span>
                             </div>
                             <button
-                                onClick={() => toggleFeatured(product.id)}
+                                onClick={() => toggleFeatured(product._id)}
                                 className="px-3 py-1 rounded-full text-xs font-medium bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
                             >
                                 Remove
