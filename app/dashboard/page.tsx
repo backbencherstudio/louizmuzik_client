@@ -34,31 +34,88 @@ import { AudioPlayer } from "@/components/audio-player";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
 
-const formatedFollowers = (followers: number) => {
+// TypeScript interfaces
+interface Melody {
+  _id: string;
+  name: string;
+  producer: string;
+  image?: string;
+  audio_path?: string;
+  audio?: string;
+  audioUrl?: string;
+  bpm?: number;
+  key?: string;
+  genre?: string | string[];
+  artistType?: string;
+  plays?: number;
+  downloads?: number;
+}
+
+interface Pack {
+  _id: string;
+  title?: string;
+  name?: string;
+  thumbnail_image?: string;
+  price?: number;
+  sales?: number;
+}
+
+interface DownloadData {
+  day: string;
+  downloads: number;
+}
+
+interface SalesData {
+  day: string;
+  sales: number;
+}
+
+interface UserData {
+  _id: string;
+  followersCounter?: number;
+  favourite_melodies?: string[];
+}
+
+interface PlayingMelody {
+  _id: string;
+  name: string;
+  producer: string;
+  image: string;
+  audio: string;
+  audioUrl: string;
+  bpm: number;
+  key: string;
+  genre: string;
+  artistType: string;
+}
+
+type TimeRange = "7days" | "month" | "ytd";
+
+const formatedFollowers = (followers: number): string => {
   if (followers >= 1000000) {
     return `${(followers / 1000000).toFixed(1)}M`;
   } else if (followers >= 1000) {
     return `${(followers / 1000).toFixed(1)}K`;
   } else {
-    return followers;
+    return followers.toString();
   }
 };
 
-const formatedPlays = (plays: number) => {
+const formatedPlays = (plays: number): string => {
   if (plays >= 1000000) {
     return `${(plays / 1000000).toFixed(1)}M`;
   } else if (plays >= 1000) {
     return `${(plays / 1000).toFixed(1)}K`;
   } else {
-    return plays;
+    return plays.toString();
   }
 };
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number): string => {
   return `$${amount.toFixed(2)}`;
 };
 
-const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
+const processDownloadData = (rawData: any[], selectedTimeRange: TimeRange): DownloadData[] => {
   if (!rawData || !Array.isArray(rawData)) {
     return [];
   }
@@ -67,7 +124,7 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const downloadsByDay = new Map();
+  const downloadsByDay = new Map<string, number>();
 
   if (selectedTimeRange === '7days') {
     for (let i = 6; i >= 0; i--) {
@@ -92,7 +149,7 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
   rawData.forEach(item => {
     if (item.date) {
       const downloadDate = new Date(item.date);
-      let dayKey;
+      let dayKey: string | undefined;
 
       if (selectedTimeRange === '7days') {
         const sevenDaysAgo = new Date();
@@ -113,7 +170,7 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
       }
 
       if (dayKey && downloadsByDay.has(dayKey)) {
-        downloadsByDay.set(dayKey, downloadsByDay.get(dayKey) + (item.downloads || 0));
+        downloadsByDay.set(dayKey, downloadsByDay.get(dayKey)! + (item.downloads || 0));
       }
     }
   });
@@ -124,7 +181,7 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
   }));
 };
 
-const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: string) => {
+const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: TimeRange): SalesData[] => {
   if (!salesHistoryData || !Array.isArray(salesHistoryData)) {
     return [];
   }
@@ -146,7 +203,7 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
       startDate.setDate(now.getDate() - 7);
   }
 
-  const salesByDay = new Map();
+  const salesByDay = new Map<string, number>();
   
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -178,7 +235,7 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
       if (saleDate >= startDate && saleDate <= now) {
         const salesCount = salesEntry.salesCount;
         
-        let dayKey;
+        let dayKey: string | undefined;
         if (selectedTimeRange === '7days') {
           dayKey = dayNames[saleDate.getDay()];
         } else if (selectedTimeRange === 'month') {
@@ -187,8 +244,8 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
           dayKey = monthNames[saleDate.getMonth()];
         }
         
-        if (salesByDay.has(dayKey)) {
-          salesByDay.set(dayKey, salesByDay.get(dayKey) + salesCount);
+        if (dayKey && salesByDay.has(dayKey)) {
+          salesByDay.set(dayKey, salesByDay.get(dayKey)! + salesCount);
         }
       }
     }
@@ -200,7 +257,7 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
   }));
 };
 
-const calculateTotalRevenue = (packsData: any[]) => {
+const calculateTotalRevenue = (packsData: Pack[]): number => {
   if (!packsData || !Array.isArray(packsData)) {
     return 0;
   }
@@ -213,13 +270,13 @@ const calculateTotalRevenue = (packsData: any[]) => {
 };
 
 export default function DashboardPage() {
-  const [selectedTimeRange, setSelectedTimeRange] = useState("7days");
-  const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState("7days");
-  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<any>(null);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("7days");
+  const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState<TimeRange>("7days");
+  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<PlayingMelody | null>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
-  const [selectedMelody, setSelectedMelody] = useState<any>(null);
+  const [selectedMelody, setSelectedMelody] = useState<Melody | null>(null);
 
   const {
     data: userData,
@@ -232,11 +289,11 @@ export default function DashboardPage() {
 
   const { data: melodiesData, refetch: refetchMelodies } =
     useGetMelodyByUserIdQuery(userId);
-  const melodies = melodiesData?.data;
+  const melodies = melodiesData?.data as Melody[] | undefined;
   
 
   const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId);
-  const packs = packsData?.data;
+  const packs = packsData?.data as Pack[] | undefined;
   console.log(packs);
  
 
@@ -259,19 +316,19 @@ export default function DashboardPage() {
 
   const { currentTime, duration, currentMelodyId } = useAudioContext();
 
-  const isMelodyFavorite = (melodyId: string) => {
+  const isMelodyFavorite = (melodyId: string): boolean => {
     return userData?.data?.favourite_melodies?.includes(melodyId) || false;
   };
 
   
-  const toggleFavorite = async (melodyId: string) => {
+  const toggleFavorite = async (melodyId: string): Promise<void> => {
     if (melodyId && userId) {
       await favoriteMelody({ id: melodyId, userId: userId }).unwrap();
       refetchMelodies();
     }
   };
 
-  const handlePlayClick = async (melody: any) => {
+  const handlePlayClick = async (melody: Melody): Promise<void> => {
     if (currentPlayingMelody?._id === melody._id) {
       setCurrentPlayingMelody(null);
       setIsAudioPlayerVisible(false);
@@ -284,16 +341,16 @@ export default function DashboardPage() {
         console.log("error", error);
       }
       
-      const melodyToPlay = {
+      const melodyToPlay: PlayingMelody = {
         _id: melody._id, 
         name: melody.name,
         producer: melody.producer,
-        image: melody.image,
-        audio: melody.audio_path || melody.audio || melody.audioUrl,
-        audioUrl: melody.audio_path || melody.audio || melody.audioUrl,
+        image: melody.image || "",
+        audio: melody.audio_path || melody.audio || melody.audioUrl || "",
+        audioUrl: melody.audio_path || melody.audio || melody.audioUrl || "",
         bpm: melody.bpm || 120,
         key: melody.key || 'C Maj',
-        genre: melody.genre || 'Unknown',
+        genre: Array.isArray(melody.genre) ? melody.genre.join(', ') : melody.genre || 'Unknown',
         artistType: melody.artistType || 'Producer',
       };
       
@@ -303,12 +360,12 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDownloadClick = async (melody: any) => {
+  const handleDownloadClick = async (melody: Melody): Promise<void> => {
     setSelectedMelody(melody);
     setIsCollabModalOpen(true);
   };
 
-  const calculateTotals = () => {
+  const calculateTotals = (): { totalPlays: number; totalDownloads: number } => {
     if (!melodies || !Array.isArray(melodies)) {
       return { totalPlays: 0, totalDownloads: 0 };
     }
@@ -408,7 +465,7 @@ export default function DashboardPage() {
                 </h3>
                 <Tabs
                   value={selectedTimeRange}
-                  onValueChange={setSelectedTimeRange}
+                  onValueChange={(value: string) => setSelectedTimeRange(value as TimeRange)}
                   className="space-y-4"
                 >
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
@@ -450,11 +507,11 @@ export default function DashboardPage() {
                           borderRadius: "8px",
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                         }}
-                        formatter={(value, name) => [
+                        formatter={(value: number, name: string) => [
                           `${value} downloads`,
                           "Downloads",
                         ]}
-                        labelFormatter={(label) => `Day: ${label}`}
+                        labelFormatter={(label: string) => `Day: ${label}`}
                       />
                       <Area
                         type="monotone"
@@ -508,7 +565,7 @@ export default function DashboardPage() {
                 </h3>
                 <Tabs 
                   value={selectedSalesTimeRange} 
-                  onValueChange={setSelectedSalesTimeRange}
+                  onValueChange={(value: string) => setSelectedSalesTimeRange(value as TimeRange)}
                   className="space-y-4"
                 >
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
@@ -550,11 +607,11 @@ export default function DashboardPage() {
                           borderRadius: "8px",
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                         }}
-                        formatter={(value, name) => [
+                        formatter={(value: number, name: string) => [
                           Number(value),
                           "Total Sales",
                         ]}
-                        labelFormatter={(label) => `Day: ${label}`}
+                        labelFormatter={(label: string) => `Day: ${label}`}
                       />
                       <Area
                         type="monotone"
@@ -618,7 +675,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="space-y-4">
-                {melodies?.slice(0, 3).map((melody:any) => (
+                {melodies?.slice(0, 3).map((melody: Melody) => (
                   <div
                     key={melody._id}
                     className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-zinc-800/50"
@@ -641,7 +698,7 @@ export default function DashboardPage() {
                     </Button>
                     <div className="flex-1 text-sm font-medium text-zinc-400 w-1/4">
                       <WaveformDisplay
-                        audioUrl={melody.audioUrl}
+                        audioUrl={melody.audioUrl || melody.audio_path || melody.audio || ""}
                         isPlaying={currentPlayingMelody?._id === melody._id}
                         onPlayPause={() => handlePlayClick(melody)}
                         height={30}
@@ -707,12 +764,12 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {packs?.slice(0, 3).map((pack:any) => (
+                {packs?.slice(0, 3).map((pack: Pack) => (
                   <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
                     <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
                       <Image
                         src={pack.thumbnail_image || "/placeholder.svg"}
-                        alt={pack.title || pack.name}
+                        alt={pack.title || pack.name || "Pack"}
                         width={200}
                         height={200}
                         className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
@@ -749,7 +806,7 @@ export default function DashboardPage() {
               setShouldAutoPlay(false);
             }}
             isFavorite={isMelodyFavorite(currentPlayingMelody._id)}
-            onFavoriteClick={(melodyId) => toggleFavorite(melodyId)}
+            onFavoriteClick={(melodyId: string) => toggleFavorite(melodyId)}
             playNextMelody={() => {}}
             playPreviousMelody={() => {}}
             onEnded={() => {
