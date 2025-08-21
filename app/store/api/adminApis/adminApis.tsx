@@ -15,6 +15,13 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
+    getUserDetails: builder.query({
+      query: (userId) => ({
+        url: `/admin/singleUserInformationForAdmin/${userId}`,
+        method: "GET",
+      }),
+    }),
+
     deleteUser: builder.mutation({
       query: (userId) => ({
         url: `/admin/${userId}`,
@@ -85,4 +92,5 @@ export const {
   useDeletePackMutation,
   useGetBillingHistoryQuery,
   useAddHighlightMutation,
+  useGetUserDetailsQuery,
 } = adminApis;

@@ -18,11 +18,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ClientPagination } from "@/components/admin/ClientPagination";
 import {
-    useDeleteUserMutation,
+  useDeleteUserMutation,
   useFreeSubscriptionMutation,
+  useGetUserDetailsQuery,
   useGetUsersQuery,
 } from "@/app/store/api/adminApis/adminApis";
 import { toast } from "sonner";
+import DeleteModal from "@/components/Modals/DeleteModal";
 
 interface UserStats {
   totalMelodies: number;
@@ -49,10 +51,11 @@ interface User {
   melodiesCounter: number;
   subscribedAmount?: number;
   stats?: UserStats;
-  paymentMethod?: "stripe" | "paypal"; // Add this property
+  paymentMethod?: "stripe" | "paypal"; 
 }
 
 export default function UsersPage() {
+  const [userId, setUserId] = useState<string>("");
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const limit = 20;
@@ -64,11 +67,21 @@ export default function UsersPage() {
   const [expandedUsers, setExpandedUsers] = useState<{
     [key: string]: boolean;
   }>({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   // API call to get users
   const { data: usersData, isLoading, error, refetch } = useGetUsersQuery(null);
   const users = usersData?.data || [];
   console.log(users);
+
+  const {
+    data: userDetails,
+    isLoading: isUserDetailsLoading,
+    error: userDetailsError,
+  } = useGetUserDetailsQuery(userId, { skip: !userId });
+  const details = userDetails?.data;
+  console.log(details);
 
   const [freeSubscription] = useFreeSubscriptionMutation();
   const [deleteUser] = useDeleteUserMutation();
@@ -107,20 +120,14 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
     try {
       setLoading({ ...loading, [`delete-${userId}`]: true });
       const response = await deleteUser(userId).unwrap();
       if (response) {
-        toast.success("User deleted successfully");
+        toast.success(response.message);
         refetch();
+        setDeleteModalOpen(false);
+        setUserToDelete(null);
       } else {
         toast.error("Failed to delete user");
       }
@@ -133,21 +140,27 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user. Please try again.");
+      toast.error("Failed to delete user. Please try again.");
     } finally {
       setLoading({ ...loading, [`delete-${userId}`]: false });
     }
   };
 
+  const handleDeleteConfirm = () => {
+    if (userToDelete) {
+      handleDeleteUser(userToDelete._id);
+    }
+  };
+
   const toggleUserExpanded = (userId: string) => {
+    setUserId(userId);
     setExpandedUsers((prev) => {
-      // If the clicked user is already expanded, close it
+
       if (prev[userId]) {
         const newState = { ...prev };
         delete newState[userId];
         return newState;
       }
-      // If another user is expanded, close it and open the clicked user
       return { [userId]: true };
     });
   };
@@ -240,183 +253,181 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 paginatedUsers.map((user: User) => {
-                const userStats = getUserStats(user);
-                return (
-                  <>
-                    <tr
-                      key={user._id}
-                      className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
-                    >
-                      <td className="p-4 text-white">
-                        {user.name || user.producer_name}
-                      </td>
-                      <td className="p-4 text-white">{user.email}</td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={
-                              pendingRoleChanges[user._id] !== undefined
+                  const userStats = getUserStats(user);
+                  return (
+                    <>
+                      <tr
+                        key={user._id}
+                        className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
+                      >
+                        <td className="p-4 text-white">
+                          {user.name || user.producer_name}
+                        </td>
+                        <td className="p-4 text-white">{user.email}</td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={
+                                pendingRoleChanges[user._id] !== undefined
+                                  ? pendingRoleChanges[user._id]
+                                  : user.isPro
+                              }
+                              onCheckedChange={(checked) =>
+                                handleRoleChange(user._id, checked)
+                              }
+                              disabled={
+                                user.paymentMethod === "stripe" ||
+                                user.paymentMethod === "paypal"
+                              }
+                            />
+                            <span className="text-zinc-200">
+                              {pendingRoleChanges[user._id] !== undefined
                                 ? pendingRoleChanges[user._id]
+                                  ? "Pro"
+                                  : "Free"
                                 : user.isPro
-                            }
-                            onCheckedChange={(checked) =>
-                              handleRoleChange(user._id, checked)
-                            }
-                            disabled={
-                              user.paymentMethod === "stripe" ||
-                              user.paymentMethod === "paypal"
-                            }
-                          />
-                          <span className="text-zinc-200">
-                            {pendingRoleChanges[user._id] !== undefined
-                              ? pendingRoleChanges[user._id]
                                 ? "Pro"
-                                : "Free"
-                              : user.isPro
-                              ? "Pro"
-                              : "Free"}{" "}
+                                : "Free"}{" "}
+                              {pendingRoleChanges[user._id] !== undefined && (
+                                <span className="text-zinc-400">(Pending)</span>
+                              )}
+                              {(user.paymentMethod === "stripe" ||
+                                user.paymentMethod === "paypal") && (
+                                <span>
+                                  ({" "}
+                                  <span
+                                    className={`capitalize font-semibold ${
+                                      user.paymentMethod === "stripe"
+                                        ? "text-violet-800"
+                                        : "text-blue-800"
+                                    }`}
+                                  >
+                                    {user.paymentMethod}
+                                  </span>{" "}
+                                  )
+                                </span>
+                              )}
+                            </span>
                             {pendingRoleChanges[user._id] !== undefined && (
-                              <span className="text-zinc-400">(Pending)</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSaveRoleChange(user._id);
+                                }}
+                                className="ml-2 px-3 py-1 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors"
+                                disabled={loading[user._id]}
+                              >
+                                Save
+                              </button>
                             )}
-                            {(user.paymentMethod === "stripe" ||
-                              user.paymentMethod === "paypal") && (
-                              <span>
-                                ({" "}
-                                <span
-                                  className={`capitalize font-semibold ${
-                                    user.paymentMethod === "stripe"
-                                      ? "text-violet-800"
-                                      : "text-blue-800"
-                                  }`}
-                                >
-                                  {user.paymentMethod}
-                                </span>{" "}
-                                )
-                              </span>
-                            )}
-                          </span>
-                          {pendingRoleChanges[user._id] !== undefined && (
+                          </div>
+                        </td>
+                        <td className="p-4 text-white">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-4 text-white">
+                          {new Date(user.updatedAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleSaveRoleChange(user._id);
+                                setUserToDelete(user);
+                                setDeleteModalOpen(true);
                               }}
-                              className="ml-2 px-3 py-1 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors"
-                              disabled={loading[user._id]}
+                              className="text-zinc-400 hover:text-red-500"
+                              disabled={loading[`delete-${user._id}`]}
                             >
-                              Save
+                              <Trash2 size={16} />
                             </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 text-white">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-4 text-white">
-                        {new Date(user.updatedAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteUser(user._id);
-                            }}
-                            className="text-zinc-400 hover:text-red-500"
-                            disabled={loading[`delete-${user._id}`]}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleUserExpanded(user._id);
-                            }}
-                            className="text-zinc-400 hover:text-zinc-200"
-                          >
-                            {expandedUsers[user._id] ? (
-                              <ChevronUp size={16} />
-                            ) : (
-                              <ChevronDown size={16} />
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {expandedUsers[user._id] && (
-                      <tr className="bg-zinc-800/30 border-b border-zinc-800">
-                        <td colSpan={6} className="p-4">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-zinc-800/50 p-4 rounded-lg">
-                              <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                Melodies
-                              </h3>
-                              <div className="space-y-2">
-                                <p className="text-white">
-                                  Total: {userStats.totalMelodies}
-                                </p>
-                                <p className="text-white">
-                                  Downloads: {userStats.totalDownloads}
-                                </p>
-                                <p className="text-white">
-                                  Plays: {userStats.totalPlays}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="bg-zinc-800/50 p-4 rounded-lg">
-                              <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                Products
-                              </h3>
-                              <div className="space-y-2">
-                                <p className="text-white">
-                                  Total: {userStats.totalProducts}
-                                </p>
-                                <p className="text-white">
-                                  Sold: {userStats.productsSold}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="bg-zinc-800/50 p-4 rounded-lg">
-                              <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                Revenue
-                              </h3>
-                              <div className="space-y-2">
-                                <p className="text-white">
-                                  Total: ${userStats.totalRevenue.toFixed(2)}
-                                </p>
-                                <p className="text-zinc-400 text-sm">
-                                  Platform Fee (3%): $
-                                  {userStats.platformCommission.toFixed(2)}
-                                </p>
-                                <p className="text-emerald-500">
-                                  Net: $
-                                  {(
-                                    userStats.totalRevenue -
-                                    userStats.platformCommission
-                                  ).toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="bg-zinc-800/50 p-4 rounded-lg">
-                              <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                                Membership
-                              </h3>
-                              <p className="text-white">
-                                {userStats.membershipMonths} months
-                              </p>
-                              {user.isPro && user.subscribedAmount && (
-                                <p className="text-white mt-1">
-                                  ${user.subscribedAmount}/month
-                                </p>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleUserExpanded(user._id);
+                              }}
+                              className="text-zinc-400 hover:text-zinc-200"
+                            >
+                              {expandedUsers[user._id] ? (
+                                <ChevronUp size={16} />
+                              ) : (
+                                <ChevronDown size={16} />
                               )}
-                            </div>
+                            </button>
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </>
-                );
-              })
+                      {expandedUsers[user._id] && (
+                        <tr className="bg-zinc-800/30 border-b border-zinc-800">
+                          <td colSpan={6} className="p-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                  Melodies
+                                </h3>
+                                <div className="space-y-2">
+                                  <p className="text-white">
+                                    Total: {details?.melodyStatus.totalPlays}
+                                  </p>
+                                  <p className="text-white">
+                                    Downloads: {details?.melodyStatus.totalDownloads}
+                                  </p>
+                                  <p className="text-white">
+                                    Plays: {details?.melodyStatus.totalPlays}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                  Products
+                                </h3>
+                                <div className="space-y-2">
+                                  <p className="text-white">
+                                    Total: {details?.totalPack}
+                                  </p>
+                                  <p className="text-white">
+                                    Sold: {details?.packSoldStatus.totalSalesAmount}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                  Revenue
+                                </h3>
+                                <div className="space-y-2">
+                                  <p className="text-white">
+                                    Total: ${details?.packSoldStatus.totalSalesAmount?.toFixed(2) || '0.00'}
+                                  </p>
+                                  <p className="text-zinc-400 text-sm">
+                                    Platform Fee (3%): $
+                                    {((details?.packSoldStatus.totalSalesAmount || 0) * 0.03).toFixed(2)}
+                                  </p>
+                                  <p className="text-emerald-500">
+                                    Net: $
+                                    {((details?.packSoldStatus.totalSalesAmount || 0) * 0.97).toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="bg-zinc-800/50 p-4 rounded-lg">
+                                <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                                  Membership
+                                </h3>
+                                <p className="text-white">
+                                  {userStats.membershipMonths} months
+                                </p>
+                                {user.isPro && user.subscribedAmount && (
+                                  <p className="text-white mt-1">
+                                    ${user.subscribedAmount}/month
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -425,6 +436,18 @@ export default function UsersPage() {
 
       {/* Pagination */}
       <ClientPagination total={totalUsers} limit={limit} />
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        itemToDelete={userToDelete ? { title: userToDelete.name || userToDelete.producer_name || userToDelete.email } : null}
+        isDeleting={loading[`delete-${userToDelete?._id}`] || false}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }
