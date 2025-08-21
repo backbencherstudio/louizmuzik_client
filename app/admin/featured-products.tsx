@@ -14,43 +14,59 @@ interface Product {
     isFeatured: boolean;
 }
 
+interface HighlightedPack {
+    id: string;
+    title: string;
+    producer: string;
+    price: number;
+    thumbnail_image: string;
+    genre: string[];
+    highlight: boolean;
+    userId: {
+        producer_name: string;
+        profile_image: string;
+    };
+}
+
+interface FeaturedProductsProps {
+    highlightedPacks: HighlightedPack[];
+    allPacks: HighlightedPack[];
+    onToggleHighlight?: (packId: string) => void;
+}
+
 const MAX_FEATURED_PRODUCTS = 5;
 
-export default function FeaturedProducts() {
+export default function FeaturedProducts({ 
+    highlightedPacks, 
+    allPacks, 
+    onToggleHighlight 
+}: FeaturedProductsProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [showResults, setShowResults] = useState(false);
-    const [products, setProducts] = useState<Product[]>([
-        {
-            id: '1',
-            title: 'Summer Vibes Pack',
-            producer: 'BeatMaster',
-            genre: 'Hip Hop',
-            price: 29.99,
-            image: '/placeholder.png',
-            isFeatured: true,
-        },
-        {
-            id: '2',
-            title: 'Trap Essentials',
-            producer: 'TrapKing',
-            genre: 'Trap',
-            price: 24.99,
-            image: '/placeholder.png',
-            isFeatured: true,
-        },
-        {
-            id: '3',
-            title: 'Lo-Fi Collection',
-            producer: 'ChillMaster',
-            genre: 'Lo-Fi',
-            price: 19.99,
-            image: '/placeholder.png',
-            isFeatured: false,
-        },
-    ]);
 
-    const featuredProducts = products.filter((p) => p.isFeatured);
-    const searchResults = products.filter((product) => {
+    // Convert highlighted packs to the format expected by the component
+    const featuredProducts: Product[] = highlightedPacks.map(pack => ({
+        id: pack.id,
+        title: pack.title,
+        producer: pack.userId?.producer_name || pack.producer,
+        genre: Array.isArray(pack.genre) ? pack.genre[0] : pack.genre || 'Unknown',
+        price: pack.price,
+        image: pack.thumbnail_image || '/placeholder.png',
+        isFeatured: pack.highlight,
+    }));
+
+    // Convert all packs to searchable format
+    const allProducts: Product[] = allPacks.map(pack => ({
+        id: pack.id,
+        title: pack.title,
+        producer: pack.userId?.producer_name || pack.producer,
+        genre: Array.isArray(pack.genre) ? pack.genre[0] : pack.genre || 'Unknown',
+        price: pack.price,
+        image: pack.thumbnail_image || '/placeholder.png',
+        isFeatured: pack.highlight,
+    }));
+
+    const searchResults = allProducts.filter((product) => {
         if (product.isFeatured) return false; // Don't show already featured products in search
         const query = searchQuery.toLowerCase();
         return (
@@ -65,10 +81,10 @@ export default function FeaturedProducts() {
         setShowResults(value.length > 0);
     };
 
-    const toggleFeatured = async (productId: string) => {
+    const toggleFeatured = async (packId: string) => {
         if (
             featuredProducts.length >= MAX_FEATURED_PRODUCTS &&
-            !products.find((p) => p.id === productId)?.isFeatured
+            !allProducts.find((p) => p.id === packId)?.isFeatured
         ) {
             alert(
                 `You can only feature up to ${MAX_FEATURED_PRODUCTS} products.`
@@ -77,21 +93,11 @@ export default function FeaturedProducts() {
         }
 
         try {
-            // In a real application, make an API call to update the featured status
-            // await fetch(`/api/admin/featured-products/${productId}`, {
-            //     method: 'PATCH',
-            //     body: JSON.stringify({
-            //         isFeatured: !products.find(p => p.id === productId)?.isFeatured
-            //     }),
-            // });
-
-            setProducts(
-                products.map((product) =>
-                    product.id === productId
-                        ? { ...product, isFeatured: !product.isFeatured }
-                        : product
-                )
-            );
+            // Call the parent component's toggle function if provided
+            if (onToggleHighlight) {
+                onToggleHighlight(packId);
+            }
+            
             setSearchQuery('');
             setShowResults(false);
         } catch (error) {
@@ -149,7 +155,15 @@ export default function FeaturedProducts() {
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <Package className="w-5 h-5 text-emerald-500" />
+                                        {product.image && product.image !== '/placeholder.png' ? (
+                                            <img 
+                                                src={product.image} 
+                                                alt={product.title}
+                                                className="w-full h-full object-cover rounded-lg"
+                                            />
+                                        ) : (
+                                            <Package className="w-5 h-5 text-emerald-500" />
+                                        )}
                                     </div>
                                     <div>
                                         <p className="text-white font-medium">
@@ -177,8 +191,16 @@ export default function FeaturedProducts() {
                         className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10"
                     >
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Package className="w-6 h-6 text-emerald-500" />
+                            <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                {product.image && product.image !== '/placeholder.png' ? (
+                                    <img 
+                                        src={product.image} 
+                                        alt={product.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Package className="w-6 h-6 text-emerald-500" />
+                                )}
                             </div>
                             <div className="min-w-0">
                                 <h4 className="font-medium text-white truncate">

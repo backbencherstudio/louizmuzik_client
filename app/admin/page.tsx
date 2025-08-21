@@ -17,9 +17,12 @@ import {
 import { Input } from "@/components/ui/input";
 import FeaturedProducts from "./featured-products";
 import {
+  useAddHighlightMutation,
   useGetAdminOverviewQuery,
+  useGetPacksQuery,
   useGetUsersQuery,
 } from "../store/api/adminApis/adminApis";
+import { toast } from "sonner";
 
 interface Stats {
   activeUsers: number;
@@ -56,6 +59,33 @@ export default function AdminPage() {
   const { data: adminOverview, isLoading: isAdminOverviewLoading } =
     useGetAdminOverviewQuery(null);
   const overviewData = adminOverview?.data;
+
+  const {
+    data: packsData,
+    isLoading: isPacksLoading,
+    error,
+    refetch: refreshPacks,
+  } = useGetPacksQuery(null);
+
+  const allPacks = packsData?.data || [];
+  console.log(allPacks);
+
+  const highlightedPacks = allPacks.filter((pack: any) => pack?.highlight === true);
+  const totalHighlights = highlightedPacks.length;
+
+  const [addHighlightPack, { isLoading: isHighlighting }] =
+    useAddHighlightMutation();
+
+    const removeHighlightPack = async (packId: string) => {
+      try {
+        await addHighlightPack(packId).unwrap();
+        toast.success("Sample pack removed from highlight successfully");
+        refreshPacks();
+      } catch (error) {
+        console.error("Error removing highlight:", error);
+        toast.error("Failed to remove highlight. Please try again.");
+      }
+    }
 
   const { data: users, isLoading: isUsersLoading } = useGetUsersQuery(null);
   console.log(users?.data);
@@ -214,7 +244,11 @@ export default function AdminPage() {
       </div>
 
       {/* Featured Products Section */}
-      <FeaturedProducts />
+      <FeaturedProducts 
+        highlightedPacks={highlightedPacks}
+        allPacks={allPacks}
+        onToggleHighlight={removeHighlightPack}
+      />
     </div>
   );
 }

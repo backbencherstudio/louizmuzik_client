@@ -57,6 +57,13 @@ export const adminApis = baseApi.injectEndpoints({
       }),
     }),
 
+    addHighlight: builder.mutation({
+      query: (packId) => ({
+        url: `/pack/isHighlightPack/${packId}`,
+        method: "PATCH",
+      }),
+    }),
+
     freeSubscription: builder.mutation({
       query: (userId) => ({
         url: `/auth/userManagement/directSubscription/${userId}`,
@@ -77,4 +84,5 @@ export const {
   useGetPacksQuery,
   useDeletePackMutation,
   useGetBillingHistoryQuery,
+  useAddHighlightMutation,
 } = adminApis;
