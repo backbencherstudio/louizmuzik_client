@@ -58,23 +58,18 @@ const formatCurrency = (amount: number) => {
   return `$${amount.toFixed(2)}`;
 };
 
-// Helper function to process download chart data
 const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
   if (!rawData || !Array.isArray(rawData)) {
     return [];
   }
 
-  // Get current date
   const now = new Date();
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // Create a map to store downloads by day
   const downloadsByDay = new Map();
 
-  // Initialize days with 0 downloads based on selected time range
   if (selectedTimeRange === '7days') {
-    // For 7 days, show last 7 days with day names
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
@@ -82,7 +77,6 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
       downloadsByDay.set(dayName, 0);
     }
   } else if (selectedTimeRange === 'month') {
-    // For month, show last 30 days with date numbers
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
@@ -90,34 +84,29 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
       downloadsByDay.set(dayKey, 0);
     }
   } else if (selectedTimeRange === 'ytd') {
-    // For YTD, show months from January to current month
     for (let i = 0; i <= now.getMonth(); i++) {
       downloadsByDay.set(monthNames[i], 0);
     }
   }
 
-  // Process each download entry
   rawData.forEach(item => {
     if (item.date) {
       const downloadDate = new Date(item.date);
       let dayKey;
 
       if (selectedTimeRange === '7days') {
-        // Check if within last 7 days
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(now.getDate() - 7);
         if (downloadDate >= sevenDaysAgo) {
           dayKey = dayNames[downloadDate.getDay()];
         }
       } else if (selectedTimeRange === 'month') {
-        // Check if within last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
         if (downloadDate >= thirtyDaysAgo) {
           dayKey = downloadDate.getDate().toString();
         }
       } else if (selectedTimeRange === 'ytd') {
-        // Check if within current year
         if (downloadDate.getFullYear() === now.getFullYear()) {
           dayKey = monthNames[downloadDate.getMonth()];
         }
@@ -129,20 +118,17 @@ const processDownloadData = (rawData: any[], selectedTimeRange: string) => {
     }
   });
 
-  // Convert map to array for chart
   return Array.from(downloadsByDay.entries()).map(([day, downloads]) => ({
     day,
     downloads
   }));
 };
 
-// Helper function to process sales data from packSalesHistoryData
 const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: string) => {
   if (!salesHistoryData || !Array.isArray(salesHistoryData)) {
     return [];
   }
 
-  // Get the date range based on selected time range
   const now = new Date();
   const startDate = new Date();
   
@@ -154,21 +140,18 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
       startDate.setMonth(now.getMonth() - 1);
       break;
     case 'ytd':
-      startDate.setMonth(0, 1); // January 1st of current year
+      startDate.setMonth(0, 1); 
       break;
     default:
       startDate.setDate(now.getDate() - 7);
   }
 
-  // Create a map to store sales per day
   const salesByDay = new Map();
   
-  // Initialize days with 0 sales
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
   if (selectedTimeRange === '7days') {
-    // For 7 days, show day names
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
@@ -176,7 +159,6 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
       salesByDay.set(dayName, 0);
     }
   } else if (selectedTimeRange === 'month') {
-    // For month, show last 30 days with date numbers
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
@@ -184,20 +166,16 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
       salesByDay.set(dayKey, 0);
     }
   } else if (selectedTimeRange === 'ytd') {
-    // For YTD, show months
     for (let i = 0; i <= now.getMonth(); i++) {
       salesByDay.set(monthNames[i], 0);
     }
   }
 
-  // Process each sales history entry
   salesHistoryData.forEach(salesEntry => {
     if (salesEntry.salesCount && salesEntry.createdAt) {
       const saleDate = new Date(salesEntry.createdAt);
       
-      // Check if the sale was made within our date range
       if (saleDate >= startDate && saleDate <= now) {
-        // Use salesCount as the sales value
         const salesCount = salesEntry.salesCount;
         
         let dayKey;
@@ -216,14 +194,12 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: str
     }
   });
 
-  // Convert map to array for chart
   return Array.from(salesByDay.entries()).map(([day, sales]) => ({
     day,
-    sales: sales // Keep as integer for sales count
+    sales: sales 
   }));
 };
 
-// Helper function to calculate total revenue from packs
 const calculateTotalRevenue = (packsData: any[]) => {
   if (!packsData || !Array.isArray(packsData)) {
     return 0;
@@ -244,7 +220,6 @@ export default function DashboardPage() {
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
-  const router = useRouter();
 
   const {
     data: userData,
@@ -274,25 +249,21 @@ export default function DashboardPage() {
     usePackSalesHistoryQuery(userId);
   const packSalesHistoryData = packSalesHistory?.data;
   
-  // sales data
   const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
   console.log(salesData);
   const totalRevenue = calculateTotalRevenue(packs || []);
 
-  // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
   const [favoriteMelody] = useFavoriteMelodyMutation();
 
-  // Audio context
   const { currentTime, duration, currentMelodyId } = useAudioContext();
 
-  // Check if melody is favorite
   const isMelodyFavorite = (melodyId: string) => {
     return userData?.data?.favourite_melodies?.includes(melodyId) || false;
   };
 
-  // Toggle favorite
+  
   const toggleFavorite = async (melodyId: string) => {
     if (melodyId && userId) {
       await favoriteMelody({ id: melodyId, userId: userId }).unwrap();
@@ -337,7 +308,6 @@ export default function DashboardPage() {
     setIsCollabModalOpen(true);
   };
 
-  // Calculate totals from melodies data
   const calculateTotals = () => {
     if (!melodies || !Array.isArray(melodies)) {
       return { totalPlays: 0, totalDownloads: 0 };
