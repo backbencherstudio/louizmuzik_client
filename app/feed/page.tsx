@@ -32,6 +32,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Pagination } from "@/components/ui/pagination";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import { useFollowingProducerContentQuery } from "../store/api/userManagementApis/userManagementApis";
@@ -95,7 +96,7 @@ interface CollabModalData {
 
 export default function FeedPage() {
   const [currentPage, setCurrentPage] = useState(0);
-  const [currentMelodiesPage, setCurrentMelodiesPage] = useState(0);
+  const [currentMelodiesPage, setCurrentMelodiesPage] = useState(1); // Changed to 1-based
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<CollabModalData | null>(
     null
@@ -154,8 +155,6 @@ export default function FeedPage() {
     setIsCollabModalOpen(true);
   };
 
-
-
   const { currentTime, duration, currentMelodyId } = useAudioContext();
 
   const playNextMelody = () => {
@@ -206,7 +205,7 @@ export default function FeedPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPlayingMelody, isAudioPlayerVisible]);
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
   const melodiesPerPage = 10;
 
   // Extract unique values for filter options
@@ -250,14 +249,9 @@ export default function FeedPage() {
     setCurrentPage(Math.min(maxPage, currentPage + 1));
   };
 
-  const handleMelodiesPrevious = () => {
-    setCurrentMelodiesPage(Math.max(0, currentMelodiesPage - 1));
-  };
-
-  const handleMelodiesNext = () => {
-    const maxPage =
-      Math.ceil(filteredAndSortedMelodies.length / melodiesPerPage) - 1;
-    setCurrentMelodiesPage(Math.min(maxPage, currentMelodiesPage + 1));
+  // Updated pagination handlers for melodies
+  const handleMelodiesPageChange = (page: number) => {
+    setCurrentMelodiesPage(page);
   };
 
   const getCurrentItems = () => {
@@ -266,7 +260,7 @@ export default function FeedPage() {
   };
 
   const getCurrentMelodies = () => {
-    const start = currentMelodiesPage * melodiesPerPage;
+    const start = (currentMelodiesPage - 1) * melodiesPerPage; // Changed to 1-based
     return filteredAndSortedMelodies.slice(start, start + melodiesPerPage);
   };
 
@@ -405,27 +399,27 @@ export default function FeedPage() {
     max?: number;
   }) => {
     setBpmFilter(values);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
 
   const handleBpmFilterClear = () => {
     setBpmFilter(null);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
 
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre === selectedGenre ? "" : genre);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
 
   const handleArtistTypeSelect = (type: string) => {
     setSelectedArtistType(type === selectedArtistType ? "" : type);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
 
   const handlePopularitySelect = (popularity: string) => {
     setSelectedPopularity(popularity === selectedPopularity ? "" : popularity);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
 
   const handleClearAllFilters = () => {
@@ -434,8 +428,12 @@ export default function FeedPage() {
     setSelectedArtistType("");
     setSelectedPopularity("");
     setBpmFilter(null);
-    setCurrentMelodiesPage(0);
+    setCurrentMelodiesPage(1); // Reset to first page
   };
+
+  // Pagination calculations for melodies
+  const totalMelodies = filteredAndSortedMelodies.length;
+  const totalMelodiesPages = Math.ceil(totalMelodies / melodiesPerPage);
 
   // Loading state
   if (isFollowingProducerContentLoading) {
@@ -761,7 +759,7 @@ export default function FeedPage() {
                     value={selectedKey}
                     onChange={(key) => {
                       setSelectedKey(key);
-                      setCurrentMelodiesPage(0);
+                      setCurrentMelodiesPage(1); // Reset to first page
                     }}
                   />
                 </PopoverContent>
@@ -1140,35 +1138,14 @@ export default function FeedPage() {
             </div>
 
             {/* Melodies Pagination */}
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleMelodiesPrevious}
-                disabled={currentMelodiesPage === 0}
-                className="h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <span className="text-sm text-zinc-400">
-                Page {currentMelodiesPage + 1} of{" "}
-                {Math.ceil(filteredAndSortedMelodies.length / melodiesPerPage)}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleMelodiesNext}
-                disabled={
-                  currentMelodiesPage >=
-                  Math.ceil(
-                    filteredAndSortedMelodies.length / melodiesPerPage
-                  ) -
-                    1
-                }
-                className="h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
+            <div className="mt-6 mb-24">
+              <Pagination
+                currentPage={currentMelodiesPage}
+                totalPages={totalMelodiesPages}
+                onPageChange={handleMelodiesPageChange}
+                totalItems={totalMelodies}
+                itemsPerPage={melodiesPerPage}
+              />
             </div>
           </div>
         </div>
