@@ -69,8 +69,9 @@ export default function AdminPage() {
 
   const toggleHighlightPack = async (packId: string) => {
     try {
-      await addHighlightPack(packId).unwrap();
-      toast.success("Sample pack removed from highlight successfully");
+      const response = await addHighlightPack(packId).unwrap();
+      console.log(response);
+      toast.success(response?.message);
       refreshPacks();
     } catch (error) {
       console.error("Error removing highlight:", error);

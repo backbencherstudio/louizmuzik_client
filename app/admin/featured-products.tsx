@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, X, Star, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface Product {
     _id: string;
@@ -88,7 +89,7 @@ export default function FeaturedProducts({
             featuredProducts.length >= MAX_FEATURED_PRODUCTS &&
             !allProducts.find((p) => p._id === packId)?.isFeatured
         ) {
-            alert(
+            toast.info(
                 `You can only feature up to ${MAX_FEATURED_PRODUCTS} products.`
             );
             return;
