@@ -108,7 +108,6 @@ export default function UsersPage() {
         toast.error("Failed to change user subscription");
       }
 
-      // Clear the pending change after successful save
       const newPendingChanges = { ...pendingRoleChanges };
       delete newPendingChanges[userId];
       setPendingRoleChanges(newPendingChanges);
@@ -133,7 +132,6 @@ export default function UsersPage() {
         toast.error("Failed to delete user");
       }
 
-      // Clear any pending changes for the deleted user
       if (pendingRoleChanges[userId]) {
         const newPendingChanges = { ...pendingRoleChanges };
         delete newPendingChanges[userId];
@@ -180,16 +178,15 @@ export default function UsersPage() {
   const endIndex = startIndex + limit;
   const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
-  // Function to calculate user stats (you might get these from the API in a real scenario)
   const getUserStats = (user: User): UserStats => {
     return {
       totalMelodies: user.melodiesCounter || 0,
-      totalDownloads: Math.floor(user.melodiesCounter * 3.8) || 0, // Example calculation
-      totalPlays: Math.floor(user.melodiesCounter * 12.5) || 0, // Example calculation
+      totalDownloads: Math.floor(user.melodiesCounter * 3.8) || 0, 
+      totalPlays: Math.floor(user.melodiesCounter * 12.5) || 0, 
       totalProducts: Math.floor((user.melodiesCounter || 0) / 4) || 0,
       productsSold: Math.floor((user.melodiesCounter || 0) / 6) || 0,
       totalRevenue: (user.subscribedAmount || 0) * (user.isPro ? 10 : 0),
-      membershipMonths: user.isPro ? 3 : 0, // Example value
+      membershipMonths: user.isPro ? 3 : 0, 
       platformCommission:
         (user.subscribedAmount || 0) * (user.isPro ? 10 : 0) * 0.03,
     };
