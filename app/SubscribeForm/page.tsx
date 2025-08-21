@@ -1,4 +1,4 @@
-// components/SubscribeForm.jsx
+"use client"
 import { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 
 const stripePromise = loadStripe(
-  "pk_test_51NFvq6ArRmO7hNaVcPS5MwczdEtM4yEMOclovA0k5LtJTxhtzKZ2SKim3p8qmvssQ7j7bREjoRRmHB9Gvz8n8Dfm00UOo9bZYg"
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
 );
 
 interface CheckoutFormProps {

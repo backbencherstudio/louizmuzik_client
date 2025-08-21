@@ -52,6 +52,7 @@ interface User {
   subscribedAmount?: number;
   stats?: UserStats;
   paymentMethod?: "stripe" | "paypal"; 
+  membershipDate?: string;
 }
 
 export default function UsersPage() {
@@ -192,6 +193,19 @@ export default function UsersPage() {
       platformCommission:
         (user.subscribedAmount || 0) * (user.isPro ? 10 : 0) * 0.03,
     };
+  };
+
+  // Helper function to calculate months from membership date
+  const calculateMembershipMonths = (membershipDate: string | undefined): number => {
+    if (!membershipDate) return 0;
+    
+    const membershipStart = new Date(membershipDate);
+    const now = new Date();
+    
+    const diffTime = Math.abs(now.getTime() - membershipStart.getTime());
+    const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30.44)); 
+    
+    return diffMonths;
   };
 
   if (isLoading) return <div className="p-6 text-white">Loading users...</div>;
@@ -413,11 +427,15 @@ export default function UsersPage() {
                                   Membership
                                 </h3>
                                 <p className="text-white">
-                                  {userStats.membershipMonths} months
+                                  {user.membershipDate ? (
+                                    `${calculateMembershipMonths(user.membershipDate)} months`
+                                  ) : (
+                                    "No membership date"
+                                  )}
                                 </p>
                                 {user.isPro && user.subscribedAmount && (
                                   <p className="text-white mt-1">
-                                    ${user.subscribedAmount}/month
+                                    ${user.subscribedAmount || 0}/month
                                   </p>
                                 )}
                               </div>
