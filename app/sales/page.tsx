@@ -91,15 +91,15 @@ export default function SalesPage() {
 
     // Transform the real data to match our display format
     const transformedSalesData: TransformedSalesData[] = salesHistory?.data?.map((transaction: SalesTransaction) => ({
-        id: transaction._id,
-        date: transaction.createdAt,
-        buyer: transaction.userId.name,
-        buyerEmail: transaction.userId.email,
-        product: transaction.packId.title,
-        amount: transaction.price,
-        producerId: transaction.selectedProducerId,
-        packId: transaction.packId._id,
-        updatedAt: transaction.updatedAt,
+        id: transaction?._id,
+        date: transaction?.createdAt,
+        buyer: transaction?.userId?.name,
+        buyerEmail: transaction?.userId?.email,
+        product: transaction?.packId?.title,
+        amount: transaction?.price,
+        producerId: transaction?.selectedProducerId,
+        packId: transaction?.packId?._id,
+        updatedAt: transaction?.updatedAt,
     })) || [];
 
     // Calculate summary statistics from real data
