@@ -57,7 +57,7 @@ export default function BrowsePage() {
     const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
     const [selectedKey, setSelectedKey] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 2;
 
     const [sortConfig, setSortConfig] = useState<{
         key: string;

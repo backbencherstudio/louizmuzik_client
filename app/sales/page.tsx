@@ -33,6 +33,7 @@ import { Copy, FileText, ArrowDownToLine } from 'lucide-react';
 import Image from 'next/image';
 import { useLoggedInUser } from '../store/api/authApis/authApi';
 import { useGetSalesHistoryQuery } from '../store/api/paymentApis/paymentApis';
+import { Pagination } from '@/components/ui/pagination';
 
 
 interface PackData {
@@ -79,6 +80,8 @@ export default function SalesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDate, setSelectedDate] = useState<Date>();
     const [selectedStatus, setSelectedStatus] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<TransformedSalesData | null>(null);
@@ -120,6 +123,28 @@ export default function SalesPage() {
 
         return matchesSearch && matchesDate && matchesStatus;
     });
+
+    // Pagination logic
+    const totalItems = filteredSales.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentSales = filteredSales.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    // Reset to first page when filters change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleDateChange = (date: Date | undefined) => {
+        setSelectedDate(date);
+        setCurrentPage(1);
+    };
 
     const handleExport = () => {
         console.log('Exporting sales data...');
@@ -197,7 +222,7 @@ export default function SalesPage() {
                             <Input
                                 placeholder="Search by buyer name or product..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleSearchChange}
                                 className="pl-9 border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                             />
                         </div>
@@ -221,7 +246,7 @@ export default function SalesPage() {
                             <CalendarComponent
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={handleDateChange}
                                 initialFocus
                             />
                         </PopoverContent>
@@ -258,7 +283,7 @@ export default function SalesPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredSales.length === 0 ? (
+                                {currentSales.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
                                             {transformedSalesData.length === 0 
@@ -268,7 +293,7 @@ export default function SalesPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredSales.map((sale) => (
+                                    currentSales.map((sale) => (
                                         <tr
                                             key={sale.id}
                                             className=" odd:bg-zinc-900 even:bg-zinc-900/50 hover:bg-zinc-900/30 duration-300"
@@ -302,7 +327,21 @@ export default function SalesPage() {
                         </table>
                     </div>
                 </Card>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="mt-6 mb-24">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                            totalItems={totalItems}
+                            itemsPerPage={itemsPerPage}
+                        />
+                    </div>
+                )}
             </div>
+
             {/* Transaction Details Modal */}
             <Dialog
                 open={isTransactionModalOpen}
