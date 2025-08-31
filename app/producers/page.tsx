@@ -60,13 +60,13 @@ export default function ProducersPage() {
   const currentProducers = filteredProducers.slice(startIndex, endIndex);
 
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1); 
   };
 
   const handleClearFilter = () => {
     setSelectedCountry("GLOBAL");
     setSearchQuery("");
-    setCurrentPage(1); // Reset to first page when clearing filters
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -75,23 +75,9 @@ export default function ProducersPage() {
 
   const handleCountrySelect = (country: string) => {
     setSelectedCountry(country);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
-  // Loading state
-  if (isProducersDataLoading) {
-    return (
-      <Layout>
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="text-white text-lg">Loading...</div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>

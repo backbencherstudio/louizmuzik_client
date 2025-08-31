@@ -381,15 +381,7 @@ export default function DashboardPage() {
 
   const { totalPlays, totalDownloads } = calculateTotals();
 
-  if (isLoadingUser || isLoadingDownloadChart) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-zinc-400">Loading...</div>
-        </div>
-      </Layout>
-    );
-  }
+ 
 
   return (
     <Layout>
