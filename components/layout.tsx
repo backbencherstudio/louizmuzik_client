@@ -24,6 +24,7 @@ import {
   Store,
   Activity,
   User,
+  Shield,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -130,6 +131,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </Link>
       ) : (
         ""
+      )}
+
+      {user?.data?.role === "admin" && (
+        <button className="flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all">
+          <Link href="/admin" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Admin Panel
+          </Link>
+        </button>
       )}
     </>
   );
