@@ -46,7 +46,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { logout: auth0Logout } = useAuth0();
-
+  const router = useRouter();
   const logout = () => {
     localStorage.removeItem("token");
     auth0Logout();
@@ -134,11 +134,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       )}
 
       {user?.data?.role === "admin" && (
-        <button className="flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all">
-          <Link href="/admin" className="flex items-center gap-2">
+        <button onClick={() => router.push("/admin")} className="w-full flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all">
             <Shield className="h-4 w-4" />
             Admin Panel
-          </Link>
         </button>
       )}
     </>
