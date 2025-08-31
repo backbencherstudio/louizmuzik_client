@@ -5,9 +5,15 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Check, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { useLoggedInUser } from '@/app/store/api/authApis/authApi';
 
 export function PricingSection() {
     const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+    const { data: user } = useLoggedInUser();
+
+    const userData = user?.data;
+    console.log(userData, 454545);
 
     const faqs = [
         {
@@ -143,7 +149,7 @@ export function PricingSection() {
                                         asChild
                                         className="w-full bg-white text-black hover:bg-gray-200 py-4 text-lg h-auto"
                                     >
-                                        <Link href="/signup">
+                                        <Link href={userData ? "/dashboard" : "/signup"}>
                                             Create Free Account
                                         </Link>
                                     </Button>
@@ -232,7 +238,7 @@ export function PricingSection() {
                                         asChild
                                         className="w-full bg-primary text-black hover:bg-primary/90 py-4 text-lg h-auto"
                                     >
-                                        <Link href="/signup">Try Pro</Link>
+                                        <Link href={userData?.isPro ? "/checkout-membership" : "/signup"}>Try Pro</Link>
                                     </Button>
                                 </div>
                             </div>
