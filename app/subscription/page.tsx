@@ -279,8 +279,8 @@ export default function SubscriptionPage() {
             </p>
             <Button
               variant="destructive"
-              className={`${userData?.cancelRequest === true ? "cursor-not-allowed bg-gray-500 border-gray-600 hover:bg-gray-800 text-white" : "bg-red-500 hover:bg-red-600"}`}
-              disabled={userData?.cancelRequest === true}
+              className={`${userData?.cancelRequest === true || userData?.isPro === false ? "cursor-not-allowed bg-gray-500 border-gray-600 hover:bg-gray-800 text-white" : "bg-red-500 hover:bg-red-600"}`}
+              disabled={userData?.cancelRequest === true || userData?.isPro === false}
               onClick={() => setShowCancelModal(true)}
             >
               Cancel Subscription

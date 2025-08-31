@@ -293,20 +293,18 @@ export default function DashboardPage() {
 
   const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId);
   const packs = packsData?.data as Pack[] | undefined;
-  console.log(packs);
  
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
   const downloadData = processDownloadData(downloadChartData?.data || [], selectedTimeRange);
-  console.log(downloadData);
 
   const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
     usePackSalesHistoryQuery(userId);
   const packSalesHistoryData = packSalesHistory?.data;
   
   const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
-  console.log(salesData);
+
   const totalRevenue = calculateTotalRevenue(packs || []);
 
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -335,7 +333,7 @@ export default function DashboardPage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
+        // console.log("melodyPlayCounter", response);
       } catch (error) {
         console.log("error", error);
       }

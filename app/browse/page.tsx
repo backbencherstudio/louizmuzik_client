@@ -90,7 +90,6 @@ export default function BrowsePage() {
   const { data: melodiesData, refetch: refetchMelodies } =
     useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
-  console.log("melodies", melodies);
 
   // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -143,7 +142,7 @@ export default function BrowsePage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
+        // console.log("melodyPlayCounter", response);
       } catch (error) {
         console.log("error", error);
       }
@@ -168,29 +167,27 @@ export default function BrowsePage() {
   };
 
   const handleSearch = () => {
-    // Handle search functionality
-    console.log("Searching for:", searchQuery);
-    setCurrentPage(1); // Reset to first page when searching
+    // console.log("Searching for:", searchQuery);
+    setCurrentPage(1);
   };
 
   const handleSort = (field: string) => {
     setSortConfig((currentConfig) => {
       if (currentConfig.key === field) {
-        // Si es el mismo campo, cambiamos la dirección
         return {
           ...currentConfig,
           direction: currentConfig.direction === "asc" ? "desc" : "asc",
           type: "default",
         };
       }
-      // Si es un campo nuevo, ordenamos ascendente
+
       return {
         key: field,
         direction: "asc",
         type: "default",
       };
     });
-    setCurrentPage(1); // Reset to first page when sort changes
+    setCurrentPage(1);
   };
 
   const handleSortByType = (type: "popular" | "recent" | "random") => {
@@ -199,7 +196,7 @@ export default function BrowsePage() {
       direction: "desc",
       type,
     });
-    setCurrentPage(1); // Reset to first page when sort changes
+    setCurrentPage(1);
   };
 
   const handleBpmFilterApply = (values: {
@@ -208,7 +205,7 @@ export default function BrowsePage() {
     max?: number;
   }) => {
     setBpmFilter(values);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleBpmFilterClear = () => {
@@ -217,12 +214,12 @@ export default function BrowsePage() {
 
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre === selectedGenre ? "" : genre);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleArtistTypeSelect = (type: string) => {
     setSelectedArtistType(type === selectedArtistType ? "" : type);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleClearAllFilters = () => {
@@ -231,7 +228,7 @@ export default function BrowsePage() {
     setSelectedGenre("");
     setSelectedArtistType("");
     setBpmFilter(null);
-    setCurrentPage(1); // Reset to first page when clearing filters
+    setCurrentPage(1);
   };
 
   const filteredAndSortedMelodies = [...(melodies || [])]
@@ -302,7 +299,7 @@ export default function BrowsePage() {
           : b.plays - a.plays;
       }
 
-      // Ordenamiento por campo específico
+      
       if (sortConfig.key === "bpm") {
         return sortConfig.direction === "asc" ? a.bpm - b.bpm : b.bpm - a.bpm;
       }
