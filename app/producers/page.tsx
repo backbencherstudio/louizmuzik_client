@@ -186,14 +186,14 @@ export default function ProducersPage() {
                           producer.profile_image ||
                           "/images/profiles/banner-profile.jpg"
                         }
-                        alt={producer.name || "Producer"}
+                        alt={producer.producer_name || "Producer"}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                     <div className="flex items-center justify-center gap-1">
                       <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
-                        {producer.name || "Unknown Producer"}
+                        {producer?.producer_name || producer?.name || "Unknown Producer"}
                       </h3>
                       {producer.isPro && (
                         <Image
@@ -248,14 +248,14 @@ export default function ProducersPage() {
                             producer.profile_image ||
                             "/images/profiles/banner-profile.jpg"
                           }
-                          alt={producer.name || "Producer"}
+                          alt={producer?.producer_name || producer?.name || "Producer"}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
                       <div className="flex items-center justify-center gap-1">
                         <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
-                          {producer.name || "Unknown Producer"}
+                          {producer.producer_name || "Unknown Producer"}
                         </h3>
                         {producer.isPro && (
                           <Image
