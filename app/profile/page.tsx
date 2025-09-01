@@ -22,11 +22,16 @@ import Layout from "@/components/layout";
 import { useGetUserProfileQuery } from "../store/api/userManagementApis/userManagementApis";
 import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
 import Skeleton from "react-loading-skeleton";
-import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMutation } from "@/app/store/api/melodyApis/melodyApis";
+import {
+  useMelodyPlayMutation,
+  useMelodyDownloadMutation,
+  useFavoriteMelodyMutation,
+} from "@/app/store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
 import { Pagination } from "@/components/ui/pagination";
+import { FaTiktok } from "react-icons/fa";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -46,14 +51,18 @@ export default function ProfilePage() {
   const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
   const userId = user?.data?._id;
 
-  const { data: userProfile, isLoading: isUserProfileLoading, refetch: refetchUserProfile } =
-    useGetUserProfileQuery(userId);
+  const {
+    data: userProfile,
+    isLoading: isUserProfileLoading,
+    refetch: refetchUserProfile,
+  } = useGetUserProfileQuery(userId);
 
   const [melodyPlayCounter] = useMelodyPlayMutation();
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
   const [favoriteMelody] = useFavoriteMelodyMutation();
 
   const userData = userProfile?.data?.userData;
+  console.log(userData, "profile page");
 
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
@@ -81,7 +90,7 @@ export default function ProfilePage() {
       } catch (error) {
         console.error("Error playing melody:", error);
       }
-      
+
       const melodyToPlay = {
         _id: melody._id,
         name: melody.name,
@@ -151,11 +160,11 @@ export default function ProfilePage() {
       if (!isAudioPlayerVisible) return;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
           playNextMelody();
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
           playPreviousMelody();
           break;
@@ -164,8 +173,8 @@ export default function ProfilePage() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPlayingMelody, isAudioPlayerVisible]);
 
   if (isUserProfileLoading) {
@@ -184,11 +193,20 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
+      <div
+        className={`${
+          isAudioPlayerVisible ? "mb-10" : ""
+        } min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}
+      >
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
           {isUserProfileLoading && (
-            <Skeleton height={400} width="100%" highlightColor="#27272a" className="mb-4" />
+            <Skeleton
+              height={400}
+              width="100%"
+              highlightColor="#27272a"
+              className="mb-4"
+            />
           )}
           {!isUserProfileLoading && (
             <>
@@ -227,8 +245,8 @@ export default function ProfilePage() {
                     alt="Profile Image"
                     fill
                     className="object-cover"
-                    onLoadingComplete={handleImageLoad} 
-                    style={{ display: isImageLoaded ? "block" : "none" }} 
+                    onLoadingComplete={handleImageLoad}
+                    style={{ display: isImageLoaded ? "block" : "none" }}
                   />
                 </div>
 
@@ -273,27 +291,42 @@ export default function ProfilePage() {
 
                   {/* Social Media Links */}
                   <div className="hidden md:flex justify-center md:justify-start gap-2 mt-6">
-                    <Link
-                      href="https://instagram.com"
-                      target="_blank"
-                      className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                    >
-                      <Instagram className="w-5 h-5" />
-                    </Link>
-                    <Link
-                      href="https://youtube.com"
-                      target="_blank"
-                      className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                    >
-                      <Youtube className="w-5 h-5" />
-                    </Link>
-                    <Link
-                      href="https://beatstars.com"
-                      target="_blank"
-                      className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                    </Link>
+                    {userData?.instagramUsername && (
+                      <Link
+                        href={`https://instagram.com/${userData?.instagramUsername}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                      >
+                        <Instagram className="w-5 h-5" />
+                      </Link>
+                    )}
+                    {userData?.youtubeUsername && (
+                      <Link
+                        href={`https://youtube.com/${userData?.youtubeUsername}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                      >
+                        <Youtube className="w-5 h-5" />
+                      </Link>
+                    )}
+                    {userData?.tiktokUsername && (
+                      <Link
+                        href={`https://tiktok.com/${userData?.tiktokUsername}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                      >
+                        <FaTiktok className="w-5 h-5" />
+                      </Link>
+                    )}
+                    {userData?.beatstarsUsername && (
+                      <Link
+                        href={`https://beatstars.com/${userData?.beatstarsUsername}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -366,7 +399,8 @@ export default function ProfilePage() {
           {melodies?.length > 0 && (
             <div className="mt-10">
               <h2 className="text-2xl font-bold text-white mb-6">
-                <span className="capitalize">{userData?.producer_name}</span>'s Melodies
+                <span className="capitalize">{userData?.producer_name}</span>'s
+                Melodies
               </h2>
               <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
                 <div className="overflow-x-auto">
@@ -376,26 +410,43 @@ export default function ProfilePage() {
                       <tr className="border-b border-zinc-800 bg-zinc-900/50">
                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">NAME</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">WAVEFORM</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">BPM</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">KEY</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">GENRE</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">ARTIST TYPE</th>
-                        <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">ACTIONS</th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          NAME
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          WAVEFORM
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          BPM
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          KEY
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          GENRE
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          ARTIST TYPE
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+                          ACTIONS
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {currentMelodies.map((melody: any) => (
-                        <tr key={melody._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
+                        <tr
+                          key={melody._id}
+                          className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                        >
                           <td className="whitespace-nowrap px-4 py-3 text-center">
                             <Button
                               variant="ghost"
                               size="icon"
                               className={`h-8 w-8 rounded-full ${
                                 currentPlayingMelody?._id === melody._id
-                                  ? 'bg-emerald-500 text-black hover:bg-emerald-600'
-                                  : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                                  ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                               }`}
                               onClick={() => handlePlayClick(melody)}
                             >
@@ -409,7 +460,9 @@ export default function ProfilePage() {
                           <td className="whitespace-nowrap px-4 py-3">
                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                               <Image
-                                src={melody?.image || '/images/default-melody.png'}
+                                src={
+                                  melody?.image || "/images/default-melody.png"
+                                }
                                 alt={melody?.name}
                                 fill
                                 className="object-cover"
@@ -422,13 +475,19 @@ export default function ProfilePage() {
                           <td className="whitespace-nowrap px-4 py-3">
                             <WaveformDisplay
                               audioUrl={melody.audioUrl}
-                              isPlaying={currentPlayingMelody?._id === melody._id}
+                              isPlaying={
+                                currentPlayingMelody?._id === melody._id
+                              }
                               onPlayPause={() => handlePlayClick(melody)}
                               height={30}
                               width="200px"
                               isControlled={true}
-                              currentTime={currentMelodyId === melody._id ? currentTime : 0}
-                              duration={currentMelodyId === melody._id ? duration : 0}
+                              currentTime={
+                                currentMelodyId === melody._id ? currentTime : 0
+                              }
+                              duration={
+                                currentMelodyId === melody._id ? duration : 0
+                              }
                             />
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
@@ -438,13 +497,13 @@ export default function ProfilePage() {
                             {melody?.key}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                            {Array.isArray(melody?.genre) 
-                              ? melody.genre.join(', ') 
+                            {Array.isArray(melody?.genre)
+                              ? melody.genre.join(", ")
                               : melody?.genre}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                            {Array.isArray(melody?.artistType) 
-                              ? melody.artistType.join(', ') 
+                            {Array.isArray(melody?.artistType)
+                              ? melody.artistType.join(", ")
                               : melody?.artistType}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-center">
@@ -454,20 +513,20 @@ export default function ProfilePage() {
                                 size="icon"
                                 className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
                                   isMelodyFavorite(melody?._id)
-                                    ? 'text-red-500'
-                                    : ''
+                                    ? "text-red-500"
+                                    : ""
                                 }`}
                                 onClick={() => toggleFavorite(melody?._id)}
                               >
                                 <Heart
                                   className={`h-4 w-4 ${
                                     isMelodyFavorite(melody._id)
-                                      ? 'fill-current'
-                                      : ''
+                                      ? "fill-current"
+                                      : ""
                                   }`}
                                 />
                               </Button>
-                              
+
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -487,11 +546,16 @@ export default function ProfilePage() {
                   <table className="w-full md:hidden">
                     <tbody>
                       {currentMelodies.map((melody: any) => (
-                        <tr key={melody?._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
+                        <tr
+                          key={melody?._id}
+                          className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                        >
                           <td className="px-4 py-3 flex items-center gap-3">
                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                               <Image
-                                src={melody?.image || '/images/default-melody.png'}
+                                src={
+                                  melody?.image || "/images/default-melody.png"
+                                }
                                 alt={melody?.name}
                                 fill
                                 className="object-cover"
@@ -502,8 +566,8 @@ export default function ProfilePage() {
                               size="icon"
                               className={`h-8 w-8 flex-shrink-0 rounded-full ${
                                 currentPlayingMelody?._id === melody._id
-                                  ? 'bg-emerald-500 text-black hover:bg-emerald-600'
-                                  : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                                  ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                               }`}
                               onClick={() => handlePlayClick(melody)}
                             >
@@ -521,23 +585,23 @@ export default function ProfilePage() {
                                 {melody?.producer}
                               </p>
                             </div>
-                            
+
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
                                   isMelodyFavorite(melody?._id)
-                                    ? 'text-red-500'
-                                    : ''
+                                    ? "text-red-500"
+                                    : ""
                                 }`}
                                 onClick={() => toggleFavorite(melody?._id)}
                               >
                                 <Heart
                                   className={`h-4 w-4 ${
                                     isMelodyFavorite(melody?._id)
-                                      ? 'fill-current'
-                                      : ''
+                                      ? "fill-current"
+                                      : ""
                                   }`}
                                 />
                               </Button>
@@ -557,7 +621,7 @@ export default function ProfilePage() {
                   </table>
                 </div>
               </div>
-              
+
               {/* Pagination */}
               <div className="mt-6 mb-24">
                 <Pagination
