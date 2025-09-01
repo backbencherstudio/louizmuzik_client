@@ -38,7 +38,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const producerId = pack?.userId?._id;
   const { data: user ,refetch} = useLoggedInUser();
   const userId = user?.data?._id;
-  const [favoritePack, { is: isFavoritePackLoading }] = useFavoritePackMutation();
+  const [favoritePack, { isLoading: isFavoritePackLoading }] = useFavoritePackMutation();
   const isFavorite = user?.data?.favourite_packs?.includes(id);
 
   const morePacks = packDetails?.data?.eachUserAllPack;

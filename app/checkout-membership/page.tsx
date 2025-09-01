@@ -25,7 +25,7 @@ export default function ProPage() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/v1/payment/paypalSubscription",
+        "https://louizmuzik-server.vercel.app/api/v1/payment/paypalSubscription",
         {
           amount,
           email,
@@ -55,7 +55,7 @@ export default function ProPage() {
   const handleStripeCancelSubscription = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/payment/cancel-subscription/${customerId}`
+        `https://louizmuzik-server.vercel.app/api/v1/payment/cancel-subscription/${customerId}`
       );
       console.log("Subscription cancelled successfully");
       alert("Subscription cancelled successfully");
@@ -67,7 +67,7 @@ export default function ProPage() {
   const handleCancelSubscription = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
+        `https://louizmuzik-server.vercel.app/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
       );
       console.log("Subscription cancelled successfully");
       alert("Subscription cancelled successfully");

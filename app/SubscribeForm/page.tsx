@@ -73,7 +73,7 @@ const CheckoutForm = ({ totalPrice }: CheckoutFormProps) => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/v1/payment/stripeSubscription",
+        "https://louizmuzik-server.vercel.app/api/v1/payment/stripeSubscription",
         {
           email: userData?.email,
           name: userData?.name,
