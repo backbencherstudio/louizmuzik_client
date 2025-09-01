@@ -290,7 +290,7 @@ export default function AccountPage() {
                     </Label>
                     <Input
                       id="instagram"
-                      name="instagram"
+                      name="instagramUsername"
                       placeholder="Your Instagram username"
                       defaultValue={user?.data?.instagramUsername || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
@@ -305,8 +305,8 @@ export default function AccountPage() {
                     </Label>
                     <Input
                       id="youtube"
-                      name="youtube"
-                      placeholder="Your Youtube username"
+                      name="youtubeUsername"
+                      placeholder="Example: @username"
                       defaultValue={user?.data?.youtubeUsername || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                     />
@@ -317,7 +317,7 @@ export default function AccountPage() {
                     </Label>
                     <Input
                       id="tiktok"
-                      name="tiktok"
+                      name="tiktokUsername"
                       placeholder="Your TikTok username"
                       defaultValue={user?.data?.tiktokUsername || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
