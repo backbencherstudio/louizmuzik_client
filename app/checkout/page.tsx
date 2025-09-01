@@ -164,7 +164,7 @@ export default function CheckoutPage() {
                       <PayPalButtons
                         createOrder={async () => {
                           const res = await axios.post(
-                            "http://localhost:5000/api/v1/payment/create-order",
+                            "https://louizmuzik-server.vercel.app/api/v1/payment/create-order",
                             {
                               amount,
                               selectedData,
@@ -175,7 +175,7 @@ export default function CheckoutPage() {
                         onApprove={async (data) => {
                           try {
                             const res = await axios.post(
-                              `http://localhost:5000/api/v1/payment/capture-order/${data.orderID}`
+                              `https://louizmuzik-server.vercel.app/api/v1/payment/capture-order/${data.orderID}`
                             );
 
                             alert("✅ Payment successful!");
