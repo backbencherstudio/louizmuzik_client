@@ -39,6 +39,7 @@ export default function AccountPage() {
   const [isSubmittingPayPal, setIsSubmittingPayPal] = useState(false);
 
   const { data: user, refetch } = useLoggedInUser();
+  console.log("user 42", user);
   const userId = user?.data?._id;
   console.log("userId 34", userId);
   const [updateUserProfile, { isLoading: isUpdatingProfile }] =
@@ -458,7 +459,7 @@ export default function AccountPage() {
               <div>
                 <h2 className="text-2xl font-bold text-white">Subscription</h2>
                 <p className="text-zinc-400 mt-1">
-                  Current Plan: <span className="text-emerald-500">Pro</span>
+                  Current Plan: <span className={`${user?.data?.isPro ? "text-emerald-500" : "text-red-500"}`}>{user?.data?.isPro ? "Pro" : "N/A"}</span> 
                 </p>
               </div>
               <Button asChild variant="outline" className="border-zinc-800">

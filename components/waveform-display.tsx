@@ -32,14 +32,13 @@ export function WaveformDisplay({
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
-        // Clean up previous instance if it exists
         if (wavesurferRef.current) {
             wavesurferRef.current.destroy();
             wavesurferRef.current = null;
         }
 
         if (!waveformRef.current || !audioUrl) {
-            console.log('No container or audio URL:', { container: !!waveformRef.current, audioUrl });
+            // console.log('No container or audio URL:', { container: !!waveformRef.current, audioUrl });
             return;
         }
 
@@ -47,10 +46,8 @@ export function WaveformDisplay({
         setError(null);
         setIsReady(false);
 
-        // Add a small delay to ensure DOM is ready
         const timer = setTimeout(() => {
             try {
-                // Create WaveSurfer instance
                 const wavesurfer = WaveSurfer.create({
                     container: waveformRef.current!,
                     waveColor: '#374151',
@@ -61,7 +58,7 @@ export function WaveformDisplay({
                     barRadius: 2,
                     height: height,
                     normalize: true,
-                    interact: !isControlled, // Disable interaction if controlled by external player
+                    interact: !isControlled, 
                     mediaControls: false,
                     hideScrollbar: true,
                     minPxPerSec: 50,
@@ -71,9 +68,8 @@ export function WaveformDisplay({
 
                 wavesurferRef.current = wavesurfer;
 
-                // Set up event listeners
                 wavesurfer.on('ready', () => {
-                    console.log('WaveSurfer is ready for:', audioUrl);
+                    // console.log('WaveSurfer is ready for:', audioUrl);
                     setIsLoading(false);
                     setIsReady(true);
                     setError(null);
@@ -87,10 +83,9 @@ export function WaveformDisplay({
                 });
 
                 wavesurfer.on('loading', (percent) => {
-                    console.log('Loading progress:', percent + '%');
+                    // console.log('Loading progress:', percent + '%');
                 });
 
-                // Only handle click events if not controlled by external player
                 if (!isControlled) {
                     wavesurfer.on('click', () => {
                         if (onPlayPause) {
@@ -99,12 +94,10 @@ export function WaveformDisplay({
                     });
                 }
 
-                // Load the audio with error handling
                 const loadAudio = async () => {
                     try {
-                        console.log('Loading audio from:', audioUrl);
+                        // console.log('Loading audio from:', audioUrl);
                         
-                        // Check if URL is accessible first
                         const response = await fetch(audioUrl, { 
                             method: 'HEAD',
                             mode: 'cors' 
@@ -133,7 +126,6 @@ export function WaveformDisplay({
             }
         }, 100);
 
-        // Cleanup function
         return () => {
             clearTimeout(timer);
             if (wavesurferRef.current) {
@@ -149,9 +141,8 @@ export function WaveformDisplay({
         };
     }, [audioUrl, height, isControlled]);
 
-    // Handle play/pause state changes (only if not controlled)
     useEffect(() => {
-        if (isControlled) return; // Skip if controlled by external player
+        if (isControlled) return; 
         
         const wavesurfer = wavesurferRef.current;
         if (!wavesurfer || !isReady || error) {
@@ -173,7 +164,6 @@ export function WaveformDisplay({
         }
     }, [isPlaying, isReady, error, isControlled]);
 
-    // Sync with external audio player progress
     useEffect(() => {
         if (!isControlled || !isReady) return;
         
@@ -181,7 +171,6 @@ export function WaveformDisplay({
         if (!wavesurfer || !duration) return;
 
         try {
-            // Update the progress position without playing
             const progress = currentTime / duration;
             wavesurfer.setTime(currentTime);
         } catch (err) {
@@ -192,12 +181,10 @@ export function WaveformDisplay({
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isControlled) {
-            // If controlled, just trigger the play/pause callback
             if (onPlayPause) {
                 onPlayPause();
             }
         } else {
-            // If not controlled, let WaveSurfer handle it
             if (onPlayPause) {
                 onPlayPause();
             }

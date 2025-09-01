@@ -33,7 +33,7 @@ export default function RootLayout({
           </ReduxProvider>
           <Toaster position="top-center" richColors />
         </AudioProvider> */}
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div></div>}>
           <AudioProvider>
             <Auth0ProviderWithConfig>
               <ReduxProvider>

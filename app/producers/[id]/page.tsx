@@ -29,7 +29,11 @@ import {
   useGetUserProfileQuery,
 } from "@/app/store/api/userManagementApis/userManagementApis";
 import { useParams } from "next/navigation";
-import { useMelodyPlayMutation, useMelodyDownloadMutation, useFavoriteMelodyMutation } from "@/app/store/api/melodyApis/melodyApis";
+import {
+  useMelodyPlayMutation,
+  useMelodyDownloadMutation,
+  useFavoriteMelodyMutation,
+} from "@/app/store/api/melodyApis/melodyApis";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
@@ -85,7 +89,7 @@ export default function ProfilePage() {
       } catch (error) {
         console.error("Error playing melody:", error);
       }
-      
+
       const melodyToPlay = {
         _id: melody._id,
         name: melody.name,
@@ -188,11 +192,11 @@ export default function ProfilePage() {
       if (!isAudioPlayerVisible) return;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
           playNextMelody();
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
           playPreviousMelody();
           break;
@@ -201,13 +205,17 @@ export default function ProfilePage() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPlayingMelody, isAudioPlayerVisible]);
 
   return (
     <Layout>
-      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
+      <div
+        className={`${
+          isAudioPlayerVisible ? "mb-10" : ""
+        } min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}
+      >
         {/* Hero Section */}
         <div className="relative h-[400px] w-full overflow-hidden">
           {isUserProfileLoading && (
@@ -286,7 +294,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium">
+                      <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium md:-mt-11">
                         Verified Producer
                       </span>
                     </div>
@@ -369,283 +377,318 @@ export default function ProfilePage() {
               <span className="capitalize"> {userData?.producer_name}</span> 's
               Premium Packs
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {premiumPacks?.map((pack: any) => (
-                <Link
-                  key={pack._id}
-                  href={`/product/${pack._id}`}
-                  className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={pack.thumbnail_image}
-                      alt={pack.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {premiumPacks?.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {premiumPacks?.map((pack: any) => (
+                  <Link
+                    key={pack._id}
+                    href={`/product/${pack._id}`}
+                    className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
+                  >
+                    <div className="relative aspect-square">
+                      <Image
+                        src={pack.thumbnail_image}
+                        alt={pack.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                    {/* Play/Pause Button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                        currentPlayingPack?.id === pack._id
-                          ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                          : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                      }`}
-                      onClick={() => handlePackPlayClick(pack)}
-                    >
-                      {currentPlayingPack?.id === pack._id ? (
-                        <Pause className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                      {pack?.title}
-                    </h3>
-                    <p className="mt-1 text-sm font-bold text-emerald-500">
-                      ${pack?.price.toFixed(2)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                      {/* Play/Pause Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`h-8 w-8 flex-shrink-0 rounded-full ${
+                          currentPlayingPack?.id === pack._id
+                            ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                            : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                        }`}
+                        onClick={() => handlePackPlayClick(pack)}
+                      >
+                        {currentPlayingPack?.id === pack._id ? (
+                          <Pause className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">
+                        {pack?.title}
+                      </h3>
+                      <p className="mt-1 text-sm font-bold text-emerald-500">
+                        ${pack?.price.toFixed(2)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <h1 className="text-white text-center">No premium packs found</h1>
+            )}
           </div>
-                     {/* Melodies Table */}
-           {melodies?.length > 0 && (
-             <div className="mt-10">
-               <h2 className="text-2xl font-bold text-white mb-6">
-                 <span className="capitalize">{userData?.producer_name}</span>'s Melodies
-               </h2>
-               <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
-                 <div className="overflow-x-auto">
-                   {/* Desktop Table */}
-                   <table className="w-full hidden md:table">
-                     <thead>
-                       <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">NAME</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">WAVEFORM</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">BPM</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">KEY</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">GENRE</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">ARTIST TYPE</th>
-                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">ACTIONS</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {melodies.map((melody: any) => (
-                         <tr key={melody._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
-                           <td className="whitespace-nowrap px-4 py-3 text-center">
-                             <Button
-                               variant="ghost"
-                               size="icon"
-                               className={`h-8 w-8 rounded-full ${
-                                 currentPlayingMelody?._id === melody._id
-                                   ? 'bg-emerald-500 text-black hover:bg-emerald-600'
-                                   : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-                               }`}
-                               onClick={() => handlePlayClick(melody)}
-                             >
-                               {currentPlayingMelody?._id === melody._id ? (
-                                 <Pause className="h-4 w-4" />
-                               ) : (
-                                 <Play className="h-4 w-4" />
-                               )}
-                             </Button>
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3">
-                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                               <Image
-                                 src={melody?.image || '/images/default-melody.png'}
-                                 alt={melody?.name}
-                                 fill
-                                 className="object-cover"
-                               />
-                             </div>
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                             {melody?.name}
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3">
-                             <WaveformDisplay
-                               audioUrl={melody.audioUrl}
-                               isPlaying={currentPlayingMelody?._id === melody._id}
-                               onPlayPause={() => handlePlayClick(melody)}
-                               height={30}
-                               width="200px"
-                               isControlled={true}
-                               currentTime={currentMelodyId === melody._id ? currentTime : 0}
-                               duration={currentMelodyId === melody._id ? duration : 0}
-                             />
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                             {melody?.bpm}
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                             {melody?.key}
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                             {Array.isArray(melody?.genre) 
-                               ? melody.genre.join(', ') 
-                               : melody?.genre}
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                             {Array.isArray(melody?.artistType) 
-                               ? melody.artistType.join(', ') 
-                               : melody?.artistType}
-                           </td>
-                           <td className="whitespace-nowrap px-4 py-3 text-center">
-                             <div className="flex items-center justify-center gap-1">
-                               <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                   isMelodyFavorite(melody?._id)
-                                     ? 'text-red-500'
-                                     : ''
-                                 }`}
-                                 onClick={() => toggleFavorite(melody?._id)}
-                               >
-                                 <Heart
-                                   className={`h-4 w-4 ${
-                                     isMelodyFavorite(melody._id)
-                                       ? 'fill-current'
-                                       : ''
-                                   }`}
-                                 />
-                               </Button>
-                               
-                               <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 className="h-8 w-8 text-zinc-400 hover:text-white"
-                                 onClick={() => handleDownloadClick(melody)}
-                               >
-                                 <Download className="h-4 w-4" />
-                               </Button>
-                             </div>
-                           </td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
+          {/* Melodies Table */}
+          {melodies?.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                <span className="capitalize">{userData?.producer_name}</span>'s
+                Melodies
+              </h2>
+              <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
+                <div className="overflow-x-auto">
+                  {/* Desktop Table */}
+                  <table className="w-full hidden md:table">
+                    <thead>
+                      <tr className="border-b border-zinc-800 bg-zinc-900/50">
+                        <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          NAME
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          WAVEFORM
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          BPM
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          KEY
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          GENRE
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                          ARTIST TYPE
+                        </th>
+                        <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+                          ACTIONS
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {melodies.map((melody: any) => (
+                        <tr
+                          key={melody._id}
+                          className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                        >
+                          <td className="whitespace-nowrap px-4 py-3 text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 rounded-full ${
+                                currentPlayingMelody?._id === melody._id
+                                  ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                              }`}
+                              onClick={() => handlePlayClick(melody)}
+                            >
+                              {currentPlayingMelody?._id === melody._id ? (
+                                <Pause className="h-4 w-4" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <div className="relative h-10 w-10 overflow-hidden rounded-md">
+                              <Image
+                                src={
+                                  melody?.image || "/images/default-melody.png"
+                                }
+                                alt={melody?.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
+                            {melody?.name}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <WaveformDisplay
+                              audioUrl={melody.audioUrl}
+                              isPlaying={
+                                currentPlayingMelody?._id === melody._id
+                              }
+                              onPlayPause={() => handlePlayClick(melody)}
+                              height={30}
+                              width="200px"
+                              isControlled={true}
+                              currentTime={
+                                currentMelodyId === melody._id ? currentTime : 0
+                              }
+                              duration={
+                                currentMelodyId === melody._id ? duration : 0
+                              }
+                            />
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                            {melody?.bpm}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                            {melody?.key}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                            {Array.isArray(melody?.genre)
+                              ? melody.genre.join(", ")
+                              : melody?.genre}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                            {Array.isArray(melody?.artistType)
+                              ? melody.artistType.join(", ")
+                              : melody?.artistType}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                                  isMelodyFavorite(melody?._id)
+                                    ? "text-red-500"
+                                    : ""
+                                }`}
+                                onClick={() => toggleFavorite(melody?._id)}
+                              >
+                                <Heart
+                                  className={`h-4 w-4 ${
+                                    isMelodyFavorite(melody._id)
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
+                                />
+                              </Button>
 
-                   {/* Mobile Table */}
-                   <table className="w-full md:hidden">
-                     <tbody>
-                       {melodies.map((melody: any) => (
-                         <tr key={melody?._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
-                           <td className="px-4 py-3 flex items-center gap-3">
-                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
-                               <Image
-                                 src={melody?.image || '/images/default-melody.png'}
-                                 alt={melody?.name}
-                                 fill
-                                 className="object-cover"
-                               />
-                             </div>
-                             <Button
-                               variant="ghost"
-                               size="icon"
-                               className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                                 currentPlayingMelody?._id === melody._id
-                                   ? 'bg-emerald-500 text-black hover:bg-emerald-600'
-                                   : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-                               }`}
-                               onClick={() => handlePlayClick(melody)}
-                             >
-                               {currentPlayingMelody?._id === melody._id ? (
-                                 <Pause className="h-4 w-4" />
-                               ) : (
-                                 <Play className="h-4 w-4" />
-                               )}
-                             </Button>
-                             <div className="flex-1 min-w-0">
-                               <p className="text-sm font-medium text-white truncate">
-                                 {melody.name}
-                               </p>
-                               <p className="text-xs text-zinc-400 truncate mt-0.5">
-                                 {melody?.producer}
-                               </p>
-                             </div>
-                             
-                             <div className="flex items-center gap-2">
-                               <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                   isMelodyFavorite(melody?._id)
-                                     ? 'text-red-500'
-                                     : ''
-                                 }`}
-                                 onClick={() => toggleFavorite(melody?._id)}
-                               >
-                                 <Heart
-                                   className={`h-4 w-4 ${
-                                     isMelodyFavorite(melody?._id)
-                                       ? 'fill-current'
-                                       : ''
-                                   }`}
-                                 />
-                               </Button>
-                               <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
-                                 onClick={() => handleDownloadClick(melody)}
-                               >
-                                 <Download className="h-4 w-4" />
-                               </Button>
-                             </div>
-                           </td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
-                 </div>
-               </div>
-             </div>
-           )}
-        </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-zinc-400 hover:text-white"
+                                onClick={() => handleDownloadClick(melody)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
 
-                                   {/* Audio Player */}
-          <AudioPlayer
-            key={currentPlayingMelody?.audioUrl || currentPlayingPack?.audioUrl}
-            isVisible={isAudioPlayerVisible}
-            melody={currentPlayingMelody || currentPlayingPack}
-            shouldAutoPlay={shouldAutoPlay}
-            onClose={() => {
-              setCurrentPlayingMelody(null);
-              setCurrentPlayingPack(null);
-              setIsAudioPlayerVisible(false);
-              setShouldAutoPlay(false);
-            }}
-            isFavorite={
-              currentPlayingMelody
-                ? isMelodyFavorite(currentPlayingMelody._id)
-                : false
-            }
-            onFavoriteClick={(melodyId) => toggleFavorite(melodyId)}
-            playNextMelody={playNextMelody}
-            playPreviousMelody={playPreviousMelody}
-            onEnded={playNextMelody}
-            handleDownloadClick={handleDownloadClick}
-          />
-          {selectedMelody && (
-            <CollabModal
-              melodyDownloadCounter={melodyDownloadCounter}
-              isOpen={isCollabModalOpen}
-              onClose={() => setIsCollabModalOpen(false)}
-              melodyData={selectedMelody}
-            />
+                  {/* Mobile Table */}
+                  <table className="w-full md:hidden">
+                    <tbody>
+                      {melodies.map((melody: any) => (
+                        <tr
+                          key={melody?._id}
+                          className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                        >
+                          <td className="px-4 py-3 flex items-center gap-3">
+                            <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
+                              <Image
+                                src={
+                                  melody?.image || "/images/default-melody.png"
+                                }
+                                alt={melody?.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 flex-shrink-0 rounded-full ${
+                                currentPlayingMelody?._id === melody._id
+                                  ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                              }`}
+                              onClick={() => handlePlayClick(melody)}
+                            >
+                              {currentPlayingMelody?._id === melody._id ? (
+                                <Pause className="h-4 w-4" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-white truncate">
+                                {melody.name}
+                              </p>
+                              <p className="text-xs text-zinc-400 truncate mt-0.5">
+                                {melody?.producer}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
+                                  isMelodyFavorite(melody?._id)
+                                    ? "text-red-500"
+                                    : ""
+                                }`}
+                                onClick={() => toggleFavorite(melody?._id)}
+                              >
+                                <Heart
+                                  className={`h-4 w-4 ${
+                                    isMelodyFavorite(melody?._id)
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
+                                />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
+                                onClick={() => handleDownloadClick(melody)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           )}
         </div>
+
+        {/* Audio Player */}
+        <AudioPlayer
+          key={currentPlayingMelody?.audioUrl || currentPlayingPack?.audioUrl}
+          isVisible={isAudioPlayerVisible}
+          melody={currentPlayingMelody || currentPlayingPack}
+          shouldAutoPlay={shouldAutoPlay}
+          onClose={() => {
+            setCurrentPlayingMelody(null);
+            setCurrentPlayingPack(null);
+            setIsAudioPlayerVisible(false);
+            setShouldAutoPlay(false);
+          }}
+          isFavorite={
+            currentPlayingMelody
+              ? isMelodyFavorite(currentPlayingMelody._id)
+              : false
+          }
+          onFavoriteClick={(melodyId) => toggleFavorite(melodyId)}
+          playNextMelody={playNextMelody}
+          playPreviousMelody={playPreviousMelody}
+          onEnded={playNextMelody}
+          handleDownloadClick={handleDownloadClick}
+        />
+        {selectedMelody && (
+          <CollabModal
+            melodyDownloadCounter={melodyDownloadCounter}
+            isOpen={isCollabModalOpen}
+            onClose={() => setIsCollabModalOpen(false)}
+            melodyData={selectedMelody}
+          />
+        )}
+      </div>
     </Layout>
   );
-  }
+}

@@ -24,6 +24,7 @@ import {
   Store,
   Activity,
   User,
+  Shield,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -44,11 +45,8 @@ import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-
-  const {
-    logout: auth0Logout,
-  } = useAuth0();
-
+  const { logout: auth0Logout } = useAuth0();
+  const router = useRouter();
   const logout = () => {
     localStorage.removeItem("token");
     auth0Logout();
@@ -58,6 +56,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { cartItems, removeFromCart } = useCart();
   const { data: user } = useLoggedInUser();
+
+  const isPro = user?.data?.isPro === true;
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
@@ -117,17 +117,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <User className="h-5 w-5" />
         Profile
       </Link>
-      <Link
-        href="/checkout-membership"
-        className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#f0b82d] ${
-          pathname === "/checkout-membership"
-            ? "bg-[#ffc439] text-black"
-            : "bg-[#ffc439] text-black"
-        }`}
-      >
-        <Crown className="h-4 w-4" />
-        Become a Pro
-      </Link>
+      {!isPro ? (
+        <Link
+          href="/checkout-membership"
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#f0b82d] ${
+            pathname === "/checkout-membership"
+              ? "bg-[#ffc439] text-black"
+              : "bg-[#ffc439] text-black"
+          }`}
+        >
+          <Crown className="h-4 w-4" />
+          Become a Pro
+        </Link>
+      ) : (
+        ""
+      )}
+
+      {user?.data?.role === "admin" && (
+        <button onClick={() => router.push("/admin")} className="w-full flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all">
+            <Shield className="h-4 w-4" />
+            Admin Panel
+        </button>
+      )}
     </>
   );
 

@@ -13,9 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Pagination } from "@/components/ui/pagination";
 import Layout from "@/components/layout";
 import { useAllProducersDataWithTopProducersDataQuery } from "../store/api/userManagementApis/userManagementApis";
-// Removed: import { Pagination } from "../components/admin/Pagination";
 
 const countries = [
   "United States",
@@ -30,8 +30,8 @@ const countries = [
 export default function ProducersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("GLOBAL");
-  // Removed: const [currentPage, setCurrentPage] = useState(1);
-  // Removed: const producersPerPage = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const producersPerPage = 20;
 
   const { data: producersData, isLoading: isProducersDataLoading } =
     useAllProducersDataWithTopProducersDataQuery(null);
@@ -53,33 +53,31 @@ export default function ProducersPage() {
   });
 
   // Calculate pagination
-  // Removed: const totalPages = Math.ceil(filteredProducers.length / producersPerPage);
-  // Removed: const currentProducers = filteredProducers.slice((currentPage - 1) * producersPerPage, currentPage * producersPerPage);
+  const totalItems = filteredProducers.length;
+  const totalPages = Math.ceil(totalItems / producersPerPage);
+  const startIndex = (currentPage - 1) * producersPerPage;
+  const endIndex = startIndex + producersPerPage;
+  const currentProducers = filteredProducers.slice(startIndex, endIndex);
 
   const handleSearch = () => {
-    // Removed: setCurrentPage(1);
+    setCurrentPage(1); 
   };
 
   const handleClearFilter = () => {
     setSelectedCountry("GLOBAL");
     setSearchQuery("");
-    // Removed: setCurrentPage(1);
+    setCurrentPage(1);
   };
 
-  // Loading state
-  if (isProducersDataLoading) {
-    return (
-      <Layout>
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="text-white text-lg">Loading producers...</div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleCountrySelect = (country: string) => {
+    setSelectedCountry(country);
+    setCurrentPage(1);
+  };
+
 
   return (
     <Layout>
@@ -124,7 +122,7 @@ export default function ProducersPage() {
                     ? "bg-emerald-500 text-black hover:bg-emerald-600"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800"
                 }`}
-                onClick={() => setSelectedCountry("GLOBAL")}
+                onClick={() => handleCountrySelect("GLOBAL")}
               >
                 GLOBAL
               </Button>
@@ -151,7 +149,7 @@ export default function ProducersPage() {
                   {countries.map((country) => (
                     <DropdownMenuItem
                       key={country}
-                      onClick={() => setSelectedCountry(country)}
+                      onClick={() => handleCountrySelect(country)}
                       className="text-white hover:bg-zinc-800 hover:text-emerald-500"
                     >
                       {country}
@@ -238,7 +236,7 @@ export default function ProducersPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {filteredProducers.map((producer:any) => (
+                  {currentProducers.map((producer:any) => (
                     <Link
                       key={producer._id}
                       href={`/producers/${producer._id}`}
@@ -271,6 +269,17 @@ export default function ProducersPage() {
                       </div>
                     </Link>
                   ))}
+                </div>
+                
+                {/* Pagination */}
+                <div className="mt-6 mb-24">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    totalItems={totalItems}
+                    itemsPerPage={producersPerPage}
+                  />
                 </div>
               </>
             )}

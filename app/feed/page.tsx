@@ -435,21 +435,6 @@ export default function FeedPage() {
   const totalMelodies = filteredAndSortedMelodies.length;
   const totalMelodiesPages = Math.ceil(totalMelodies / melodiesPerPage);
 
-  // Loading state
-  if (isFollowingProducerContentLoading) {
-    return (
-      <Layout>
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
-          <div className="mx-auto max-w-[1200px]">
-            <div className="text-center">
-              <p className="text-zinc-400">Loading...</p>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">

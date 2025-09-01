@@ -168,6 +168,20 @@ export default function ProfilePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPlayingMelody, isAudioPlayerVisible]);
 
+  if (isUserProfileLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="text-white text-lg">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} min-h-screen bg-gradient-to-b from-black to-zinc-900/50`}>
@@ -236,7 +250,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium">
+                      <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium md:-mt-11">
                         Verified Producer
                       </span>
                     </div>

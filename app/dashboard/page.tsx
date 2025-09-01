@@ -293,20 +293,18 @@ export default function DashboardPage() {
 
   const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId);
   const packs = packsData?.data as Pack[] | undefined;
-  console.log(packs);
  
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
     useDownloadChartMelodyQuery(userId);
   const downloadData = processDownloadData(downloadChartData?.data || [], selectedTimeRange);
-  console.log(downloadData);
 
   const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
     usePackSalesHistoryQuery(userId);
   const packSalesHistoryData = packSalesHistory?.data;
   
   const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
-  console.log(salesData);
+
   const totalRevenue = calculateTotalRevenue(packs || []);
 
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -335,7 +333,7 @@ export default function DashboardPage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
+        // console.log("melodyPlayCounter", response);
       } catch (error) {
         console.log("error", error);
       }
@@ -383,15 +381,7 @@ export default function DashboardPage() {
 
   const { totalPlays, totalDownloads } = calculateTotals();
 
-  if (isLoadingUser || isLoadingDownloadChart) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-zinc-400">Loading...</div>
-        </div>
-      </Layout>
-    );
-  }
+ 
 
   return (
     <Layout>
@@ -666,14 +656,17 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-white">
                   Top Melodies
                 </h2>
-                <Link
+                {
+                  (melodies?.length || 0) > 0 ? <Link
                   href="/analytics?tab=melodies"
                   className="text-sm text-emerald-500 hover:text-emerald-400"
                 >
                   View All
-                </Link>
+                </Link> : ""
+                }
               </div>
-              <div className="space-y-4">
+              {
+                (melodies?.length || 0) > 0 ? <div className="space-y-4">
                 {melodies?.slice(0, 3).map((melody: Melody) => (
                   <div
                     key={melody._id}
@@ -744,7 +737,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div> : <div className="text-white text-center">No melodies found</div>
+              }
             </div>
           </Card>
 
@@ -755,14 +749,17 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-white">
                   Latest Packs
                 </h2>
-                <Link
+                {
+                  (packs?.length || 0) > 0 ? <Link
                   href="/analytics?tab=products"
                   className="text-sm text-emerald-500 hover:text-emerald-400"
                 >
                   View All
-                </Link>
+                </Link> : ""
+                }
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              {
+                (packs?.length || 0) > 0 ? <div className="grid grid-cols-3 gap-4">
                 {packs?.slice(0, 3).map((pack: Pack) => (
                   <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
                     <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
@@ -787,7 +784,8 @@ export default function DashboardPage() {
                     </div>
                   </Link>
                 ))}
-              </div>
+              </div> : <div className="text-white text-center">No Latest Packs found</div>
+              }
             </div>
           </Card>
         </div>
