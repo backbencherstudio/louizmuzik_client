@@ -43,7 +43,6 @@ export default function ItemsPage() {
 
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
     const melodies = melodiesData?.data;
-    console.log("melodies", melodies);
     
     // Filter melodies based on search query
     const filteredMelodies = melodies?.filter((melody: any) => {
