@@ -447,7 +447,7 @@ export default function FeedPage() {
   return (
     <Layout>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
-        <div className="mx-auto max-w-[1200px]">
+        <div className="mx-auto max-w-[1400px]">
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h1 className="text-4xl font-bold mb-4">

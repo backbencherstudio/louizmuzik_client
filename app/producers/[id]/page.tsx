@@ -38,6 +38,7 @@ import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaTiktok } from "react-icons/fa";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -327,28 +328,43 @@ export default function ProfilePage() {
 
                     {/* Social Media Links */}
                     <div className="hidden md:flex justify-center md:justify-start gap-2 mt-6">
+                    {userData?.instagramUsername && (
                       <Link
-                        href="https://instagram.com"
+                        href={`https://instagram.com/${userData?.instagramUsername}`}
                         target="_blank"
                         className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
                       >
                         <Instagram className="w-5 h-5" />
                       </Link>
+                    )}
+                    {userData?.youtubeUsername && (
                       <Link
-                        href="https://youtube.com"
+                        href={`https://youtube.com/${userData?.youtubeUsername}`}
                         target="_blank"
                         className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
                       >
                         <Youtube className="w-5 h-5" />
                       </Link>
+                    )}
+                    {userData?.tiktokUsername && (
                       <Link
-                        href="https://beatstars.com"
+                        href={`https://tiktok.com/${userData?.tiktokUsername}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                      >
+                        <FaTiktok className="w-5 h-5" />
+                      </Link>
+                    )}
+                    {userData?.beatstarsUsername && (
+                      <Link
+                        href={`https://beatstars.com/${userData?.beatstarsUsername}`}
                         target="_blank"
                         className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
                       >
                         <ExternalLink className="w-5 h-5" />
                       </Link>
-                    </div>
+                    )}
+                  </div>
                   </div>
                 </div>
               </div>
