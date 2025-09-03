@@ -320,7 +320,7 @@ export default function AccountPage() {
                     </Label>
                     <Input
                       id="beatstars"
-                      name="beatstars"
+                      name="beatstarsUsername"
                       placeholder="Your Beatstars username"
                       defaultValue={user?.data?.beatstarsUsername || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"

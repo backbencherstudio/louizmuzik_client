@@ -361,39 +361,41 @@ export default function ProfilePage() {
           </div>
 
           {/* Premium Packs Section */}
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-6 ">
-              <span className="capitalize"> {userData?.producer_name}</span> 's
-              Premium Packs
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {premiumPacks?.map((pack: any) => (
-                <Link
-                  key={pack._id}
-                  href={`/product/${pack._id}`}
-                  className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={pack.thumbnail_image}
-                      alt={pack.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                      {pack?.title}
-                    </h3>
-                    <p className="mt-1 text-sm font-bold text-emerald-500">
-                      ${pack?.price.toFixed(2)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+          {premiumPacks?.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-6 ">
+                <span className="capitalize"> {userData?.producer_name}</span>{" "}
+                's Premium Packs
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {premiumPacks?.map((pack: any) => (
+                  <Link
+                    key={pack._id}
+                    href={`/product/${pack._id}`}
+                    className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
+                  >
+                    <div className="relative aspect-square">
+                      <Image
+                        src={pack.thumbnail_image}
+                        alt={pack.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-white group-hover:text-emerald-500 line-clamp-1">
+                        {pack?.title}
+                      </h3>
+                      <p className="mt-1 text-sm font-bold text-emerald-500">
+                        ${pack?.price.toFixed(2)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Melodies Table */}
           {melodies?.length > 0 && (
@@ -461,7 +463,8 @@ export default function ProfilePage() {
                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                               <Image
                                 src={
-                                  melody?.userId?.profile_image || "/images/default-melody.png"
+                                  melody?.userId?.profile_image ||
+                                  "/images/default-melody.png"
                                 }
                                 alt={melody?.name}
                                 fill
@@ -554,7 +557,8 @@ export default function ProfilePage() {
                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                               <Image
                                 src={
-                                  melody?.userId?.profile_image || "/images/default-melody.png"
+                                  melody?.userId?.profile_image ||
+                                  "/images/default-melody.png"
                                 }
                                 alt={melody?.name}
                                 fill
