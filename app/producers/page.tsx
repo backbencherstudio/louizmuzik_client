@@ -78,6 +78,10 @@ export default function ProducersPage() {
     setCurrentPage(1);
   };
 
+  if (isProducersDataLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Layout>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
@@ -179,8 +183,8 @@ export default function ProducersPage() {
                     href={`/producers/${producer._id}`}
                     className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                   >
-                    <div className="bg-gradient-to-bl to-[#161616] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
-                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-10px_10px_8px_0px] shadow-black/20  group-hover:scale-105 transition-transform duration-300">
+                    <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
                       <Image
                         src={
                           producer.profile_image ||
@@ -245,8 +249,8 @@ export default function ProducersPage() {
                       href={`/producers/${producer._id}`}
                       className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                     >
-                      <div className="bg-gradient-to-bl to-[#161616] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
-                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-10px_10px_8px_0px] shadow-black/20  group-hover:scale-105 transition-transform duration-300">
+                      <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
                           <Image
                             src={
                               producer.profile_image ||
