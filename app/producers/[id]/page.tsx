@@ -382,12 +382,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Premium Packs Section */}
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-6 ">
-                <span className="capitalize"> {userData?.producer_name}</span>{" "}
-                's Premium Packs
-              </h2>
-              {premiumPacks?.length > 0 ? (
+            {premiumPacks?.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6 ">
+                  <span className="capitalize"> {userData?.producer_name}</span>{" "}
+                  's Premium Packs
+                </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {premiumPacks?.map((pack: any) => (
                     <Link
@@ -433,12 +433,8 @@ export default function ProfilePage() {
                     </Link>
                   ))}
                 </div>
-              ) : (
-                <h1 className="text-white text-center">
-                  No premium packs found
-                </h1>
-              )}
-            </div>
+              </div>
+            )}
             {/* Melodies Table */}
             {melodies?.length > 0 && (
               <div className="mt-10">
