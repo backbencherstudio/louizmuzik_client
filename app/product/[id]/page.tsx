@@ -20,6 +20,7 @@ import { useCart } from "@/components/cart-context";
 import { useFavoritePackMutation, useGetPackDetailsQuery } from "@/app/store/api/packApis/packApis";
 import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 import { Slider } from "@/components/ui/slider";
+import { Pagination } from "@/components/ui/pagination";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -27,6 +28,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [showVideo, setShowVideo] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { addToCart } = useCart();
   const {
@@ -42,6 +45,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const isFavorite = user?.data?.favourite_packs?.includes(id);
 
   const morePacks = packDetails?.data?.eachUserAllPack;
+
+  // Reset to first page when product changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [id]);
+
+  // Calculate pagination for more packs
+  const totalItems = morePacks?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPacks = morePacks?.slice(startIndex, endIndex) || [];
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of the more packs section
+    window.scrollTo({
+      top: document.body.scrollHeight - 400,
+      behavior: 'smooth'
+    });
+  };
 
   // Create product object from pack data
   const product = pack
@@ -356,7 +380,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 More from {pack?.userId?.producer_name || product?.producer}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {morePacks.slice(0, 20).map((item: any) => (
+                {currentPacks.map((item: any) => (
                   <Link
                     key={item?._id}
                     href={`/product/${item?._id}`}
@@ -381,6 +405,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   </Link>
                 ))}
               </div>
+              
+              {/* Page Info */}
+              {totalPages > 1 && (
+                <div className="mt-4 text-center text-zinc-400 text-sm">
+                  Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} products
+                </div>
+              )}
+                             {totalPages > 1 && (
+                 <div className="mt-8 flex justify-center">
+                   <Pagination
+                     currentPage={currentPage}
+                     totalPages={totalPages}
+                     onPageChange={handlePageChange}
+                     totalItems={totalItems}
+                     itemsPerPage={itemsPerPage}
+                   />
+                 </div>
+               )}
             </div>
           </div>
         )}
