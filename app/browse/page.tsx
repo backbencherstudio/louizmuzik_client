@@ -241,11 +241,14 @@ export default function BrowsePage() {
 
   const filteredAndSortedMelodies = [...(melodies || [])]
     .filter((melody) => {
-      if (
-        searchQuery &&
-        !melody.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const melodyNameLower = melody.name.toLowerCase();
+        const producerNameLower = melody.producer.toLowerCase();
+        
+        if (!melodyNameLower.includes(searchLower) && !producerNameLower.includes(searchLower)) {
+          return false;
+        }
       }
 
       if (selectedKey && melody.key !== selectedKey) {
