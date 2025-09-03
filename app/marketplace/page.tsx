@@ -51,7 +51,8 @@ export default function MarketplacePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const itemsPerPage = 60;
+  
   const [currentPlayingPack, setCurrentPlayingPack] =
     useState<PlayingPack | null>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
@@ -346,7 +347,7 @@ export default function MarketplacePage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-8">
+                <div className="mt-6 mb-24">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
