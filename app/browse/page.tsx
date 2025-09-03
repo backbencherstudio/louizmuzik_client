@@ -95,6 +95,7 @@ export default function BrowsePage() {
   const { data: melodiesData, refetch: refetchMelodies } =
     useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
+  console.log("melodies", melodies);
 
   // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -747,7 +748,7 @@ export default function BrowsePage() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                       <Link
-                        href={`/producer/${melody?.producer
+                        href={`/producers/${melody?.userId?._id
                           .toLowerCase()
                           .replace(/\s+/g, "-")}`}
                         className="hover:text-emerald-500 transition-colors"
@@ -857,7 +858,7 @@ export default function BrowsePage() {
                         </p>
                         <p className="text-xs text-zinc-400 truncate mt-0.5">
                           <Link
-                            href={`/producer/${melody?.producer
+                            href={`/producers/${melody?.userId?._id
                               .toLowerCase()
                               .replace(/\s+/g, "-")}`}
                             className="hover:text-emerald-500 transition-colors"
