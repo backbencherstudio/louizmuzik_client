@@ -42,7 +42,7 @@ export default function ProducersPage() {
   const allProducers = producersData?.data?.allProducers || [];
 
   // Filter producers based on search query and country
-  const filteredProducers = allProducers.filter((producer:any) => {
+  const filteredProducers = allProducers.filter((producer: any) => {
     const name = producer.name || "";
     const matchesSearch = name
       .toLowerCase()
@@ -60,7 +60,7 @@ export default function ProducersPage() {
   const currentProducers = filteredProducers.slice(startIndex, endIndex);
 
   const handleSearch = () => {
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleClearFilter = () => {
@@ -77,7 +77,6 @@ export default function ProducersPage() {
     setSelectedCountry(country);
     setCurrentPage(1);
   };
-
 
   return (
     <Layout>
@@ -174,13 +173,14 @@ export default function ProducersPage() {
                 Top Producers
               </h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {topProducers.map((producer:any) => (
+                {topProducers.map((producer: any) => (
                   <Link
                     key={producer._id}
                     href={`/producers/${producer._id}`}
                     className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                   >
-                    <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-800">
+                    <div className="bg-gradient-to-bl to-[#161616] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-10px_10px_8px_0px] shadow-black/20  group-hover:scale-105 transition-transform duration-300">
                       <Image
                         src={
                           producer.profile_image ||
@@ -188,12 +188,15 @@ export default function ProducersPage() {
                         }
                         alt={producer.producer_name || "Producer"}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-300  shadow-lg  shadow-black/20  "
                       />
-                    </div>
+                        </div>
+                      </div>
                     <div className="flex items-center justify-center gap-1">
                       <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
-                        {producer?.producer_name || producer?.name || "Unknown Producer"}
+                        {producer?.producer_name ||
+                          producer?.name ||
+                          "Unknown Producer"}
                       </h3>
                       {producer.isPro && (
                         <Image
@@ -236,22 +239,28 @@ export default function ProducersPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {currentProducers.map((producer:any) => (
+                  {currentProducers.map((producer: any) => (
                     <Link
                       key={producer._id}
                       href={`/producers/${producer._id}`}
                       className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
                     >
-                      <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-800">
-                        <Image
-                          src={
-                            producer.profile_image ||
-                            "/images/profiles/banner-profile.jpg"
-                          }
-                          alt={producer?.producer_name || producer?.name || "Producer"}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                      <div className="bg-gradient-to-bl to-[#161616] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-10px_10px_8px_0px] shadow-black/20  group-hover:scale-105 transition-transform duration-300">
+                          <Image
+                            src={
+                              producer.profile_image ||
+                              "/images/profiles/banner-profile.jpg"
+                            }
+                            alt={
+                              producer?.producer_name ||
+                              producer?.name ||
+                              "Producer"
+                            }
+                            fill
+                            className="object-cover transition-transform duration-300 "
+                          />
+                        </div>
                       </div>
                       <div className="flex items-center justify-center gap-1">
                         <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
@@ -270,7 +279,7 @@ export default function ProducersPage() {
                     </Link>
                   ))}
                 </div>
-                
+
                 {/* Pagination */}
                 <div className="mt-6 mb-24">
                   <Pagination
