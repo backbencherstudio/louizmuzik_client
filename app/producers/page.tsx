@@ -31,7 +31,7 @@ export default function ProducersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("GLOBAL");
   const [currentPage, setCurrentPage] = useState(1);
-  const producersPerPage = 20;
+  const producersPerPage = 60;
 
   const { data: producersData, isLoading: isProducersDataLoading } =
     useAllProducersDataWithTopProducersDataQuery(null);
@@ -43,7 +43,7 @@ export default function ProducersPage() {
 
   // Filter producers based on search query and country
   const filteredProducers = allProducers.filter((producer: any) => {
-    const name = producer.name || "";
+    const name = producer.name || producer.producer_name || "";
     const matchesSearch = name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
