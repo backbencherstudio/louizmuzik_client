@@ -122,6 +122,12 @@ export default function FeedPage() {
     max?: number;
   } | null>(null);
 
+  // Add these new state variables for controlling filter popovers
+  const [popularityPopoverOpen, setPopularityPopoverOpen] = useState(false);
+  const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
+  const [keyPopoverOpen, setKeyPopoverOpen] = useState(false);
+  const [artistTypePopoverOpen, setArtistTypePopoverOpen] = useState(false);
+
   const { data: user, refetch: refetchUser } = useLoggedInUserQuery(null);
   const userId = user?.data?._id;
 
@@ -410,16 +416,19 @@ export default function FeedPage() {
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre === selectedGenre ? "" : genre);
     setCurrentMelodiesPage(1); // Reset to first page
+    setGenrePopoverOpen(false); // Close the popover after selection
   };
 
   const handleArtistTypeSelect = (type: string) => {
     setSelectedArtistType(type === selectedArtistType ? "" : type);
     setCurrentMelodiesPage(1); // Reset to first page
+    setArtistTypePopoverOpen(false); // Close the popover after selection
   };
 
   const handlePopularitySelect = (popularity: string) => {
     setSelectedPopularity(popularity === selectedPopularity ? "" : popularity);
     setCurrentMelodiesPage(1); // Reset to first page
+    setPopularityPopoverOpen(false); // Close the popover after selection
   };
 
   const handleClearAllFilters = () => {
@@ -635,7 +644,7 @@ export default function FeedPage() {
           <div className="mb-32">
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
               {/* Popularity Filter */}
-              <Popover>
+              <Popover open={popularityPopoverOpen} onOpenChange={setPopularityPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -682,7 +691,7 @@ export default function FeedPage() {
               </Popover>
 
               {/* Genre Filter */}
-              <Popover>
+              <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -729,7 +738,7 @@ export default function FeedPage() {
               />
 
               {/* Key Filter */}
-              <Popover>
+              <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -745,13 +754,14 @@ export default function FeedPage() {
                     onChange={(key) => {
                       setSelectedKey(key);
                       setCurrentMelodiesPage(1); // Reset to first page
+                      setKeyPopoverOpen(false); // Close the popover after selection
                     }}
                   />
                 </PopoverContent>
               </Popover>
 
               {/* Artist Type Filter */}
-              <Popover>
+              <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
