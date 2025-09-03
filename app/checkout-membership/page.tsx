@@ -15,6 +15,7 @@ import { useLoggedInUser } from "../store/api/authApis/authApi";
 export default function ProPage() {
   const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
+  console.log("checkout-membership", userData?.hasUsedTrial);
   const [amount, setAmount] = useState("9.99");
   const [loading, setLoading] = useState(false);
 
@@ -82,20 +83,30 @@ export default function ProPage() {
         {/* Hero Section */}
         <div className="relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
           <div className="mx-auto max-w-7xl">
-            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <h1 className="mb-4 sm:mb-6 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white">
-                Start your{" "}
-                <span className="gradient-text">7-day free trial</span>
-              </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
-                Get access to all the benefits today for free and take your
-                career to the next level. No commitment required.
-              </p>
-            </div>
+            {userData?.hasUsedTrial === true ? (
+              ""
+            ) : (
+              <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+                <h1 className="mb-4 sm:mb-6 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white">
+                  Start your{" "}
+                  <span className="gradient-text">7-day free trial</span>
+                </h1>
+                <p className="text-base sm:text-lg lg:text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
+                  Get access to all the benefits today for free and take your
+                  career to the next level. No commitment required.
+                </p>
+              </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="max-w-6xl mx-auto">
-              <div className="grid gap-8 lg:grid-cols-[1fr_450px] items-start">
+              <div
+                className={`grid gap-8 ${
+                  userData?.hasUsedTrial === true
+                    ? "lg:grid-cols-[1fr_450px]"
+                    : "lg:grid-cols-[1fr_450px]"
+                } items-start`}
+              >
                 {/* Payment Form Section */}
                 <div className="order-2 lg:order-1">
                   <Card className="border-0 bg-zinc-900/50 backdrop-blur-sm">
@@ -176,7 +187,7 @@ export default function ProPage() {
 
                 {/* Summary Card */}
                 <div className="order-1 lg:order-2">
-                  <Card className="border-0 bg-zinc-900/50 backdrop-blur-sm sticky top-8">
+                  <Card className={`border-0 ${userData?.hasUsedTrial === true ? "" : "bg-zinc-900/50 "} sticky top-8`}>
                     <CardHeader className="pb-6">
                       <CardTitle className="text-xl sm:text-2xl font-bold text-white">
                         Order Summary
@@ -184,36 +195,40 @@ export default function ProPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Trial Period */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold text-white text-lg">
-                              Free Pro Trial
+                      {userData?.hasUsedTrial === true ? (
+                        ""
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white text-lg">
+                                Free Pro Trial
+                              </div>
+                              <div className="text-sm text-zinc-400">
+                                7 days of unlimited access
+                              </div>
                             </div>
-                            <div className="text-sm text-zinc-400">
-                              7 days of unlimited access
+                            <div className="text-2xl font-bold text-emerald-500">
+                              $0.00
                             </div>
                           </div>
-                          <div className="text-2xl font-bold text-emerald-500">
-                            $0.00
-                          </div>
-                        </div>
 
-                        {/* Future Payments */}
-                        <div className="flex items-center justify-between pt-4 border-t border-zinc-700">
-                          <div>
-                            <div className="font-semibold text-white text-lg">
-                              Future payments
+                          {/* Future Payments */}
+                          <div className="flex items-center justify-between pt-4 border-t border-zinc-700">
+                            <div>
+                              <div className="font-semibold text-white text-lg">
+                                Future payments
+                              </div>
+                              <div className="text-sm text-zinc-400">
+                                Starting on March 2, 2025
+                              </div>
                             </div>
-                            <div className="text-sm text-zinc-400">
-                              Starting on March 2, 2025
+                            <div className="text-xl font-semibold text-zinc-300">
+                              $9.99
                             </div>
-                          </div>
-                          <div className="text-xl font-semibold text-zinc-300">
-                            $9.99
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Total */}
                       <div className="flex items-center justify-between pt-4 border-t border-zinc-700">
@@ -221,7 +236,7 @@ export default function ProPage() {
                           Total Today
                         </div>
                         <div className="text-2xl font-bold text-emerald-500">
-                          $0.00
+                          {userData?.hasUsedTrial === true ? "$9.99" : "$0.00"}
                         </div>
                       </div>
 
