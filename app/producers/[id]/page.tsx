@@ -395,7 +395,7 @@ export default function ProfilePage() {
                       href={`/product/${pack._id}`}
                       className="group relative block overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
                     >
-                      <div className="relative aspect-square">
+                      <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={pack.thumbnail_image}
                           alt={pack.title}

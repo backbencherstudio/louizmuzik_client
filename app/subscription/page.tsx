@@ -39,6 +39,22 @@ export default function SubscriptionPage() {
   const [cancelPaypalSubscription, { isLoading: isCancellingPaypal }] =
     useCancelPaypalSubscriptionMutation();
 
+  // Fix: Move this inside the component and add proper validation
+  const nextBillingDate = userData?.nextBillingTime ? new Date(userData.nextBillingTime) : null;
+  console.log(52, nextBillingDate);
+
+  // Helper function to safely format the date
+  const formatNextBillingDate = () => {
+    if (!nextBillingDate || isNaN(nextBillingDate.getTime())) {
+      return "Not available";
+    }
+    return nextBillingDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long", 
+      day: "numeric"
+    });
+  };
+
   const handleStripeCancelSubscription = async () => {
     try {
       const res = await cancelSubscription(customerId);
@@ -160,12 +176,7 @@ export default function SubscriptionPage() {
               <div className="text-right">
                 <p className="text-sm text-zinc-400 mb-1">Next billing date</p>
                 <p className="text-white font-medium">
-                  {userData?.nextBillingTime === ""
-                    ? new Date(userData?.nextBillingTime).toLocaleDateString(
-                        "en-US",
-                        { year: "numeric", month: "long", day: "numeric" }
-                      )
-                    : "N/A"}
+                  {formatNextBillingDate()}
                 </p>
               </div>
             </div>
@@ -329,7 +340,7 @@ export default function SubscriptionPage() {
             </div>
 
             <p className="text-zinc-400 mb-8">
-              Your subscription will remain active until April 15, 2025. After
+              Your subscription will remain active until {formatNextBillingDate()}. After
               that, your account will be downgraded to the Free plan.
             </p>
 
