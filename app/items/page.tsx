@@ -164,81 +164,83 @@ export default function ItemsPage() {
                     <h2 className="text-2xl font-bold text-white mb-6">
                         Sample Packs
                     </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {packData?.data?.map((pack: any) => (
-                            <div
-                                key={pack._id}
-                                className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
+                   {
+                    packData?.data?.length > 0 ?  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {packData?.data?.map((pack: any) => (
+                        <div
+                            key={pack._id}
+                            className="group relative overflow-hidden rounded-xl bg-zinc-800/30 transition-all hover:bg-zinc-800/50"
+                        >
+                            <Link
+                                href={`/product/${pack._id}`}
+                                className="block"
                             >
-                                <Link
-                                    href={`/product/${pack._id}`}
-                                    className="block"
-                                >
-                                    <div className="relative aspect-square">
-                                        <Image
-                                            src={pack?.thumbnail_image || '/placeholder.svg'}
-                                            alt={pack.title}
-                                            fill
-                                            className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
-                                        />
-                                        {/* Play button on hover */}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                                <div className="relative aspect-square">
+                                    <Image
+                                        src={pack?.thumbnail_image || '/placeholder.svg'}
+                                        alt={pack.title}
+                                        fill
+                                        className="object-cover transition-all group-hover:scale-105 group-hover:opacity-75"
+                                    />
+                                    {/* Play button on hover */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                                        <Button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handlePackPlayClick(pack);
+                                            }}
+                                            className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
+                                        >
+                                            {currentPlayingPack?._id === pack._id ? (
+                                                <Pause className="h-6 w-6" />
+                                            ) : (
+                                                <Play className="h-6 w-6" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="p-3 sm:p-4">
+                                    <h3 className="mb-1 text-sm sm:text-base font-medium text-white group-hover:text-emerald-500 line-clamp-1">
+                                        {pack?.title}
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-emerald-500">
+                                        {pack?.producer}
+                                    </p>
+                                    <div className="mt-2 flex items-center justify-between">
+                                        <p className="text-sm sm:text-base font-bold text-white">
+                                            ${pack?.price.toFixed(2)}
+                                        </p>
+                                        <div className="flex gap-2">
                                             <Button
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    handlePackPlayClick(pack);
+                                                    window.location.href = `/new-pack?edit=${pack._id}`;
                                                 }}
-                                                className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
+                                                className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-600 hover:text-black transition-colors"
                                             >
-                                                {currentPlayingPack?._id === pack._id ? (
-                                                    <Pause className="h-6 w-6" />
-                                                ) : (
-                                                    <Play className="h-6 w-6" />
-                                                )}
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setDeleteModalOpen(true);
+                                                    setPackToDelete(pack);
+                                                }}
+                                                className='bg-red-500 text-white'
+                                            >
+                                                <Trash className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="p-3 sm:p-4">
-                                        <h3 className="mb-1 text-sm sm:text-base font-medium text-white group-hover:text-emerald-500 line-clamp-1">
-                                            {pack?.title}
-                                        </h3>
-                                        <p className="text-xs sm:text-sm text-emerald-500">
-                                            {pack?.producer}
-                                        </p>
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <p className="text-sm sm:text-base font-bold text-white">
-                                                ${pack?.price.toFixed(2)}
-                                            </p>
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        window.location.href = `/new-pack?edit=${pack._id}`;
-                                                    }}
-                                                    className="text-xs sm:text-sm bg-emerald-500/10 text-emerald-500 hover:bg-emerald-600 hover:text-black transition-colors"
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        setDeleteModalOpen(true);
-                                                        setPackToDelete(pack);
-                                                    }}
-                                                    className='bg-red-500 text-white'
-                                                >
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                    ))}
+                </div>: <p className='text-red-500 text-center'>Your sample crate is empty. Time to fill it up</p>
+                   }
                 </div>
 
                 {/* Melodies Section */}
