@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Layout from "@/components/layout";
 import {
   useUpdateUserPasswordMutation,
@@ -27,6 +34,7 @@ import { useLoggedInUser } from "../store/api/authApis/authApi";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { useAddPaypalEmailMutation } from "../store/api/paymentApis/paymentApis";
+import countries from "@/components/Data/country";
 
 export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +47,20 @@ export default function AccountPage() {
   const [isSubmittingPayPal, setIsSubmittingPayPal] = useState(false);
 
   const { data: user, refetch } = useLoggedInUser();
+  const [selectedCountry, setSelectedCountry] = useState("");
+
+  // Update selectedCountry when user data changes
+  useEffect(() => {
+    if (user?.data?.country) {
+      console.log("Setting selectedCountry to:", user.data.country);
+      setSelectedCountry(user.data.country);
+    }
+  }, [user?.data?.country]);
+
+
+
   console.log("user 42", user);
+  console.log("User country:", user?.data?.country);
   const userId = user?.data?._id;
   console.log("userId 34", userId);
   const [updateUserProfile, { isLoading: isUpdatingProfile }] =
@@ -61,6 +82,9 @@ export default function AccountPage() {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
 
     try {
       const response = await updateUserProfile({
@@ -69,6 +93,8 @@ export default function AccountPage() {
       }).unwrap();
       if (response.success) {
         toast.success(response.message);
+        // Refresh user data after successful update
+        refetch();
       } else {
         toast.error(response.message);
       }
@@ -261,14 +287,30 @@ export default function AccountPage() {
                     <Label htmlFor="location" className="text-zinc-400">
                       Country
                     </Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      placeholder="Your country"
-                      defaultValue={user?.data?.country || ""}
-                      className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
-                    />
-                  </div>
+                    <Select 
+                      name="country" 
+                      value={selectedCountry} 
+                      onValueChange={(value) => {
+                        console.log("Country selection changed to:", value);
+                        setSelectedCountry(value);
+                      }}
+                    >
+                      <SelectTrigger className="border-zinc-800 bg-zinc-900 text-white">
+                        <SelectValue placeholder="Select your country" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-white max-h-60">
+                        {countries.map((country) => (
+                          <SelectItem
+                            key={country}
+                            value={country}
+                            className="text-white hover:bg-zinc-800 focus:bg-zinc-800"
+                          >
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                                         </Select>
+                   </div>
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2">
