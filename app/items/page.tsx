@@ -43,7 +43,7 @@ export default function ItemsPage() {
 
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
     const melodies = melodiesData?.data
-    // console.log("melodies",melodies);
+    console.log("melodies",melodies);
     const [deleteMelody, { isLoading: isDeletingMelody }] = useDeleteMelodyMutation();
 
     const handleDeletePack = async (packId: string) => {
@@ -322,7 +322,7 @@ export default function ItemsPage() {
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                                 <Image
                                                     src={
-                                                        melody?.image ||
+                                                        melody?.userId?.profile_image ||
                                                         '/placeholder.svg'
                                                     }
                                                     alt={melody?.name}

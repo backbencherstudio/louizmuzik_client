@@ -461,7 +461,7 @@ export default function ProfilePage() {
                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
                               <Image
                                 src={
-                                  melody?.image || "/images/default-melody.png"
+                                  melody?.userId?.profile_image || "/images/default-melody.png"
                                 }
                                 alt={melody?.name}
                                 fill
@@ -554,7 +554,7 @@ export default function ProfilePage() {
                             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                               <Image
                                 src={
-                                  melody?.image || "/images/default-melody.png"
+                                  melody?.userId?.profile_image || "/images/default-melody.png"
                                 }
                                 alt={melody?.name}
                                 fill

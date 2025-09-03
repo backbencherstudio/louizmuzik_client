@@ -31,7 +31,9 @@ type Melody = {
     producer: string;
     splitPercentage: number;
     updatedAt: string;
-    userId: string;
+    userId: {
+        profile_image: string;
+    };
     videoUrl: string;
 };
 
@@ -282,7 +284,7 @@ export default function MelodyAnalytics() {
                                 <tr key={melody._id} className="border-b border-zinc-800 hover:bg-zinc-900/30">
                                     <td className="whitespace-nowrap px-4 py-3">
                                         <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                                            <Image src={melody.image} alt={melody.name} fill className="object-cover" />
+                                            <Image src={melody.userId?.profile_image} alt={melody.name} fill className="object-cover" />
                                         </div>
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3">
