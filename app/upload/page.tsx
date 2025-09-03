@@ -339,6 +339,8 @@ export default function UploadPage() {
             if (file.type.startsWith('audio/')) {
                 setFile(file);
                 setExistingAudioUrl(''); 
+                const fileName = file.name.replace(/\.[^/.]+$/, '');
+                setMelodyName(fileName);
             }
         }
     };
@@ -349,6 +351,8 @@ export default function UploadPage() {
             if (file.type.startsWith('audio/')) {
                 setFile(file);
                 setExistingAudioUrl(''); 
+                const fileName = file.name.replace(/\.[^/.]+$/, '');
+                setMelodyName(fileName);
             }
         }
     };
@@ -361,6 +365,12 @@ export default function UploadPage() {
                 setExistingImageUrl(''); 
             }
         }
+    };
+
+    const handleRemoveFile = () => {
+        setFile(null);
+        setExistingAudioUrl('');
+        setMelodyName('');
     };
 
     const validateForm = () => {
@@ -387,9 +397,7 @@ export default function UploadPage() {
         if (!file && !existingAudioUrl) {
             errors.audio = 'Audio file is required.';
         }
-        if (!imageFile && !existingImageUrl) {
-            errors.image = 'Cover image is required.';
-        }
+        
         if (!agreedToTerms) {
             errors.terms = 'You must agree to the terms.';
         }
@@ -515,9 +523,9 @@ export default function UploadPage() {
 
                     <Card className="border-0 bg-black p-4 md:p-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Image Upload Area */}
+                            {/* Image Upload Area commented by dev */}
                             <div
-                                className={`relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 mb-4 ${formErrors.image ? 'border-red-500' : ''}`}
+                                className={`relative hidden min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 md:p-6 transition-colors border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 mb-4 ${formErrors.image ? 'border-red-500' : ''}`}
                                 onClick={() => document.getElementById('image-input')?.click()}
                             >
                                 <input
@@ -551,9 +559,9 @@ export default function UploadPage() {
                                         </>
                                     )}
                                 </div>
-                                {formErrors.image && (
+                                {/* {formErrors.image && (
                                     <p className="mt-2 text-xs text-red-500">{formErrors.image}</p>
-                                )}
+                                )} */}
                             </div>
 
                             {/* Drag & Drop Area */}
@@ -611,29 +619,40 @@ export default function UploadPage() {
                             {/* Audio Player */}
                             {hasAudio && (
                                 <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Button
+                                                onClick={handlePlayPause}
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-500"
+                                            >
+                                                {isPlaying ? (
+                                                    <Pause className="h-5 w-5" />
+                                                ) : (
+                                                    <Play className="h-5 w-5" />
+                                                )}
+                                            </Button>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">
+                                                    {file?.name.split('.')[0] || melodyName || 'Audio File'}
+                                                </p>
+                                                <p className="text-xs text-zinc-400">
+                                                    {formatTime(currentTime)} /{' '}
+                                                    {formatTime(duration)}
+                                                </p>
+                                            </div>
+                                        </div>
                                         <Button
-                                            onClick={handlePlayPause}
+                                            onClick={handleRemoveFile}
                                             type="button"
                                             variant="ghost"
                                             size="icon"
-                                            className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-500"
+                                            className="h-8 w-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-500"
                                         >
-                                            {isPlaying ? (
-                                                <Pause className="h-5 w-5" />
-                                            ) : (
-                                                <Play className="h-5 w-5" />
-                                            )}
+                                            <X className="h-4 w-4" />
                                         </Button>
-                                        <div>
-                                            <p className="text-sm font-medium text-white">
-                                                {file?.name || melodyName || 'Audio File'}
-                                            </p>
-                                            <p className="text-xs text-zinc-400">
-                                                {formatTime(currentTime)} /{' '}
-                                                {formatTime(duration)}
-                                            </p>
-                                        </div>
                                     </div>
 
                                     <div
@@ -645,7 +664,7 @@ export default function UploadPage() {
 
                             {/* Form Fields */}
                             <div className="grid gap-6">
-                                <div className="space-y-2">
+                                <div className="space-y-2 ">
                                     <Label htmlFor="name" className="text-white">
                                         Melody Name
                                     </Label>
