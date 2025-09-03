@@ -83,6 +83,11 @@ export default function BrowsePage() {
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
 
+  // Add these new state variables for controlling filter popovers
+  const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
+  const [keyPopoverOpen, setKeyPopoverOpen] = useState(false);
+  const [artistTypePopoverOpen, setArtistTypePopoverOpen] = useState(false);
+
   // Get user
   const { data: user, refetch: refetchUser } = useLoggedInUser();
   const userId = user?.data?._id;
@@ -215,11 +220,13 @@ export default function BrowsePage() {
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre === selectedGenre ? "" : genre);
     setCurrentPage(1);
+    setGenrePopoverOpen(false); // Close the popover after selection
   };
 
   const handleArtistTypeSelect = (type: string) => {
     setSelectedArtistType(type === selectedArtistType ? "" : type);
     setCurrentPage(1);
+    setArtistTypePopoverOpen(false); // Close the popover after selection
   };
 
   const handleClearAllFilters = () => {
@@ -448,7 +455,7 @@ export default function BrowsePage() {
             </DropdownMenu>
           </div>
 
-          <Popover>
+          <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -493,7 +500,7 @@ export default function BrowsePage() {
             onClear={handleBpmFilterClear}
           />
 
-          <Popover>
+          <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -508,13 +515,14 @@ export default function BrowsePage() {
                 value={selectedKey}
                 onChange={(key) => {
                   setSelectedKey(key);
-                  setCurrentPage(1); // Reset to first page when key changes
+                  setCurrentPage(1);
+                  setKeyPopoverOpen(false); // Close the popover after selection
                 }}
               />
             </PopoverContent>
           </Popover>
 
-          <Popover>
+          <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
