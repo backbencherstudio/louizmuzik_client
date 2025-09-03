@@ -57,8 +57,6 @@ export default function AccountPage() {
     }
   }, [user?.data?.country]);
 
-
-
   console.log("user 42", user);
   console.log("User country:", user?.data?.country);
   const userId = user?.data?._id;
@@ -69,7 +67,8 @@ export default function AccountPage() {
   const [updateUserPassword, { isLoading: isUpdatingPassword }] =
     useUpdateUserPasswordMutation();
 
-  const [addPaypalEmail, { isLoading: isAddingPayPal }] = useAddPaypalEmailMutation();
+  const [addPaypalEmail, { isLoading: isAddingPayPal }] =
+    useAddPaypalEmailMutation();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,7 +126,6 @@ export default function AccountPage() {
     }
   };
 
-
   const handleLinkPayPal = () => {
     setPaypalEmail(user?.data?.paypalEmail || "");
     setIsPayPalModalOpen(true);
@@ -138,44 +136,44 @@ export default function AccountPage() {
     setIsSubmittingPayPal(true);
 
     if (!paypalEmail.trim()) {
-        toast.error("Please enter a valid PayPal email");
-        setIsSubmittingPayPal(false);
-        return;
+      toast.error("Please enter a valid PayPal email");
+      setIsSubmittingPayPal(false);
+      return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(paypalEmail)) {
-        toast.error("Please enter a valid email address");
-        setIsSubmittingPayPal(false);
-        return;
+      toast.error("Please enter a valid email address");
+      setIsSubmittingPayPal(false);
+      return;
     }
 
     try {
-        const response = await addPaypalEmail({ 
-            paypalEmail, 
-            userId: userId as string 
-        }).unwrap();
-        
-        if (response.success) {
-            toast.success(response.message || "PayPal email updated successfully!");
-            setIsPayPalModalOpen(false);
-            setPaypalEmail("");
-            refetch();
-        } else {
-            toast.error(response.message || "Failed to update PayPal email");
-        }
+      const response = await addPaypalEmail({
+        paypalEmail,
+        userId: userId as string,
+      }).unwrap();
+
+      if (response.success) {
+        toast.success(response.message || "PayPal email updated successfully!");
+        setIsPayPalModalOpen(false);
+        setPaypalEmail("");
+        refetch();
+      } else {
+        toast.error(response.message || "Failed to update PayPal email");
+      }
     } catch (error: any) {
-        console.error("PayPal email update error:", error);
-        toast.error(
-            error.data?.message || 
-            error.error || 
-            "Failed to update PayPal email. Please try again."
-        );
+      console.error("PayPal email update error:", error);
+      toast.error(
+        error.data?.message ||
+          error.error ||
+          "Failed to update PayPal email. Please try again."
+      );
     } finally {
-        setIsSubmittingPayPal(false);
+      setIsSubmittingPayPal(false);
     }
-};
+  };
 
   const handlePayPalModalClose = () => {
     setIsPayPalModalOpen(false);
@@ -287,9 +285,9 @@ export default function AccountPage() {
                     <Label htmlFor="location" className="text-zinc-400">
                       Country
                     </Label>
-                    <Select 
-                      name="country" 
-                      value={selectedCountry} 
+                    <Select
+                      name="country"
+                      value={selectedCountry}
                       onValueChange={(value) => {
                         console.log("Country selection changed to:", value);
                         setSelectedCountry(value);
@@ -309,8 +307,8 @@ export default function AccountPage() {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                                         </Select>
-                   </div>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -501,7 +499,14 @@ export default function AccountPage() {
               <div>
                 <h2 className="text-2xl font-bold text-white">Subscription</h2>
                 <p className="text-zinc-400 mt-1">
-                  Current Plan: <span className={`${user?.data?.isPro ? "text-emerald-500" : "text-red-500"}`}>{user?.data?.isPro ? "Pro" : "N/A"}</span> 
+                  Current Plan:{" "}
+                  <span
+                    className={`${
+                      user?.data?.isPro ? "text-emerald-500" : "text-red-500"
+                    }`}
+                  >
+                    {user?.data?.isPro ? "Pro" : "N/A"}
+                  </span>
                 </p>
               </div>
               <Button asChild variant="outline" className="border-zinc-800">
@@ -529,21 +534,27 @@ export default function AccountPage() {
             <h2 className="text-2xl font-bold text-white mb-6">
               Payment (PayPal Setting)
             </h2>
-            
+
             {/* Show current PayPal email if set */}
             {user?.data?.paypalEmail && (
               <div className="mb-4 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-                <p className="text-zinc-400 text-sm mb-1">Current PayPal Email:</p>
-                <p className="text-white font-medium">{user.data.paypalEmail}</p>
+                <p className="text-zinc-400 text-sm mb-1">
+                  Current PayPal Email:
+                </p>
+                <p className="text-white font-medium">
+                  {user.data.paypalEmail}
+                </p>
               </div>
             )}
-            
+
             <Button
               onClick={handleLinkPayPal}
               className="w-full bg-emerald-500 text-black hover:bg-emerald-600"
               disabled={isAddingPayPal}
             >
-              {user?.data?.paypalEmail ? "Update PayPal Account" : "Link your PayPal Account"}
+              {user?.data?.paypalEmail
+                ? "Update PayPal Account"
+                : "Link your PayPal Account"}
             </Button>
           </Card>
         </div>
@@ -554,7 +565,9 @@ export default function AccountPage() {
         <DialogContent className="bg-[#0F0F0F] border-zinc-800 text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-white">
-              {user?.data?.paypalEmail ? "Update PayPal Account" : "Link PayPal Account"}
+              {user?.data?.paypalEmail
+                ? "Update PayPal Account"
+                : "Link PayPal Account"}
             </DialogTitle>
           </DialogHeader>
 
@@ -594,7 +607,11 @@ export default function AccountPage() {
                 className="bg-emerald-500 text-black hover:bg-emerald-600"
                 disabled={isSubmittingPayPal}
               >
-                {isSubmittingPayPal ? "Updating..." : (user?.data?.paypalEmail ? "Update Account" : "Link Account")}
+                {isSubmittingPayPal
+                  ? "Updating..."
+                  : user?.data?.paypalEmail
+                  ? "Update Account"
+                  : "Link Account"}
               </Button>
             </DialogFooter>
           </form>

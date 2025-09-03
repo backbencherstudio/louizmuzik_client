@@ -3,29 +3,17 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Pagination } from "@/components/ui/pagination";
 import Layout from "@/components/layout";
 import { useAllProducersDataWithTopProducersDataQuery } from "../store/api/userManagementApis/userManagementApis";
+import countries from "@/components/Data/country";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const countries = [
-  "United States",
-  "UK",
-  "Canada",
-  "India",
-  "France",
-  "Germany",
-  "Spain",
-];
+
 
 export default function ProducersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,49 +105,36 @@ export default function ProducersPage() {
 
           {/* Filters */}
           <div className="mb-12 flex items-center justify-center gap-4">
-            <div className="flex overflow-hidden rounded-lg border border-emerald-500/20">
+            <div className="flex items-center">
               <Button
                 variant="ghost"
                 className={`px-6 py-2 text-sm transition-colors ${
                   selectedCountry === "GLOBAL"
                     ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-100"
                 }`}
                 onClick={() => handleCountrySelect("GLOBAL")}
               >
                 GLOBAL
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={`px-6 py-2 text-sm transition-colors flex items-center gap-2 ${
-                      selectedCountry !== "GLOBAL"
-                        ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                    }`}
-                  >
-                    {selectedCountry === "GLOBAL"
-                      ? "BY COUNTRY"
-                      : selectedCountry}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-[200px] bg-zinc-900 border-zinc-800"
-                >
+              <div>
+              <Select value={selectedCountry === "GLOBAL" ? "" : selectedCountry} onValueChange={handleCountrySelect}>
+                <SelectTrigger className="w-48  text-white">
+                  <SelectValue placeholder="Select Country" className="text-white" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 h-96">
                   {countries.map((country) => (
-                    <DropdownMenuItem
+                    <SelectItem
                       key={country}
-                      onClick={() => handleCountrySelect(country)}
-                      className="text-white hover:bg-zinc-800 hover:text-emerald-500"
+                      value={country}
+                      className="text-white hover:bg-zinc-800 hover:text-emerald-500 focus:bg-zinc-800 focus:text-emerald-500"
                     >
                       {country}
-                    </DropdownMenuItem>
+                    </SelectItem>
                   ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </SelectContent>
+              </Select>
+              </div>
             </div>
             <Button
               onClick={handleClearFilter}
