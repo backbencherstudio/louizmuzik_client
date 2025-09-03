@@ -181,7 +181,7 @@ export default function AccountPage() {
     setIsSubmittingPayPal(false);
   };
 
-  // https://www.paypal.com/connect?client_id=AeMnBMlrboT2yZ77Ny1Zuwm-UnhJeeMzvE1D1ana1ZetUAzPfo7C-Px41iR4FijH5SN1FHEYrGokg3G2&response_type=code&scope=openid&redirect_uri=https://louizmuzik-server.vercel.app/api/v1/payment/paypal-callback
+  // https://www.paypal.com/connect?client_id=AeMnBMlrboT2yZ77Ny1Zuwm-UnhJeeMzvE1D1ana1ZetUAzPfo7C-Px41iR4FijH5SN1FHEYrGokg3G2&response_type=code&scope=openid&redirect_uri=http://localhost:5000/api/v1/payment/paypal-callback
   return (
     <Layout>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8">
