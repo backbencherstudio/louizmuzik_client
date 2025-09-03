@@ -179,6 +179,7 @@ export default function UploadPage() {
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [existingAudioUrl, setExistingAudioUrl] = useState<string>('');
     const [existingImageUrl, setExistingImageUrl] = useState<string>('');
+    const [keyPopoverOpen, setKeyPopoverOpen] = useState(false);
 
     const { data: user } = useLoggedInUserQuery(null);
     const userData = user?.data;
@@ -455,6 +456,12 @@ export default function UploadPage() {
             toast.error(error?.data?.message || error?.message || 'Something went wrong');
         }
     };
+
+    const handleKeyChange = (key: string) => {
+        setSelectedKey(key);
+        setKeyPopoverOpen(false); 
+    };
+
     if (isEditMode && isMelodyLoading) {
         return (
             <Layout>
@@ -705,7 +712,7 @@ export default function UploadPage() {
                                             <Label htmlFor="key" className="text-white">
                                                 Key
                                             </Label>
-                                            <Popover>
+                                            <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
@@ -718,7 +725,7 @@ export default function UploadPage() {
                                                 <PopoverContent className="w-auto p-0" align="start">
                                                     <KeySelector
                                                         value={selectedKey}
-                                                        onChange={setSelectedKey}
+                                                        onChange={handleKeyChange}
                                                     />
                                                 </PopoverContent>
                                             </Popover>
