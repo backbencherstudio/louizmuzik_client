@@ -42,8 +42,14 @@ export default function ItemsPage() {
     const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
 
     const { data: melodiesData, refetch: refetchMelodies } = useGetMelodyByUserIdQuery(userId);
-    const melodies = melodiesData?.data
-    console.log("melodies",melodies);
+    const melodies = melodiesData?.data;
+    console.log("melodies", melodies);
+    
+    // Filter melodies based on search query
+    const filteredMelodies = melodies?.filter((melody: any) => {
+        if (!searchQuery.trim()) return true;
+        return melody?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    }) || [];
     const [deleteMelody, { isLoading: isDeletingMelody }] = useDeleteMelodyMutation();
 
     const handleDeletePack = async (packId: string) => {
@@ -295,7 +301,7 @@ export default function ItemsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {melodies?.map((melody: any) => (
+                                {filteredMelodies?.map((melody: any) => (
                                     <tr
                                         key={melody?._id}
                                         className="border-b border-zinc-800 hover:bg-zinc-900/30"
