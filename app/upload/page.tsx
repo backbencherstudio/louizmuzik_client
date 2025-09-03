@@ -389,9 +389,6 @@ export default function UploadPage() {
         if (selectedGenres.length === 0) {
             errors.genres = 'At least one genre is required.';
         }
-        // if (selectedInstruments.length === 0) {
-        //     errors.instruments = 'At least one instrument is required.';
-        // }
         if (selectedArtistTypes.length === 0) {
             errors.artistTypes = 'At least one artist type is required.';
         }
@@ -427,13 +424,11 @@ export default function UploadPage() {
             formData.append('instruments', JSON.stringify(selectedInstruments));
             formData.append('artistType', JSON.stringify(selectedArtistTypes));
             
-            // Only append files if new ones are selected
             if (file) formData.append('audioUrl', file);
             if (imageFile) formData.append('image', imageFile);
 
             let response;
             if (isEditMode) {
-                // Update existing melody
                 response = await updateMelody({ id: melodyId, formData }).unwrap();
                 if (response.success) {
                     toast.success('Melody updated successfully');
@@ -442,7 +437,6 @@ export default function UploadPage() {
                     toast.error(response.message || 'Failed to update melody');
                 }
             } else {
-                // Create new melody
                 response = await createMelody(formData).unwrap();
                 if (response.success) {
                     toast.success('Melody created successfully');
