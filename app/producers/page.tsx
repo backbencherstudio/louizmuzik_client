@@ -66,9 +66,7 @@ export default function ProducersPage() {
     setCurrentPage(1);
   };
 
-  if (isProducersDataLoading) {
-    return <div>Loading...</div>;
-  }
+ 
 
   return (
     <Layout>
