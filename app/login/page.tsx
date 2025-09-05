@@ -23,6 +23,7 @@ export default function LoginPage() {
     const router = useRouter();
     const {
         loginWithRedirect: googleLogin,
+        isLoading: isGoogleLoggingIn,
       } = useAuth0();
     
       const googleSignUp = () =>
@@ -126,10 +127,10 @@ export default function LoginPage() {
 
                     <Button
                         type="submit"
-                        disabled={isLoggingIn}
+                        disabled={isLoggingIn || isGoogleLoggingIn}
                         className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
                     >
-                        {isLoggingIn ? 'Signing in...' : 'Sign in'}
+                        {isLoggingIn ? 'Signing in...' : isGoogleLoggingIn ? 'Logging in...' : 'Sign in'}
                     </Button>
 
                     <div className="relative">

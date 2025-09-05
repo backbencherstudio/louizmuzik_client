@@ -17,6 +17,7 @@ interface AuthContextType {
   loginWithRedirect: () => void;
   logout: () => void;
   auth0User: any;
+  isGoogleSigningUp: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,10 +56,13 @@ export const GoogleProvider = ({ children }: GoogleProviderProps) => {
         console.log("res", res);
         if (res?.success) {
           localStorage.setItem("token", res?.data?.accessToken);
+          
           setIsGoogleSignupDone(true);
+          router.push("/dashboard");
         }
       } catch (error) {
         console.log("error", error);
+        toast.error("Something went wrong");
       }
     }
   };
@@ -77,7 +81,7 @@ export const GoogleProvider = ({ children }: GoogleProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, loginWithRedirect, logout, auth0User }}
+      value={{ isAuthenticated, loginWithRedirect, logout, auth0User,isGoogleSigningUp }}
     >
       {children}
     </AuthContext.Provider>
