@@ -67,13 +67,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MdKeyboardArrowRight } from "react-icons/md";
+import { MdKeyboardArrowLeft } from "react-icons/md";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [currentPacksPage, setCurrentPacksPage] = useState(1);
+  const itemsPerPage = 1;
+  const packsPerPage = 1;
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,6 +138,17 @@ export default function ProfilePage() {
 
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
+
+  // Pagination logic for packs
+  const totalPacks = premiumPacks?.length || 0;
+  const totalPacksPages = Math.ceil(totalPacks / packsPerPage);
+  const packsStartIndex = (currentPacksPage - 1) * packsPerPage;
+  const packsEndIndex = packsStartIndex + packsPerPage;
+  const currentPacks = premiumPacks?.slice(packsStartIndex, packsEndIndex) || [];
+
+  const handlePacksPageChange = (page: number) => {
+    setCurrentPacksPage(page);
+  };
 
   // Extract unique genres and artist types from melodies
   const genres = Array.from(
@@ -644,12 +659,19 @@ export default function ProfilePage() {
             {/* Premium Packs Section */}
             {premiumPacks?.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-white mb-6 ">
-                  <span className="capitalize"> {userData?.producer_name}</span>{" "}
-                  's Premium Packs
-                </h2>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                  <h2 className="text-2xl font-bold text-white">
+                    <span className="capitalize"> {userData?.producer_name}</span>{" "}
+                    's Premium Packs
+                  </h2>
+                  {totalPacks > packsPerPage && (
+                    <div className="text-sm text-zinc-400">
+                      Showing {packsStartIndex + 1} to {Math.min(packsEndIndex, totalPacks)} of {totalPacks} packs
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {premiumPacks?.map((pack: any) => (
+                  {currentPacks?.map((pack: any) => (
                     <Link
                       key={pack._id}
                       href={`/product/${pack._id}`}
@@ -693,6 +715,67 @@ export default function ProfilePage() {
                     </Link>
                   ))}
                 </div>
+
+                {/* Packs Pagination */}
+                {totalPacksPages > 1 && (
+                  <div className="mt-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePacksPageChange(currentPacksPage - 1)}
+                          disabled={currentPacksPage === 1}
+                          className="h-8 px-3 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <MdKeyboardArrowLeft />
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: Math.min(5, totalPacksPages) }, (_, i) => {
+                            let pageNum;
+                            if (totalPacksPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (currentPacksPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (currentPacksPage >= totalPacksPages - 2) {
+                              pageNum = totalPacksPages - 4 + i;
+                            } else {
+                              pageNum = currentPacksPage - 2 + i;
+                            }
+                            
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={currentPacksPage === pageNum ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePacksPageChange(pageNum)}
+                                className={`h-8 w-8 p-0 ${
+                                  currentPacksPage === pageNum
+                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                    : "border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                                }`}
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePacksPageChange(currentPacksPage + 1)}
+                          disabled={currentPacksPage === totalPacksPages}
+                          className="h-8 px-3 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <MdKeyboardArrowRight />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {/* Melodies Section with Filters */}
