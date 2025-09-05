@@ -346,7 +346,7 @@ export default function AccountPage() {
                     <Input
                       id="youtube"
                       name="youtubeUsername"
-                      placeholder="Example: @username"
+                      placeholder="Your youtube username"
                       defaultValue={user?.data?.youtubeUsername || ""}
                       className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
                     />

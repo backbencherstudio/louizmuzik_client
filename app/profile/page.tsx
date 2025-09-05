@@ -302,7 +302,7 @@ export default function ProfilePage() {
                     )}
                     {userData?.youtubeUsername && (
                       <Link
-                        href={`https://youtube.com/${userData?.youtubeUsername}`}
+                        href={`https://youtube.com/@${userData?.youtubeUsername}`}
                         target="_blank"
                         className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
                       >
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                     )}
                     {userData?.tiktokUsername && (
                       <Link
-                        href={`https://tiktok.com/${userData?.tiktokUsername}`}
+                        href={`https://tiktok.com/@${userData?.tiktokUsername}`}
                         target="_blank"
                         className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
                       >
