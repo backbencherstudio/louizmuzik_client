@@ -387,7 +387,7 @@ export default function DashboardPage() {
     <Layout>
       <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} container mx-auto space-y-8 px-4 py-8`}>
         {/* Stats Overview */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card className="relative overflow-hidden border-0 bg-[#0F0F0F] shadow-xl transition-all hover:translate-y-[-2px]">
             <div className="relative z-10 p-6">
               <div className="text-sm font-medium text-zinc-400">
@@ -445,7 +445,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Charts */}
-        <div className="mb-8 grid gap-4 md:grid-cols-2">
+        <div className="mb-8 grid gap-4 xl:grid-cols-2">
           <Card className="overflow-hidden border-0 bg-[#0F0F0F] shadow-xl">
             <div className="p-6">
               <div className="mb-4 flex items-center justify-between">
@@ -648,7 +648,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Content Sections */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-2">
           {/* Top Melodies */}
           <Card className="overflow-hidden border-0 bg-[#0F0F0F] shadow-xl">
             <div className="p-6">
