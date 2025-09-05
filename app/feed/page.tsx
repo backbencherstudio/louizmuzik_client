@@ -985,7 +985,7 @@ export default function FeedPage() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                          {melody.name}
+                          {melody.name?.slice(0, 18)}...
                         </td>
                         <td className="whitespace-nowrap px-4 py-3">
                           <WaveformDisplay
