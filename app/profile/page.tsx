@@ -14,6 +14,14 @@ import {
   Pause,
   Download,
   Heart,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Check,
+  ArrowUpDown,
+  TrendingUp,
+  Clock,
+  Shuffle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +40,25 @@ import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { FaTiktok } from "react-icons/fa";
+import BpmFilter from "@/components/bpm-filter";
+import { KeySelector } from "@/components/key-selector";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -39,6 +66,32 @@ export default function ProfilePage() {
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedKey, setSelectedKey] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("");
+  const [selectedArtistType, setSelectedArtistType] = useState("");
+  const [bpmFilter, setBpmFilter] = useState<{
+    type: "exact" | "range";
+    min?: number;
+    max?: number;
+  } | null>(null);
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+    type: "popular" | "recent" | "random" | "default";
+  }>({
+    key: "",
+    direction: "desc",
+    type: "popular",
+  });
+
+  // Popover states
+  const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
+  const [keyPopoverOpen, setKeyPopoverOpen] = useState(false);
+  const [artistTypePopoverOpen, setArtistTypePopoverOpen] = useState(false);
 
   const handleImageLoad = () => {
     setIsImageLoaded(true);
@@ -67,15 +120,192 @@ export default function ProfilePage() {
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
 
+  // Extract unique genres and artist types from melodies
+  const genres = Array.from(
+    new Set(
+      melodies?.flatMap((m: any) => {
+        if (Array.isArray(m.genre)) {
+          return m.genre;
+        }
+        return m.genre ? [m.genre] : [];
+      }) || []
+    )
+  );
+  const artistTypes = Array.from(
+    new Set(
+      melodies?.flatMap((m: any) => {
+        if (Array.isArray(m.artistType)) {
+          return m.artistType;
+        }
+        return m.artistType ? [m.artistType] : [];
+      }) || []
+    )
+  );
+
+  // Filter and sort melodies
+  const filteredAndSortedMelodies = [...(melodies || [])]
+    .filter((melody) => {
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const melodyNameLower = melody.name.toLowerCase();
+        const producerNameLower = melody.producer.toLowerCase();
+        
+        if (!melodyNameLower.includes(searchLower) && !producerNameLower.includes(searchLower)) {
+          return false;
+        }
+      }
+
+      if (selectedKey && melody.key !== selectedKey) {
+        return false;
+      }
+
+      if (selectedGenre) {
+        if (Array.isArray(melody.genre)) {
+          if (!melody.genre.includes(selectedGenre)) {
+            return false;
+          }
+        } else if (melody.genre !== selectedGenre) {
+          return false;
+        }
+      }
+
+      if (selectedArtistType) {
+        if (Array.isArray(melody.artistType)) {
+          if (!melody.artistType.includes(selectedArtistType)) {
+            return false;
+          }
+        } else if (melody.artistType !== selectedArtistType) {
+          return false;
+        }
+      }
+
+      if (bpmFilter) {
+        if (bpmFilter.type === "exact" && bpmFilter.min) {
+          if (melody.bpm !== bpmFilter.min) {
+            return false;
+          }
+        } else if (
+          bpmFilter.type === "range" &&
+          bpmFilter.min &&
+          bpmFilter.max
+        ) {
+          if (melody.bpm < bpmFilter.min || melody.bpm > bpmFilter.max) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortConfig.type === "random") {
+        return Math.random() - 0.5;
+      }
+
+      if (sortConfig.type === "recent") {
+        const dateA = new Date(a.uploadDate || "").getTime();
+        const dateB = new Date(b.uploadDate || "").getTime();
+        return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+      }
+
+      if (sortConfig.type === "popular") {
+        return sortConfig.direction === "asc"
+          ? a.plays - b.plays
+          : b.plays - a.plays;
+      }
+
+      if (sortConfig.key === "bpm") {
+        return sortConfig.direction === "asc" ? a.bpm - b.bpm : b.bpm - a.bpm;
+      }
+
+      const aValue = String(
+        a[sortConfig.key as keyof typeof a] || ""
+      ).toLowerCase();
+      const bValue = String(
+        b[sortConfig.key as keyof typeof b] || ""
+      ).toLowerCase();
+
+      return sortConfig.direction === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    });
+
   // Pagination logic
-  const totalItems = melodies?.length || 0;
+  const totalItems = filteredAndSortedMelodies.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentMelodies = melodies?.slice(startIndex, endIndex) || [];
+  const currentMelodies = filteredAndSortedMelodies.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Filter handlers
+  const handleSearch = () => {
+    setCurrentPage(1);
+  };
+
+  const handleSort = (field: string) => {
+    setSortConfig((currentConfig) => {
+      if (currentConfig.key === field) {
+        return {
+          ...currentConfig,
+          direction: currentConfig.direction === "asc" ? "desc" : "asc",
+          type: "default",
+        };
+      }
+
+      return {
+        key: field,
+        direction: "asc",
+        type: "default",
+      };
+    });
+    setCurrentPage(1);
+  };
+
+  const handleSortByType = (type: "popular" | "recent" | "random") => {
+    setSortConfig({
+      key: "",
+      direction: "desc",
+      type,
+    });
+    setCurrentPage(1);
+  };
+
+  const handleBpmFilterApply = (values: {
+    type: "exact" | "range";
+    min?: number;
+    max?: number;
+  }) => {
+    setBpmFilter(values);
+    setCurrentPage(1);
+  };
+
+  const handleBpmFilterClear = () => {
+    setBpmFilter(null);
+  };
+
+  const handleGenreSelect = (genre: string) => {
+    setSelectedGenre(genre === selectedGenre ? "" : genre);
+    setCurrentPage(1);
+    setGenrePopoverOpen(false);
+  };
+
+  const handleArtistTypeSelect = (type: string) => {
+    setSelectedArtistType(type === selectedArtistType ? "" : type);
+    setCurrentPage(1);
+    setArtistTypePopoverOpen(false);
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedKey("");
+    setSelectedGenre("");
+    setSelectedArtistType("");
+    setBpmFilter(null);
+    setCurrentPage(1);
   };
 
   const handlePlayClick = async (melody: any) => {
@@ -132,12 +362,12 @@ export default function ProfilePage() {
   const playNextMelody = () => {
     if (!currentPlayingMelody) return;
 
-    const currentIndex = melodies.findIndex(
+    const currentIndex = filteredAndSortedMelodies.findIndex(
       (melody: any) => melody._id === currentPlayingMelody._id
     );
 
-    if (currentIndex < melodies.length - 1) {
-      const nextMelody = melodies[currentIndex + 1];
+    if (currentIndex < filteredAndSortedMelodies.length - 1) {
+      const nextMelody = filteredAndSortedMelodies[currentIndex + 1];
       handlePlayClick(nextMelody);
     }
   };
@@ -145,12 +375,12 @@ export default function ProfilePage() {
   const playPreviousMelody = () => {
     if (!currentPlayingMelody) return;
 
-    const currentIndex = melodies.findIndex(
+    const currentIndex = filteredAndSortedMelodies.findIndex(
       (melody: any) => melody._id === currentPlayingMelody._id
     );
 
     if (currentIndex > 0) {
-      const previousMelody = melodies[currentIndex - 1];
+      const previousMelody = filteredAndSortedMelodies[currentIndex - 1];
       handlePlayClick(previousMelody);
     }
   };
@@ -397,13 +627,188 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Melodies Table */}
+          {/* Melodies Section with Filters */}
           {melodies?.length > 0 && (
             <div className="mt-10">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                <span className="capitalize">{userData?.producer_name}</span>'s
-                Melodies
-              </h2>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-white">
+                  <span className="capitalize">{userData?.producer_name}</span>'s
+                  Melodies
+                </h2>
+                
+                {/* Search Bar */}
+                <div className="flex flex-col md:flex-row w-full md:w-auto gap-3">
+                  <div className="relative flex-1 md:w-64">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="text"
+                      placeholder="Search melodies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/90 pl-9 pr-4 text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSearch}
+                    className="h-10 rounded-lg bg-emerald-500 px-4 text-sm font-medium text-black hover:bg-emerald-600"
+                  >
+                    Search
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filter Controls */}
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 text-sm font-medium"
+                      >
+                        <ArrowUpDown className="mr-2 h-4 w-4" />
+                        {sortConfig.type === "popular"
+                          ? "Most Popular"
+                          : sortConfig.type === "recent"
+                          ? "Most Recent"
+                          : sortConfig.type === "random"
+                          ? "Random"
+                          : "Sort By"}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[150px]">
+                      <DropdownMenuItem onClick={() => handleSortByType("popular")}>
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        Most Popular
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSortByType("recent")}>
+                        <Clock className="mr-2 h-4 w-4" />
+                        Most Recent
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSortByType("random")}>
+                        <Shuffle className="mr-2 h-4 w-4" />
+                        Random
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                    >
+                      {selectedGenre || "GENRES"}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="center">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {genres.map((genre) => (
+                            <CommandItem
+                              key={genre as string}
+                              onSelect={() => handleGenreSelect(genre as string)}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <div
+                                className={`flex-1 ${
+                                  selectedGenre === genre
+                                    ? "text-emerald-500"
+                                    : "text-white"
+                                }`}
+                              >
+                                {genre as string}
+                              </div>
+                              {selectedGenre === genre && (
+                                <Check className="h-4 w-4 text-emerald-500" />
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                <BpmFilter
+                  onApply={handleBpmFilterApply}
+                  onClear={handleBpmFilterClear}
+                />
+
+                <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                    >
+                      {selectedKey || "KEY"}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0" align="center">
+                    <KeySelector
+                      value={selectedKey}
+                      onChange={(key) => {
+                        setSelectedKey(key);
+                        setCurrentPage(1);
+                        setKeyPopoverOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                    >
+                      {selectedArtistType || "ARTIST TYPE"}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="center">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {artistTypes.map((type) => (
+                            <CommandItem
+                              key={type as string}
+                              onSelect={() => handleArtistTypeSelect(type as string)}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <div
+                                className={`flex-1 ${
+                                  selectedArtistType === type
+                                    ? "text-emerald-500"
+                                    : "text-white"
+                                }`}
+                              >
+                                {type as string}
+                              </div>
+                              {selectedArtistType === type && (
+                                <Check className="h-4 w-4 text-emerald-500" />
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                <Button
+                  variant="outline"
+                  onClick={handleClearAllFilters}
+                  className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+
               <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
                 <div className="overflow-x-auto">
                   {/* Desktop Table */}
@@ -412,23 +817,108 @@ export default function ProfilePage() {
                       <tr className="border-b border-zinc-800 bg-zinc-900/50">
                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                          NAME
+                        <th
+                          className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                          onClick={() => handleSort("name")}
+                        >
+                          <div className="flex items-center gap-1">
+                            NAME
+                            <ChevronUp
+                              className={`h-3 w-3 transition-transform ${
+                                sortConfig.key === "name"
+                                  ? "text-emerald-500"
+                                  : "text-zinc-600"
+                              } ${
+                                sortConfig.key === "name" &&
+                                sortConfig.direction === "desc"
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
                         </th>
                         <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                           WAVEFORM
                         </th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                          BPM
+                        <th
+                          className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                          onClick={() => handleSort("bpm")}
+                        >
+                          <div className="flex items-center gap-1">
+                            BPM
+                            <ChevronUp
+                              className={`h-3 w-3 transition-transform ${
+                                sortConfig.key === "bpm"
+                                  ? "text-emerald-500"
+                                  : "text-zinc-600"
+                              } ${
+                                sortConfig.key === "bpm" &&
+                                sortConfig.direction === "desc"
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
                         </th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                          KEY
+                        <th
+                          className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                          onClick={() => handleSort("key")}
+                        >
+                          <div className="flex items-center gap-1">
+                            KEY
+                            <ChevronUp
+                              className={`h-3 w-3 transition-transform ${
+                                sortConfig.key === "key"
+                                  ? "text-emerald-500"
+                                  : "text-zinc-600"
+                              } ${
+                                sortConfig.key === "key" &&
+                                sortConfig.direction === "desc"
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
                         </th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                          GENRE
+                        <th
+                          className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                          onClick={() => handleSort("genre")}
+                        >
+                          <div className="flex items-center gap-1">
+                            GENRE
+                            <ChevronUp
+                              className={`h-3 w-3 transition-transform ${
+                                sortConfig.key === "genre"
+                                  ? "text-emerald-500"
+                                  : "text-zinc-600"
+                              } ${
+                                sortConfig.key === "genre" &&
+                                sortConfig.direction === "desc"
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
                         </th>
-                        <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                          ARTIST TYPE
+                        <th
+                          className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                          onClick={() => handleSort("artistType")}
+                        >
+                          <div className="flex items-center gap-1">
+                            ARTIST TYPE
+                            <ChevronUp
+                              className={`h-3 w-3 transition-transform ${
+                                sortConfig.key === "artistType"
+                                  ? "text-emerald-500"
+                                  : "text-zinc-600"
+                              } ${
+                                sortConfig.key === "artistType" &&
+                                sortConfig.direction === "desc"
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
                         </th>
                         <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
                           ACTIONS
