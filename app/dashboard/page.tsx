@@ -694,7 +694,7 @@ export default function DashboardPage() {
                         isPlaying={currentPlayingMelody?._id === melody._id}
                         onPlayPause={() => handlePlayClick(melody)}
                         height={30}
-                        width="200px"
+                        width=""
                         isControlled={true}
                         currentTime={currentMelodyId === melody._id ? currentTime : 0}
                         duration={currentMelodyId === melody._id ? duration : 0}

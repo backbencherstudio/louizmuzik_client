@@ -70,6 +70,7 @@ export default function CheckoutPage() {
       if (res.data.success) {
         toast.success("Pack purchased successfully");
         refetch();
+        window.location.reload();
         router.push("/purchases");
       } else {
         toast.error("Pack purchase failed");
