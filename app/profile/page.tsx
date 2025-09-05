@@ -65,7 +65,9 @@ export default function ProfilePage() {
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentPacksPage, setCurrentPacksPage] = useState(1);
   const itemsPerPage = 10;
+  const packsPerPage = 10;
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,6 +121,17 @@ export default function ProfilePage() {
 
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
+
+  // Pagination logic for packs
+  const totalPacks = premiumPacks?.length || 0;
+  const totalPacksPages = Math.ceil(totalPacks / packsPerPage);
+  const startPacksIndex = (currentPacksPage - 1) * packsPerPage;
+  const endPacksIndex = startPacksIndex + packsPerPage;
+  const currentPacks = premiumPacks?.slice(startPacksIndex, endPacksIndex) || [];
+
+  const handlePacksPageChange = (page: number) => {
+    setCurrentPacksPage(page);
+  };
 
   // Extract unique genres and artist types from melodies
   const genres = Array.from(
@@ -593,12 +606,19 @@ export default function ProfilePage() {
           {/* Premium Packs Section */}
           {premiumPacks?.length > 0 && (
             <div>
-              <h2 className="text-2xl font-bold text-white mb-6 ">
-                <span className="capitalize"> {userData?.producer_name}</span>{" "}
-                's Premium Packs
-              </h2>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-white">
+                  <span className="capitalize"> {userData?.producer_name}</span>{" "}
+                  's Premium Packs
+                </h2>
+                {totalPacksPages > 1 && (
+                  <div className="text-sm text-zinc-400">
+                    Showing {startPacksIndex + 1}-{Math.min(endPacksIndex, totalPacks)} of {totalPacks} packs
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {premiumPacks?.map((pack: any) => (
+                {currentPacks?.map((pack: any) => (
                   <Link
                     key={pack._id}
                     href={`/product/${pack._id}`}
@@ -624,6 +644,19 @@ export default function ProfilePage() {
                   </Link>
                 ))}
               </div>
+              
+              {/* Packs Pagination */}
+              {totalPacksPages > 1 && (
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={currentPacksPage}
+                    totalPages={totalPacksPages}
+                    onPageChange={handlePacksPageChange}
+                    totalItems={totalPacks}
+                    itemsPerPage={packsPerPage}
+                  />
+                </div>
+              )}
             </div>
           )}
 
