@@ -747,7 +747,7 @@ export default function BrowsePage() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                      {melody?.name}
+                      {melody?.name?.slice(0, 18)}...
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                       <Link
@@ -857,7 +857,7 @@ export default function BrowsePage() {
                       </Button>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">
-                          {melody.name}
+                          {melody?.name?.slice(0, 18)}...
                         </p>
                         <p className="text-xs text-zinc-400 truncate mt-0.5">
                           <Link
@@ -866,7 +866,7 @@ export default function BrowsePage() {
                               .replace(/\s+/g, "-")}`}
                             className="hover:text-emerald-500 transition-colors"
                           >
-                            {melody?.producer}
+                            {melody?.producer?.slice(0, 10)}...
                           </Link>
                         </p>
                       </div>
