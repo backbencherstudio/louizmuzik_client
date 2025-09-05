@@ -96,7 +96,7 @@ export default function BpmFilter({ onApply, onClear }: BpmFilterProps) {
                                 min="1"
                                 value={exactBpm}
                                 onChange={(e) => setExactBpm(e.target.value)}
-                                className="bg-zinc-900 border-zinc-800 text-white"
+                                className="bg-zinc-900 border-zinc-800 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 placeholder="Enter BPM"
                             />
                         </div>
@@ -113,7 +113,7 @@ export default function BpmFilter({ onApply, onClear }: BpmFilterProps) {
                                         onChange={(e) =>
                                             setMinBpm(e.target.value)
                                         }
-                                        className="bg-zinc-900 border-zinc-800 text-white"
+                                        className="bg-zinc-900 border-zinc-800 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         placeholder="Min"
                                     />
                                 </div>
@@ -127,7 +127,7 @@ export default function BpmFilter({ onApply, onClear }: BpmFilterProps) {
                                         onChange={(e) =>
                                             setMaxBpm(e.target.value)
                                         }
-                                        className="bg-zinc-900 border-zinc-800 text-white"
+                                        className="bg-zinc-900 border-zinc-800 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         placeholder="Max"
                                     />
                                 </div>
