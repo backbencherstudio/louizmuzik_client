@@ -47,7 +47,26 @@ const AVAILABLE_GENRES = [
   "Dancehall",
   "Ambient",
   "Lo-Fi",
+  "Detroit",
+  "Hoodtrap",
+  "Brazilian Funk",
+  "Amapiano",
+  "New Jazz",
+  "Moombahton",
+  "Future Bass",
+  "Dembow",
+  "Psytrance",
+  "Dubstep",
+  "Merengue",
+  "Bachata",
+  "Oriental",
+  "Reggae",
+  "Plug",
+  "Phonk",
+  "World",
+  "WestCoast"
 ];
+
 
 export default function NewPackPage() {
   const router = useRouter();

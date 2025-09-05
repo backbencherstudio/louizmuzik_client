@@ -30,8 +30,7 @@ export default function CheckoutPage() {
   console.log("cartItems", cartItems);
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-  const tax = subtotal * 0.07; // 7% tax
-  const total = subtotal + tax;
+  const total = subtotal;
   const [amount, setAmount] = useState(total);
   const [purchasePack, { isLoading: isPurchasePackLoading }] =
     usePurchasePackMutation();
@@ -239,14 +238,6 @@ export default function CheckoutPage() {
                   <Separator className="border-zinc-800" />
 
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <p className="text-zinc-400">Subtotal</p>
-                      <p className="text-white">${subtotal.toFixed(2)}</p>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <p className="text-zinc-400">Tax (7%)</p>
-                      <p className="text-white">${tax.toFixed(2)}</p>
-                    </div>
                     <div className="flex items-center justify-between text-base font-medium">
                       <p className="text-white">Total</p>
                       <p className="text-white">${total.toFixed(2)}</p>
