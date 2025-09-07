@@ -40,23 +40,19 @@ export default function DiscographyPage() {
     const [newTrackUrl, setNewTrackUrl] = useState('');
     const [error, setError] = useState('');
 
-    // Get the user ID from URL params
     const params = useParams();
     const userId = params.id as string;
 
-    // Get current logged-in user to check if they can add/delete tracks
     const { data: currentUser, refetch: refetchUser } = useLoggedInUserQuery(null);
     const currentUserId = currentUser?.data?._id;
     const isOwner = currentUserId === userId;
 
-    // Get user profile data 
     const {
         data: userProfile,
         isLoading: isUserProfileLoading,
         refetch: refetchUserProfile,
     } = useGetUserProfileQuery(userId as string);
 
-    // Follow/Unfollow functionality 
     const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
         useFollowUnFollowProducerMutation();
 
