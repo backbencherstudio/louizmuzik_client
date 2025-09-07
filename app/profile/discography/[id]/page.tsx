@@ -86,7 +86,6 @@ export default function DiscographyPage() {
             return;
         }
 
-        // Check if track already exists
         const existingTrack = discographyData.find((track: any) =>
             track.trackId === trackId || track.discographyUrl === newTrackUrl
         );
