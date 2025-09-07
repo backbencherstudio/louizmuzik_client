@@ -461,28 +461,117 @@ export default function FeedPage() {
           </div>
 
           {/* Latest Products Title */}
-          <div className="flex items-center mb-6">
-            <h2 className="text-2xl font-bold text-emerald-500">
-              Latest Products
-            </h2>
-          </div>
+          {packs.length > 0 && (
+            <>
+              <div className="flex items-center mb-6">
+                <h2 className="text-2xl font-bold text-emerald-500">
+                  Latest Products
+                </h2>
+              </div>
 
-          {/* Packs Section */}
-          <div className="relative px-6 mb-24">
-            {/* Mobile Slider */}
-            <div className="block md:hidden relative">
-              <div className="grid grid-cols-2 gap-4">
-                {getCurrentItems()
-                  .slice(0, 2)
-                  .map((item: Pack) => (
+              {/* Packs Section */}
+              <div className="relative px-6 mb-24">
+                {/* Mobile Slider */}
+                <div className="block md:hidden relative">
+                  <div className="grid grid-cols-2 gap-4">
+                    {getCurrentItems()
+                      .slice(0, 2)
+                      .map((item: Pack) => (
+                        <Link
+                          key={item._id}
+                          className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
+                          href={`/product/${item._id}`}
+                        >
+                          <div className="relative aspect-square">
+                            <Image
+                              src={item?.thumbnail_image}
+                              alt={item.title}
+                              fill
+                              className="object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePlayClick(item);
+                                }}
+                              >
+                                <Play className="h-6 w-6" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <h3 className="text-base font-semibold text-white mb-1">
+                              {item.title}
+                            </h3>
+                            <Link
+                              href={`/producers/${item?.userId?._id}`}
+                              className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
+                            >
+                              {item.producer}
+                            </Link>
+                            <div className="mt-2">
+                              <span className="text-xl font-bold text-white">
+                                ${item.price.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                  </div>
+
+                  {/* Mobile Navigation Dots */}
+                  <div className="flex justify-center items-center gap-2 mt-4">
+                    {Array.from({
+                      length: Math.ceil(packs.length / 2),
+                    }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentPage(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          currentPage === index
+                            ? "w-4 bg-emerald-500"
+                            : "w-2 bg-zinc-700"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Mobile Navigation Buttons */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    className="absolute -left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNext}
+                    disabled={currentPage >= Math.ceil(packs.length / 2) - 1}
+                    className="absolute -right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Desktop Grid */}
+                <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
+                  {getCurrentItems().map((item: Pack) => (
                     <Link
                       key={item._id}
-                      className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                       href={`/product/${item._id}`}
+                      className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                     >
                       <div className="relative aspect-square">
                         <Image
-                          src={item?.thumbnail_image}
+                          src={item.thumbnail_image}
                           alt={item.title}
                           fill
                           className="object-cover"
@@ -519,630 +608,571 @@ export default function FeedPage() {
                       </div>
                     </Link>
                   ))}
+                </div>
+
+                {/* Desktop Navigation Buttons */}
+                <div className="hidden md:block">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    className="absolute -left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNext}
+                    disabled={
+                      currentPage >= Math.ceil(packs.length / itemsPerPage) - 1
+                    }
+                    className="absolute -right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </div>
               </div>
-
-              {/* Mobile Navigation Dots */}
-              <div className="flex justify-center items-center gap-2 mt-4">
-                {Array.from({
-                  length: Math.ceil(packs.length / 2),
-                }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentPage(index)}
-                    className={`h-2 rounded-full transition-all ${
-                      currentPage === index
-                        ? "w-4 bg-emerald-500"
-                        : "w-2 bg-zinc-700"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Mobile Navigation Buttons */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrevious}
-                disabled={currentPage === 0}
-                className="absolute -left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleNext}
-                disabled={currentPage >= Math.ceil(packs.length / 2) - 1}
-                className="absolute -right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Desktop Grid */}
-            <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
-              {getCurrentItems().map((item: Pack) => (
-                <Link
-                  key={item._id}
-                  href={`/product/${item._id}`}
-                  className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={item.thumbnail_image}
-                      alt={item.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayClick(item);
-                        }}
-                      >
-                        <Play className="h-6 w-6" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold text-white mb-1">
-                      {item.title}
-                    </h3>
-                    <Link
-                      href={`/producers/${item?.userId?._id}`}
-                      className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
-                    >
-                      {item.producer}
-                    </Link>
-                    <div className="mt-2">
-                      <span className="text-xl font-bold text-white">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Desktop Navigation Buttons */}
-            <div className="hidden md:block">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrevious}
-                disabled={currentPage === 0}
-                className="absolute -left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleNext}
-                disabled={
-                  currentPage >= Math.ceil(packs.length / itemsPerPage) - 1
-                }
-                className="absolute -right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            </div>
-          </div>
+            </>
+          )}
 
           {/* Latest Melodies Title */}
-          <div className="flex items-center mb-6">
-            <h2 className="text-2xl font-bold text-emerald-500">
-              Latest Melodies
-            </h2>
-          </div>
-
-          {/* Melodies Section */}
-          <div className="mb-32">
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-              {/* Popularity Filter */}
-              <Popover open={popularityPopoverOpen} onOpenChange={setPopularityPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                  >
-                    {selectedPopularity
-                      ? popularityOptions.find(
-                          (opt) => opt.value === selectedPopularity
-                        )?.label
-                      : "POPULARITY"}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48 p-0" align="center">
-                  <Command>
-                    <CommandList>
-                      <CommandGroup>
-                        {popularityOptions.map((option) => (
-                          <CommandItem
-                            key={option.value}
-                            onSelect={() =>
-                              handlePopularitySelect(option.value)
-                            }
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <div
-                              className={`flex-1 ${
-                                selectedPopularity === option.value
-                                  ? "text-emerald-500"
-                                  : "text-white"
-                              }`}
-                            >
-                              {option.label}
-                            </div>
-                            {selectedPopularity === option.value && (
-                              <Check className="h-4 w-4 text-emerald-500" />
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {/* Genre Filter */}
-              <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                  >
-                    {selectedGenre || "GENRES"}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48 p-0" align="center">
-                  <Command>
-                    <CommandList>
-                      <CommandGroup>
-                        {genres.map((genre) => (
-                          <CommandItem
-                            key={genre}
-                            onSelect={() => handleGenreSelect(genre)}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <div
-                              className={`flex-1 ${
-                                selectedGenre === genre
-                                  ? "text-emerald-500"
-                                  : "text-white"
-                              }`}
-                            >
-                              {genre}
-                            </div>
-                            {selectedGenre === genre && (
-                              <Check className="h-4 w-4 text-emerald-500" />
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {/* BPM Filter */}
-              <BpmFilter
-                onApply={handleBpmFilterApply}
-                onClear={handleBpmFilterClear}
-              />
-
-              {/* Key Filter */}
-              <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                  >
-                    {selectedKey || "KEY"}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="p-0" align="center">
-                  <KeySelector
-                    value={selectedKey}
-                    onChange={(key) => {
-                      setSelectedKey(key);
-                      setCurrentMelodiesPage(1); // Reset to first page
-                      setKeyPopoverOpen(false); // Close the popover after selection
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-
-              {/* Artist Type Filter */}
-              <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                  >
-                    {selectedArtistType || "ARTIST TYPE"}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48 p-0" align="center">
-                  <Command>
-                    <CommandList>
-                      <CommandGroup>
-                        {artistTypes.map((type) => (
-                          <CommandItem
-                            key={type}
-                            onSelect={() => handleArtistTypeSelect(type)}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <div
-                              className={`flex-1 ${
-                                selectedArtistType === type
-                                  ? "text-emerald-500"
-                                  : "text-white"
-                              }`}
-                            >
-                              {type}
-                            </div>
-                            {selectedArtistType === type && (
-                              <Check className="h-4 w-4 text-emerald-500" />
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              <Button
-                variant="outline"
-                className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
-                onClick={handleClearAllFilters}
-              >
-                Clear Filters
-              </Button>
-            </div>
-
-            <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
-              <div className="overflow-x-auto">
-                {/* Desktop Table */}
-                <table className="w-full hidden md:table">
-                  <thead>
-                    <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
-                        #
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                        Thumbnail
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("name")}
-                      >
-                        <div className="flex items-center gap-1">
-                          NAME
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "name"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "name" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                        Waveform
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("producer")}
-                      >
-                        <div className="flex items-center gap-1">
-                          PRODUCER
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "producer"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "producer" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("bpm")}
-                      >
-                        <div className="flex items-center gap-1">
-                          BPM
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "bpm"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "bpm" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("key")}
-                      >
-                        <div className="flex items-center gap-1">
-                          KEY
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "key"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "key" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("genre")}
-                      >
-                        <div className="flex items-center gap-1">
-                          GENRE
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "genre"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "genre" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                        onClick={() => handleSort("artistType")}
-                      >
-                        <div className="flex items-center gap-1">
-                          ARTIST TYPE
-                          <ChevronUp
-                            className={`h-3 w-3 transition-transform ${
-                              sortConfig.key === "artistType"
-                                ? "text-emerald-500"
-                                : "text-zinc-600"
-                            } ${
-                              sortConfig.key === "artistType" &&
-                              sortConfig.direction === "desc"
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
-                        ACTIONS
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getCurrentMelodies().map((melody: any) => (
-                      <tr
-                        key={melody._id || melody.id}
-                        className="border-b border-zinc-800 hover:bg-zinc-900/30"
-                      >
-                        <td className="whitespace-nowrap px-4 py-3 text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-8 w-8 rounded-full ${
-                              currentPlayingMelody?._id === melody._id
-                                ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                                : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                            }`}
-                            onClick={() => handlePlayClick(melody)}
-                          >
-                            {currentPlayingMelody?._id === melody._id ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                            <Image
-                              src={melody.userId?.profile_image || "/placeholder.svg"}
-                              alt={melody.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                          {melody.name?.slice(0, 18)}...
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          <WaveformDisplay
-                            audioUrl={
-                              melody.audio_path ||
-                              melody.audio ||
-                              melody.audioUrl
-                            }
-                            isPlaying={currentPlayingMelody?._id === melody._id}
-                            onPlayPause={() => handlePlayClick(melody)}
-                            height={30}
-                            width="200px"
-                            isControlled={true}
-                            currentTime={
-                              currentMelodyId === melody._id ? currentTime : 0
-                            }
-                            duration={
-                              currentMelodyId === melody._id ? duration : 0
-                            }
-                          />
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                          {melody.producer}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                          {melody.bpm}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                          {melody.key}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                          {Array.isArray(melody.genre)
-                            ? melody.genre.join(", ")
-                            : melody.genre}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                          {Array.isArray(melody.artistType)
-                            ? melody.artistType.join(", ")
-                            : melody.artistType}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Button
-                              onClick={() => toogleFavorite(melody._id)}
-                              variant="ghost"
-                              size="icon"
-                              className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                isMelodyFavorite(melody._id)
-                                  ? "text-red-500"
-                                  : ""
-                              }`}
-                            >
-                              {isMelodyFavorite(melody._id) ? (
-                                <FaHeart size={20} color="red" />
-                              ) : (
-                                <FaRegHeart size={20} />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-zinc-400 hover:text-white"
-                              onClick={() => handleDownloadClick(melody)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Mobile Table */}
-                <table className="w-full md:hidden">
-                  <tbody>
-                    {getCurrentMelodies().map((melody: any) => (
-                      <tr
-                        key={melody._id || melody.id}
-                        className="border-b border-zinc-800 hover:bg-zinc-900/30"
-                      >
-                        <td className="px-4 py-3 flex items-center gap-3">
-                          <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
-                            <Image
-                              src={melody.userId?.profile_image || "/placeholder.svg"}
-                              alt={melody.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                              currentPlayingMelody?._id === melody._id
-                                ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                                : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                            }`}
-                            onClick={() => handlePlayClick(melody)}
-                          >
-                            {currentPlayingMelody?._id === melody._id ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">
-                              {melody.name}
-                            </p>
-                            <p className="text-xs text-zinc-400 truncate mt-0.5">
-                              {melody.producer}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                isMelodyFavorite(melody._id) ? "" : ""
-                              }`}
-                              onClick={() => toogleFavorite(melody._id)}
-                            >
-                              {isMelodyFavorite(melody._id) ? (
-                                <FaHeart size={20} color="red" />
-                              ) : (
-                                <FaRegHeart size={20} />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
-                              onClick={() => handleDownloadClick(melody)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {melodies.length > 0 && (
+            <>
+              <div className="flex items-center mb-6">
+                <h2 className="text-2xl font-bold text-emerald-500">
+                  Latest Melodies
+                </h2>
               </div>
-            </div>
 
-            {/* Melodies Pagination */}
-            <div className="mt-6 mb-24">
-              <Pagination
-                currentPage={currentMelodiesPage}
-                totalPages={totalMelodiesPages}
-                onPageChange={handleMelodiesPageChange}
-                totalItems={totalMelodies}
-                itemsPerPage={melodiesPerPage}
-              />
-            </div>
-          </div>
+              {/* Melodies Section */}
+              <div className="mb-32">
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                  {/* Popularity Filter */}
+                  <Popover
+                    open={popularityPopoverOpen}
+                    onOpenChange={setPopularityPopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                      >
+                        {selectedPopularity
+                          ? popularityOptions.find(
+                              (opt) => opt.value === selectedPopularity
+                            )?.label
+                          : "POPULARITY"}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-0" align="center">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup>
+                            {popularityOptions.map((option) => (
+                              <CommandItem
+                                key={option.value}
+                                onSelect={() =>
+                                  handlePopularitySelect(option.value)
+                                }
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <div
+                                  className={`flex-1 ${
+                                    selectedPopularity === option.value
+                                      ? "text-emerald-500"
+                                      : "text-white"
+                                  }`}
+                                >
+                                  {option.label}
+                                </div>
+                                {selectedPopularity === option.value && (
+                                  <Check className="h-4 w-4 text-emerald-500" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Genre Filter */}
+                  <Popover
+                    open={genrePopoverOpen}
+                    onOpenChange={setGenrePopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                      >
+                        {selectedGenre || "GENRES"}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-0" align="center">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup>
+                            {genres.map((genre) => (
+                              <CommandItem
+                                key={genre}
+                                onSelect={() => handleGenreSelect(genre)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <div
+                                  className={`flex-1 ${
+                                    selectedGenre === genre
+                                      ? "text-emerald-500"
+                                      : "text-white"
+                                  }`}
+                                >
+                                  {genre}
+                                </div>
+                                {selectedGenre === genre && (
+                                  <Check className="h-4 w-4 text-emerald-500" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* BPM Filter */}
+                  <BpmFilter
+                    onApply={handleBpmFilterApply}
+                    onClear={handleBpmFilterClear}
+                  />
+
+                  {/* Key Filter */}
+                  <Popover
+                    open={keyPopoverOpen}
+                    onOpenChange={setKeyPopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                      >
+                        {selectedKey || "KEY"}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0" align="center">
+                      <KeySelector
+                        value={selectedKey}
+                        onChange={(key) => {
+                          setSelectedKey(key);
+                          setCurrentMelodiesPage(1); // Reset to first page
+                          setKeyPopoverOpen(false); // Close the popover after selection
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Artist Type Filter */}
+                  <Popover
+                    open={artistTypePopoverOpen}
+                    onOpenChange={setArtistTypePopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                      >
+                        {selectedArtistType || "ARTIST TYPE"}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-0" align="center">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup>
+                            {artistTypes.map((type) => (
+                              <CommandItem
+                                key={type}
+                                onSelect={() => handleArtistTypeSelect(type)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <div
+                                  className={`flex-1 ${
+                                    selectedArtistType === type
+                                      ? "text-emerald-500"
+                                      : "text-white"
+                                  }`}
+                                >
+                                  {type}
+                                </div>
+                                {selectedArtistType === type && (
+                                  <Check className="h-4 w-4 text-emerald-500" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Button
+                    variant="outline"
+                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                    onClick={handleClearAllFilters}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+
+                <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
+                  <div className="overflow-x-auto">
+                    {/* Desktop Table */}
+                    <table className="w-full hidden md:table">
+                      <thead>
+                        <tr className="border-b border-zinc-800 bg-zinc-900/50">
+                          <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+                            #
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                            Thumbnail
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("name")}
+                          >
+                            <div className="flex items-center gap-1">
+                              NAME
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "name"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "name" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+                            Waveform
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("producer")}
+                          >
+                            <div className="flex items-center gap-1">
+                              PRODUCER
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "producer"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "producer" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("bpm")}
+                          >
+                            <div className="flex items-center gap-1">
+                              BPM
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "bpm"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "bpm" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("key")}
+                          >
+                            <div className="flex items-center gap-1">
+                              KEY
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "key"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "key" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("genre")}
+                          >
+                            <div className="flex items-center gap-1">
+                              GENRE
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "genre"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "genre" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th
+                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                            onClick={() => handleSort("artistType")}
+                          >
+                            <div className="flex items-center gap-1">
+                              ARTIST TYPE
+                              <ChevronUp
+                                className={`h-3 w-3 transition-transform ${
+                                  sortConfig.key === "artistType"
+                                    ? "text-emerald-500"
+                                    : "text-zinc-600"
+                                } ${
+                                  sortConfig.key === "artistType" &&
+                                  sortConfig.direction === "desc"
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+                            ACTIONS
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getCurrentMelodies().map((melody: any) => (
+                          <tr
+                            key={melody._id || melody.id}
+                            className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                          >
+                            <td className="whitespace-nowrap px-4 py-3 text-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 rounded-full ${
+                                  currentPlayingMelody?._id === melody._id
+                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                                }`}
+                                onClick={() => handlePlayClick(melody)}
+                              >
+                                {currentPlayingMelody?._id === melody._id ? (
+                                  <Pause className="h-4 w-4" />
+                                ) : (
+                                  <Play className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <div className="relative h-10 w-10 overflow-hidden rounded-md">
+                                <Image
+                                  src={
+                                    melody.userId?.profile_image ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={melody.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
+                              {melody.name?.slice(0, 18)}...
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <WaveformDisplay
+                                audioUrl={
+                                  melody.audio_path ||
+                                  melody.audio ||
+                                  melody.audioUrl
+                                }
+                                isPlaying={
+                                  currentPlayingMelody?._id === melody._id
+                                }
+                                onPlayPause={() => handlePlayClick(melody)}
+                                height={30}
+                                width="200px"
+                                isControlled={true}
+                                currentTime={
+                                  currentMelodyId === melody._id
+                                    ? currentTime
+                                    : 0
+                                }
+                                duration={
+                                  currentMelodyId === melody._id ? duration : 0
+                                }
+                              />
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                              {melody.producer}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                              {melody.bpm}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                              {melody.key}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                              {Array.isArray(melody.genre)
+                                ? melody.genre.join(", ")
+                                : melody.genre}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                              {Array.isArray(melody.artistType)
+                                ? melody.artistType.join(", ")
+                                : melody.artistType}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <Button
+                                  onClick={() => toogleFavorite(melody._id)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                                    isMelodyFavorite(melody._id)
+                                      ? "text-red-500"
+                                      : ""
+                                  }`}
+                                >
+                                  {isMelodyFavorite(melody._id) ? (
+                                    <FaHeart size={20} color="red" />
+                                  ) : (
+                                    <FaRegHeart size={20} />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-zinc-400 hover:text-white"
+                                  onClick={() => handleDownloadClick(melody)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Mobile Table */}
+                    <table className="w-full md:hidden">
+                      <tbody>
+                        {getCurrentMelodies().map((melody: any) => (
+                          <tr
+                            key={melody._id || melody.id}
+                            className="border-b border-zinc-800 hover:bg-zinc-900/30"
+                          >
+                            <td className="px-4 py-3 flex items-center gap-3">
+                              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
+                                <Image
+                                  src={
+                                    melody.userId?.profile_image ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={melody.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 flex-shrink-0 rounded-full ${
+                                  currentPlayingMelody?._id === melody._id
+                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                                }`}
+                                onClick={() => handlePlayClick(melody)}
+                              >
+                                {currentPlayingMelody?._id === melody._id ? (
+                                  <Pause className="h-4 w-4" />
+                                ) : (
+                                  <Play className="h-4 w-4" />
+                                )}
+                              </Button>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">
+                                  {melody.name}
+                                </p>
+                                <p className="text-xs text-zinc-400 truncate mt-0.5">
+                                  {melody.producer}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
+                                    isMelodyFavorite(melody._id) ? "" : ""
+                                  }`}
+                                  onClick={() => toogleFavorite(melody._id)}
+                                >
+                                  {isMelodyFavorite(melody._id) ? (
+                                    <FaHeart size={20} color="red" />
+                                  ) : (
+                                    <FaRegHeart size={20} />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
+                                  onClick={() => handleDownloadClick(melody)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Melodies Pagination */}
+                <div className="mt-6 mb-24">
+                  <Pagination
+                    currentPage={currentMelodiesPage}
+                    totalPages={totalMelodiesPages}
+                    onPageChange={handleMelodiesPageChange}
+                    totalItems={totalMelodies}
+                    itemsPerPage={melodiesPerPage}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {isAudioPlayerVisible &&
