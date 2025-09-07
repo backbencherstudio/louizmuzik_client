@@ -18,6 +18,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/layout';
+import { useLoggedInUserQuery } from '@/app/store/api/authApis/authApi';
+import { useAddDiscographyMutation, useDeleteDiscographyMutation, useGetDiscographyQuery } from '@/app/store/api/discographyApis/discographyApis';
+import { toast } from 'sonner';
 
 // Función para extraer el ID de la pista de Spotify de una URL
 function getSpotifyTrackId(url: string) {
@@ -32,20 +35,55 @@ export default function DiscographyPage() {
     const [newTrackUrl, setNewTrackUrl] = useState('');
     const [error, setError] = useState('');
 
+    const {data:user} = useLoggedInUserQuery(null)
+    const userId = user?.data?._id;
+
+    const [addDiscography, {isLoading:isAddingDiscography}] = useAddDiscographyMutation()
+
+    const {data:discography} = useGetDiscographyQuery(userId)
+
+    const [deleteDiscography, {isLoading:isDeletingDiscography}] = useDeleteDiscographyMutation()
+
     const handleAddTrack = () => {
         const trackId = getSpotifyTrackId(newTrackUrl);
-        if (trackId) {
-            setTracks([...tracks, trackId]);
-            setNewTrackUrl('');
-            setError('');
-        } else {
-            setError('Por favor, ingresa un enlace válido de Spotify');
+        if (!trackId) {
+            setError('Please enter a valid Spotify link');
+            return;
         }
+        
+        addDiscography({ 
+            userId, 
+            discographyUrl: newTrackUrl 
+        }).unwrap().then((res) => {
+            if (res.success) {
+                toast.success('Track added successfully')
+                setTracks([...tracks, trackId]);
+                setNewTrackUrl('');
+                setError('');
+            } else {
+                toast.error(res.message || 'Failed to add track')
+            }
+        }).catch((error) => {
+            toast.error('Failed to add track')
+            console.error('Error adding track:', error);
+        });
     };
 
     const handleRemoveTrack = (index: number) => {
-        const newTracks = tracks.filter((_, i) => i !== index);
-        setTracks(newTracks);
+        const trackId = tracks[index];
+        if (trackId) {
+            deleteDiscography(trackId).unwrap().then((res) => {
+                if (res.success) {
+                    toast.success('Track removed successfully');
+                    setTracks(tracks.filter((_, i) => i !== index));
+                } else {
+                    toast.error(res.message || 'Failed to remove track');
+                }
+            }).catch((error) => {
+                toast.error('Failed to remove track');
+                console.error('Error removing track:', error);
+            });
+        }
     };
 
     return (
