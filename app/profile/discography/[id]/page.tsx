@@ -21,6 +21,7 @@ import Layout from '@/components/layout';
 import { useLoggedInUserQuery } from '@/app/store/api/authApis/authApi';
 import { useAddDiscographyMutation, useDeleteDiscographyMutation, useGetDiscographyQuery } from '@/app/store/api/discographyApis/discographyApis';
 import { toast } from 'sonner';
+import { useParams } from 'next/navigation';
 
 // Función para extraer el ID de la pista de Spotify de una URL
 function getSpotifyTrackId(url: string) {
@@ -34,8 +35,14 @@ export default function DiscographyPage() {
     const [newTrackUrl, setNewTrackUrl] = useState('');
     const [error, setError] = useState('');
 
-    const {data:user} = useLoggedInUserQuery(null)
-    const userId = user?.data?._id;
+    // Get the user ID from URL params
+    const params = useParams();
+    const userId = params.id as string;
+
+    // Get current logged-in user to check if they can add/delete tracks
+    const {data: currentUser} = useLoggedInUserQuery(null)
+    const currentUserId = currentUser?.data?._id;
+    const isOwner = currentUserId === userId;
 
     const [addDiscography, {isLoading:isAddingDiscography}] = useAddDiscographyMutation()
 
@@ -44,12 +51,19 @@ export default function DiscographyPage() {
     })
     const discographyData = discography?.data || []
     console.log('Discography Data:', discographyData);
+    console.log('User ID from params:', userId);
+    console.log('Is Owner:', isOwner);
 
     const [deleteDiscography, {isLoading:isDeletingDiscography}] = useDeleteDiscographyMutation()
 
     const handleAddTrack = () => {
         if (!userId) {
             toast.error('User not found');
+            return;
+        }
+
+        if (!isOwner) {
+            toast.error('You can only add tracks to your own discography');
             return;
         }
 
@@ -90,6 +104,11 @@ export default function DiscographyPage() {
     const handleRemoveTrack = (trackId: string) => {
         if (!trackId) {
             toast.error('Track ID not found');
+            return;
+        }
+
+        if (!isOwner) {
+            toast.error('You can only remove tracks from your own discography');
             return;
         }
 
@@ -260,34 +279,36 @@ export default function DiscographyPage() {
                             Thunder Beatz Discography
                         </h2>
 
-                        {/* Add Track Input */}
-                        <div className="mb-8">
-                            <div className="flex gap-4 max-w-2xl">
-                                <Input
-                                    type="text"
-                                    placeholder="Paste your Spotify track link here"
-                                    value={newTrackUrl}
-                                    onChange={(e) => {
-                                        setNewTrackUrl(e.target.value);
-                                        setError(''); // Clear error when user types
-                                    }}
-                                    className="flex-1 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500"
-                                    disabled={isAddingDiscography}
-                                />
-                                <Button
-                                    onClick={handleAddTrack}
-                                    disabled={isAddingDiscography || !newTrackUrl.trim()}
-                                    className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50"
-                                >
-                                    {isAddingDiscography ? 'Adding...' : 'Add'}
-                                </Button>
+                        {/* Add Track Input - Only show if user is the owner */}
+                        {isOwner && (
+                            <div className="mb-8">
+                                <div className="flex gap-4 max-w-2xl">
+                                    <Input
+                                        type="text"
+                                        placeholder="Paste your Spotify track link here"
+                                        value={newTrackUrl}
+                                        onChange={(e) => {
+                                            setNewTrackUrl(e.target.value);
+                                            setError(''); // Clear error when user types
+                                        }}
+                                        className="flex-1 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500"
+                                        disabled={isAddingDiscography}
+                                    />
+                                    <Button
+                                        onClick={handleAddTrack}
+                                        disabled={isAddingDiscography || !newTrackUrl.trim()}
+                                        className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50"
+                                    >
+                                        {isAddingDiscography ? 'Adding...' : 'Add'}
+                                    </Button>
+                                </div>
+                                {error && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {error}
+                                    </p>
+                                )}
                             </div>
-                            {error && (
-                                <p className="mt-2 text-sm text-red-500">
-                                    {error}
-                                </p>
-                            )}
-                        </div>
+                        )}
 
                         {/* Tracks Grid */}
                         {discographyData.length === 0 ? (
@@ -297,7 +318,7 @@ export default function DiscographyPage() {
                                     No tracks in discography yet
                                 </h3>
                                 <p className="text-zinc-500">
-                                    Add your first track by pasting a Spotify link above
+                                    {isOwner ? 'Add your first track by pasting a Spotify link above' : 'This user hasn\'t added any tracks yet'}
                                 </p>
                             </div>
                         ) : (
@@ -306,15 +327,18 @@ export default function DiscographyPage() {
                                     const trackId = track.trackId || getSpotifyTrackId(track.discographyUrl);
                                     return (
                                         <div key={track._id || index} className="relative group">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="absolute -top-2 -right-2 z-10 bg-red-500/10 text-red-500 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={() => handleRemoveTrack(track._id)}
-                                                disabled={isDeletingDiscography}
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </Button>
+                                            {/* Delete button - Only show if user is the owner */}
+                                            {isOwner && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute -top-2 -right-2 z-10 bg-red-500/10 text-red-500 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => handleRemoveTrack(track._id)}
+                                                    disabled={isDeletingDiscography}
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                             {trackId ? (
                                                 <iframe
                                                     style={{ borderRadius: '12px' }}

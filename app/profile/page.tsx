@@ -593,7 +593,7 @@ export default function ProfilePage() {
                   className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
                 >
                   <Link
-                    href="/profile/discography"
+                    href={`/profile/discography/${userId}`}
                     className="flex items-center gap-2"
                   >
                     View Discography
