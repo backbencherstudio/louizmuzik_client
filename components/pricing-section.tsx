@@ -238,7 +238,7 @@ export function PricingSection() {
                                         asChild
                                         className="w-full bg-primary text-black hover:bg-primary/90 py-4 text-lg h-auto"
                                     >
-                                        <Link href={userData?.isPro ? "/checkout-membership" : "/signup"}>Try Pro</Link>
+                                        <Link href={userData ? "/checkout-membership" : "/signup"}>Try Pro</Link>
                                     </Button>
                                 </div>
                             </div>
