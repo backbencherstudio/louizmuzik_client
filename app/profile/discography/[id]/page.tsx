@@ -13,6 +13,7 @@ import {
     ArrowLeft,
     Plus,
     X,
+    Loader2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,8 +21,12 @@ import { Input } from '@/components/ui/input';
 import Layout from '@/components/layout';
 import { useLoggedInUserQuery } from '@/app/store/api/authApis/authApi';
 import { useAddDiscographyMutation, useDeleteDiscographyMutation, useGetDiscographyQuery } from '@/app/store/api/discographyApis/discographyApis';
+import { useGetUserProfileQuery, useFollowUnFollowProducerMutation } from '@/app/store/api/userManagementApis/userManagementApis';
 import { toast } from 'sonner';
 import { useParams } from 'next/navigation';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { FaTiktok } from 'react-icons/fa';
+import Skeleton from 'react-loading-skeleton';
 
 // Función para extraer el ID de la pista de Spotify de una URL
 function getSpotifyTrackId(url: string) {
@@ -40,21 +45,33 @@ export default function DiscographyPage() {
     const userId = params.id as string;
 
     // Get current logged-in user to check if they can add/delete tracks
-    const {data: currentUser} = useLoggedInUserQuery(null)
+    const { data: currentUser, refetch: refetchUser } = useLoggedInUserQuery(null);
     const currentUserId = currentUser?.data?._id;
     const isOwner = currentUserId === userId;
 
-    const [addDiscography, {isLoading:isAddingDiscography}] = useAddDiscographyMutation()
+    // Get user profile data 
+    const {
+        data: userProfile,
+        isLoading: isUserProfileLoading,
+        refetch: refetchUserProfile,
+    } = useGetUserProfileQuery(userId as string);
 
-    const {data:discography, refetch: refetchDiscography, isLoading: isLoadingDiscography} = useGetDiscographyQuery(userId, {
+    // Follow/Unfollow functionality 
+    const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
+        useFollowUnFollowProducerMutation();
+
+    const isFollowing = currentUser?.data?.following.includes(userId as string);
+
+    const [addDiscography, { isLoading: isAddingDiscography }] = useAddDiscographyMutation();
+
+    const { data: discography, refetch: refetchDiscography, isLoading: isLoadingDiscography } = useGetDiscographyQuery(userId, {
         skip: !userId
-    })
-    const discographyData = discography?.data || []
-    console.log('Discography Data:', discographyData);
-    console.log('User ID from params:', userId);
-    console.log('Is Owner:', isOwner);
+    });
+    const discographyData = discography?.data || [];
 
-    const [deleteDiscography, {isLoading:isDeletingDiscography}] = useDeleteDiscographyMutation()
+    const [deleteDiscography, { isLoading: isDeletingDiscography }] = useDeleteDiscographyMutation();
+
+    const userData = userProfile?.data?.userData;
 
     const handleAddTrack = () => {
         if (!userId) {
@@ -72,26 +89,26 @@ export default function DiscographyPage() {
             setError('Please enter a valid Spotify link');
             return;
         }
-        
+
         // Check if track already exists
-        const existingTrack = discographyData.find((track: any) => 
+        const existingTrack = discographyData.find((track: any) =>
             track.trackId === trackId || track.discographyUrl === newTrackUrl
         );
-        
+
         if (existingTrack) {
             setError('This track is already in your discography');
             return;
         }
-        
-        addDiscography({ 
-            userId, 
-            discographyUrl: newTrackUrl 
+
+        addDiscography({
+            userId,
+            discographyUrl: newTrackUrl
         }).unwrap().then((res) => {
             if (res.success) {
                 toast.success('Track added successfully');
                 setNewTrackUrl('');
                 setError('');
-                refetchDiscography(); // Refresh the discography data
+                refetchDiscography(); 
             } else {
                 toast.error(res.message || 'Failed to add track');
             }
@@ -115,7 +132,7 @@ export default function DiscographyPage() {
         deleteDiscography(trackId).unwrap().then((res) => {
             if (res.success) {
                 toast.success('Track removed successfully');
-                refetchDiscography(); // Refresh the discography data
+                refetchDiscography(); 
             } else {
                 toast.error(res.message || 'Failed to remove track');
             }
@@ -125,12 +142,21 @@ export default function DiscographyPage() {
         });
     };
 
+    // Follow/Unfollow handler 
+    const handleFollowUnFollowProducer = async () => {
+        await followUnFollowProducer({ userId: currentUserId, producerId: userId as string });
+        refetchUser();
+        refetchUserProfile();
+    };
+
     // Loading state
-    if (isLoadingDiscography) {
+    if (isLoadingDiscography || isUserProfileLoading) {
         return (
             <Layout>
-                <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50 flex items-center justify-center">
-                    <div className="text-white text-xl">Loading discography...</div>
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-emerald-500 animate-spin">
+                        <AiOutlineLoading3Quarters size={32} />
+                    </div>
                 </div>
             </Layout>
         );
@@ -141,14 +167,26 @@ export default function DiscographyPage() {
             <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50">
                 {/* Hero Section */}
                 <div className="relative h-[400px] w-full overflow-hidden">
-                    {/* Banner Image */}
-                    <Image
-                        src="/images/profiles/banner-profile.jpg"
-                        alt="Profile Banner"
-                        fill
-                        className="object-cover"
-                        priority
-                    />
+                    {isUserProfileLoading && (
+                        <Skeleton
+                            height={400}
+                            width="100%"
+                            highlightColor="#27272a"
+                            className="mb-4"
+                        />
+                    )}
+                    {!isUserProfileLoading && (
+                        <>
+                            {/* Banner Image */}
+                            <Image
+                                src={userData?.profile_image || "/images/profiles/banner-profile.jpg"}
+                                alt="Profile Banner"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        </>
+                    )}
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" />
 
@@ -156,24 +194,44 @@ export default function DiscographyPage() {
                     <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
                         <div className="mx-auto max-w-7xl">
                             <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6">
-                                {/* Profile Image */}
+                                {/* Profile Image and Follow Button */}
                                 <div className="flex flex-col items-center gap-3 md:gap-4">
                                     <div className="relative w-28 h-28 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-black shadow-[0_0_40px_rgba(0,0,0,0.3)] -mt-8 md:-mt-24">
                                         <Image
-                                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/1729819215.jpg-uoM6NdN5hMe9otOwiONDKGITdU1L3H.jpeg"
-                                            alt="Thunder Beatz"
+                                            src={
+                                                userData?.profile_image ||
+                                                "/images/profiles/banner-profile.jpg"
+                                            }
+                                            alt={userData?.producer_name || "Producer"}
                                             fill
                                             className="object-cover"
                                         />
                                     </div>
+
+                                    {/* Follow Button - Only show if user is not the owner */}
+                                    {currentUserId !== userId && (
+                                        <Button
+                                            className={`bg-emerald-500 text-black hover:bg-emerald-600 w-full px-8 h-10 md:h-11 min-w-[180px] md:min-w-[200px] ${
+                                                isFollowing
+                                                    ? "bg-emerald-500 hover:bg-emerald-600 font-bold"
+                                                    : "bg-emerald-500 hover:bg-emerald-600"
+                                            }`}
+                                            onClick={() => handleFollowUnFollowProducer()}
+                                        >
+                                            {isFollowingLoading && (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            )}
+                                            {isFollowing ? "Unfollow" : "Follow"}
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {/* Profile Info */}
                                 <div className="flex-1 text-center md:text-left">
                                     <div className="flex flex-col md:flex-row items-center md:items-end gap-2 md:gap-4 mb-3 md:mb-4">
                                         <div className="flex items-center gap-2 md:gap-3">
-                                            <h1 className="text-2xl md:text-5xl font-bold text-white">
-                                                Thunder Beatz
+                                            <h1 className="text-2xl md:text-5xl font-bold text-white capitalize">
+                                                {userData?.producer_name || "John Doe"}
                                             </h1>
                                             <div className="relative w-5 h-5 md:w-7 md:h-7 mt-0.5 md:mt-1">
                                                 <Image
@@ -186,7 +244,7 @@ export default function DiscographyPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center">
-                                            <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium">
+                                            <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium md:-mt-11">
                                                 Verified Producer
                                             </span>
                                         </div>
@@ -195,41 +253,58 @@ export default function DiscographyPage() {
                                     <div className="flex flex-col md:flex-row items-center md:items-start gap-2 md:gap-6 text-sm md:text-base text-zinc-300">
                                         <div className="hidden md:flex items-center gap-2">
                                             <Music2 className="w-4 h-4 text-emerald-500" />
-                                            <span>247 Melodies</span>
+                                            <span>{userData?.melodiesCounter || "0"} Melodies</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Users className="w-4 h-4 text-emerald-500" />
-                                            <span>14.5K Followers</span>
+                                            <span>
+                                                {userData?.followersCounter || "0"} Followers
+                                            </span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <MapPin className="w-4 h-4 text-emerald-500" />
-                                            <span>United States</span>
+                                            <span>{userData?.country || "N/A"}</span>
                                         </div>
                                     </div>
 
                                     {/* Social Media Links */}
                                     <div className="hidden md:flex justify-center md:justify-start gap-2 mt-6">
-                                        <Link
-                                            href="https://instagram.com"
-                                            target="_blank"
-                                            className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                                        >
-                                            <Instagram className="w-5 h-5" />
-                                        </Link>
-                                        <Link
-                                            href="https://youtube.com"
-                                            target="_blank"
-                                            className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                                        >
-                                            <Youtube className="w-5 h-5" />
-                                        </Link>
-                                        <Link
-                                            href="https://beatstars.com"
-                                            target="_blank"
-                                            className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                                        >
-                                            <ExternalLink className="w-5 h-5" />
-                                        </Link>
+                                        {userData?.instagramUsername && (
+                                            <Link
+                                                href={`https://instagram.com/${userData?.instagramUsername}`}
+                                                target="_blank"
+                                                className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                                            >
+                                                <Instagram className="w-5 h-5" />
+                                            </Link>
+                                        )}
+                                        {userData?.youtubeUsername && (
+                                            <Link
+                                                href={`https://youtube.com/@${userData?.youtubeUsername}`}
+                                                target="_blank"
+                                                className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                                            >
+                                                <Youtube className="w-5 h-5" />
+                                            </Link>
+                                        )}
+                                        {userData?.tiktokUsername && (
+                                            <Link
+                                                href={`https://tiktok.com/@${userData?.tiktokUsername}`}
+                                                target="_blank"
+                                                className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                                            >
+                                                <FaTiktok className="w-5 h-5" />
+                                            </Link>
+                                        )}
+                                        {userData?.beatstarsUsername && (
+                                            <Link
+                                                href={`https://beatstars.com/${userData?.beatstarsUsername}`}
+                                                target="_blank"
+                                                className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                                            >
+                                                <ExternalLink className="w-5 h-5" />
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +322,7 @@ export default function DiscographyPage() {
                             asChild
                         >
                             <Link
-                                href="/profile"
+                                href={`/producers/${userId}`}
                                 className="flex items-center gap-2"
                             >
                                 <ArrowLeft className="w-4 h-4" />
@@ -263,12 +338,7 @@ export default function DiscographyPage() {
                                 About
                             </h2>
                             <p className="text-lg text-zinc-300 leading-relaxed">
-                                Multi-platinum music producer based in Los
-                                Angeles. Known for crafting unique melodies and
-                                innovative sound design. Credits include
-                                collaborations with Drake, The Weeknd, Bad
-                                Bunny, Anuel AA, and Maluma. Specialized in
-                                Trap, Hip-Hop, and Latin genres.
+                                {userData?.about || "N/A"}
                             </p>
                         </div>
                     </div>
@@ -276,7 +346,7 @@ export default function DiscographyPage() {
                     {/* Discography Section */}
                     <div>
                         <h2 className="text-2xl font-bold text-white mb-6">
-                            Thunder Beatz Discography
+                            <span className="capitalize">{userData?.producer_name}</span> Discography
                         </h2>
 
                         {/* Add Track Input - Only show if user is the owner */}
