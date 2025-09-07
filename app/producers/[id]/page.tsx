@@ -69,6 +69,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { MdKeyboardArrowLeft } from "react-icons/md";
+import { useGetDiscographyQuery } from "@/app/store/api/discographyApis/discographyApis";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -128,6 +129,9 @@ export default function ProfilePage() {
   const [followUnFollowProducer, { isLoading: isFollowingLoading }] =
     useFollowUnFollowProducerMutation();
 
+  const { data: discography } = useGetDiscographyQuery(id as string);
+  const discographyData = discography?.data || [];
+
   const [melodyPlayCounter] = useMelodyPlayMutation();
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
   const [favoriteMelody] = useFavoriteMelodyMutation();
@@ -144,7 +148,8 @@ export default function ProfilePage() {
   const totalPacksPages = Math.ceil(totalPacks / packsPerPage);
   const packsStartIndex = (currentPacksPage - 1) * packsPerPage;
   const packsEndIndex = packsStartIndex + packsPerPage;
-  const currentPacks = premiumPacks?.slice(packsStartIndex, packsEndIndex) || [];
+  const currentPacks =
+    premiumPacks?.slice(packsStartIndex, packsEndIndex) || [];
 
   const handlePacksPageChange = (page: number) => {
     setCurrentPacksPage(page);
@@ -179,8 +184,11 @@ export default function ProfilePage() {
         const searchLower = searchQuery.toLowerCase();
         const melodyNameLower = melody.name.toLowerCase();
         const producerNameLower = melody.producer.toLowerCase();
-        
-        if (!melodyNameLower.includes(searchLower) && !producerNameLower.includes(searchLower)) {
+
+        if (
+          !melodyNameLower.includes(searchLower) &&
+          !producerNameLower.includes(searchLower)
+        ) {
           return false;
         }
       }
@@ -587,43 +595,43 @@ export default function ProfilePage() {
 
                     {/* Social Media Links */}
                     <div className="hidden md:flex justify-center md:justify-start gap-2 mt-6">
-                    {userData?.instagramUsername && (
-                      <Link
-                        href={`https://instagram.com/${userData?.instagramUsername}`}
-                        target="_blank"
-                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                      >
-                        <Instagram className="w-5 h-5" />
-                      </Link>
-                    )}
-                    {userData?.youtubeUsername && (
-                      <Link
-                        href={`https://youtube.com/@${userData?.youtubeUsername}`}
-                        target="_blank"
-                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                      >
-                        <Youtube className="w-5 h-5" />
-                      </Link>
-                    )}
-                    {userData?.tiktokUsername && (
-                      <Link
-                        href={`https://tiktok.com/@${userData?.tiktokUsername}`}
-                        target="_blank"
-                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                      >
-                        <FaTiktok className="w-5 h-5" />
-                      </Link>
-                    )}
-                    {userData?.beatstarsUsername && (
-                      <Link
-                        href={`https://beatstars.com/${userData?.beatstarsUsername}`}
-                        target="_blank"
-                        className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                      </Link>
-                    )}
-                  </div>
+                      {userData?.instagramUsername && (
+                        <Link
+                          href={`https://instagram.com/${userData?.instagramUsername}`}
+                          target="_blank"
+                          className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                        >
+                          <Instagram className="w-5 h-5" />
+                        </Link>
+                      )}
+                      {userData?.youtubeUsername && (
+                        <Link
+                          href={`https://youtube.com/@${userData?.youtubeUsername}`}
+                          target="_blank"
+                          className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                        >
+                          <Youtube className="w-5 h-5" />
+                        </Link>
+                      )}
+                      {userData?.tiktokUsername && (
+                        <Link
+                          href={`https://tiktok.com/@${userData?.tiktokUsername}`}
+                          target="_blank"
+                          className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                        >
+                          <FaTiktok className="w-5 h-5" />
+                        </Link>
+                      )}
+                      {userData?.beatstarsUsername && (
+                        <Link
+                          href={`https://beatstars.com/${userData?.beatstarsUsername}`}
+                          target="_blank"
+                          className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors"
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -639,20 +647,22 @@ export default function ProfilePage() {
                 <p className="text-lg text-zinc-300 leading-relaxed">
                   {userData?.about || "N/A"}
                 </p>
-                <div className="mt-6">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
-                  >
-                    <Link
-                      href={`/profile/discography/${id}`}
-                      className="flex items-center gap-2"
+                {discographyData?.length > 0 && (
+                  <div className="mt-6">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
                     >
-                      View Discography
-                    </Link>
-                  </Button>
-                </div>
+                      <Link
+                        href={`/profile/discography/${id}`}
+                        className="flex items-center gap-2"
+                      >
+                        View Discography
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -661,12 +671,17 @@ export default function ProfilePage() {
               <div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <h2 className="text-2xl font-bold text-white">
-                    <span className="capitalize"> {userData?.producer_name}</span>{" "}
+                    <span className="capitalize">
+                      {" "}
+                      {userData?.producer_name}
+                    </span>{" "}
                     's Premium Packs
                   </h2>
                   {totalPacks > packsPerPage && (
                     <div className="text-sm text-zinc-400">
-                      Showing {packsStartIndex + 1} to {Math.min(packsEndIndex, totalPacks)} of {totalPacks} packs
+                      Showing {packsStartIndex + 1} to{" "}
+                      {Math.min(packsEndIndex, totalPacks)} of {totalPacks}{" "}
+                      packs
                     </div>
                   )}
                 </div>
@@ -720,53 +735,66 @@ export default function ProfilePage() {
                 {totalPacksPages > 1 && (
                   <div className="mt-6">
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                      
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePacksPageChange(currentPacksPage - 1)}
+                          onClick={() =>
+                            handlePacksPageChange(currentPacksPage - 1)
+                          }
                           disabled={currentPacksPage === 1}
                           className="h-8 px-3 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <MdKeyboardArrowLeft />
                         </Button>
-                        
+
                         <div className="flex items-center gap-1">
-                          {Array.from({ length: Math.min(5, totalPacksPages) }, (_, i) => {
-                            let pageNum;
-                            if (totalPacksPages <= 5) {
-                              pageNum = i + 1;
-                            } else if (currentPacksPage <= 3) {
-                              pageNum = i + 1;
-                            } else if (currentPacksPage >= totalPacksPages - 2) {
-                              pageNum = totalPacksPages - 4 + i;
-                            } else {
-                              pageNum = currentPacksPage - 2 + i;
+                          {Array.from(
+                            { length: Math.min(5, totalPacksPages) },
+                            (_, i) => {
+                              let pageNum;
+                              if (totalPacksPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPacksPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (
+                                currentPacksPage >=
+                                totalPacksPages - 2
+                              ) {
+                                pageNum = totalPacksPages - 4 + i;
+                              } else {
+                                pageNum = currentPacksPage - 2 + i;
+                              }
+
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={
+                                    currentPacksPage === pageNum
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  size="sm"
+                                  onClick={() => handlePacksPageChange(pageNum)}
+                                  className={`h-8 w-8 p-0 ${
+                                    currentPacksPage === pageNum
+                                      ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                                      : "border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                                  }`}
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
                             }
-                            
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={currentPacksPage === pageNum ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => handlePacksPageChange(pageNum)}
-                                className={`h-8 w-8 p-0 ${
-                                  currentPacksPage === pageNum
-                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                                    : "border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
-                                }`}
-                              >
-                                {pageNum}
-                              </Button>
-                            );
-                          })}
+                          )}
                         </div>
-                        
+
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePacksPageChange(currentPacksPage + 1)}
+                          onClick={() =>
+                            handlePacksPageChange(currentPacksPage + 1)
+                          }
                           disabled={currentPacksPage === totalPacksPages}
                           className="h-8 px-3 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -783,10 +811,12 @@ export default function ProfilePage() {
               <div className="mt-10">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
                   <h2 className="text-2xl font-bold text-white">
-                    <span className="capitalize">{userData?.producer_name}</span>'s
-                    Melodies
+                    <span className="capitalize">
+                      {userData?.producer_name}
+                    </span>
+                    's Melodies
                   </h2>
-                  
+
                   {/* Search Bar */}
                   <div className="flex flex-col md:flex-row w-full md:w-auto gap-3">
                     <div className="relative flex-1 md:w-64">
@@ -828,15 +858,21 @@ export default function ProfilePage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[150px]">
-                        <DropdownMenuItem onClick={() => handleSortByType("popular")}>
+                        <DropdownMenuItem
+                          onClick={() => handleSortByType("popular")}
+                        >
                           <TrendingUp className="mr-2 h-4 w-4" />
                           Most Popular
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSortByType("recent")}>
+                        <DropdownMenuItem
+                          onClick={() => handleSortByType("recent")}
+                        >
                           <Clock className="mr-2 h-4 w-4" />
                           Most Recent
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSortByType("random")}>
+                        <DropdownMenuItem
+                          onClick={() => handleSortByType("random")}
+                        >
                           <Shuffle className="mr-2 h-4 w-4" />
                           Random
                         </DropdownMenuItem>
@@ -844,7 +880,10 @@ export default function ProfilePage() {
                     </DropdownMenu>
                   </div>
 
-                  <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
+                  <Popover
+                    open={genrePopoverOpen}
+                    onOpenChange={setGenrePopoverOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -861,7 +900,9 @@ export default function ProfilePage() {
                             {genres.map((genre) => (
                               <CommandItem
                                 key={genre as string}
-                                onSelect={() => handleGenreSelect(genre as string)}
+                                onSelect={() =>
+                                  handleGenreSelect(genre as string)
+                                }
                                 className="flex items-center gap-2 cursor-pointer"
                               >
                                 <div
@@ -889,7 +930,10 @@ export default function ProfilePage() {
                     onClear={handleBpmFilterClear}
                   />
 
-                  <Popover open={keyPopoverOpen} onOpenChange={setKeyPopoverOpen}>
+                  <Popover
+                    open={keyPopoverOpen}
+                    onOpenChange={setKeyPopoverOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -911,7 +955,10 @@ export default function ProfilePage() {
                     </PopoverContent>
                   </Popover>
 
-                  <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
+                  <Popover
+                    open={artistTypePopoverOpen}
+                    onOpenChange={setArtistTypePopoverOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -928,7 +975,9 @@ export default function ProfilePage() {
                             {artistTypes.map((type) => (
                               <CommandItem
                                 key={type as string}
-                                onSelect={() => handleArtistTypeSelect(type as string)}
+                                onSelect={() =>
+                                  handleArtistTypeSelect(type as string)
+                                }
                                 className="flex items-center gap-2 cursor-pointer"
                               >
                                 <div
