@@ -76,8 +76,8 @@ export default function ProfilePage() {
   const [selectedMelody, setSelectedMelody] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPacksPage, setCurrentPacksPage] = useState(1);
-  const itemsPerPage = 1;
-  const packsPerPage = 1;
+  const itemsPerPage = 20;
+  const packsPerPage = 10;
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
