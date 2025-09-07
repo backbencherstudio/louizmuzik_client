@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -31,7 +31,6 @@ function getSpotifyTrackId(url: string) {
 }
 
 export default function DiscographyPage() {
-    const [tracks, setTracks] = useState<string[]>([]);
     const [newTrackUrl, setNewTrackUrl] = useState('');
     const [error, setError] = useState('');
 
@@ -40,14 +39,33 @@ export default function DiscographyPage() {
 
     const [addDiscography, {isLoading:isAddingDiscography}] = useAddDiscographyMutation()
 
-    const {data:discography} = useGetDiscographyQuery(userId)
+    const {data:discography, refetch: refetchDiscography, isLoading: isLoadingDiscography} = useGetDiscographyQuery(userId, {
+        skip: !userId
+    })
+    const discographyData = discography?.data || []
+    console.log('Discography Data:', discographyData);
 
     const [deleteDiscography, {isLoading:isDeletingDiscography}] = useDeleteDiscographyMutation()
 
     const handleAddTrack = () => {
+        if (!userId) {
+            toast.error('User not found');
+            return;
+        }
+
         const trackId = getSpotifyTrackId(newTrackUrl);
         if (!trackId) {
             setError('Please enter a valid Spotify link');
+            return;
+        }
+        
+        // Check if track already exists
+        const existingTrack = discographyData.find((track: any) => 
+            track.trackId === trackId || track.discographyUrl === newTrackUrl
+        );
+        
+        if (existingTrack) {
+            setError('This track is already in your discography');
             return;
         }
         
@@ -56,35 +74,48 @@ export default function DiscographyPage() {
             discographyUrl: newTrackUrl 
         }).unwrap().then((res) => {
             if (res.success) {
-                toast.success('Track added successfully')
-                setTracks([...tracks, trackId]);
+                toast.success('Track added successfully');
                 setNewTrackUrl('');
                 setError('');
+                refetchDiscography(); // Refresh the discography data
             } else {
-                toast.error(res.message || 'Failed to add track')
+                toast.error(res.message || 'Failed to add track');
             }
         }).catch((error) => {
-            toast.error('Failed to add track')
+            toast.error('Failed to add track');
             console.error('Error adding track:', error);
         });
     };
 
-    const handleRemoveTrack = (index: number) => {
-        const trackId = tracks[index];
-        if (trackId) {
-            deleteDiscography(trackId).unwrap().then((res) => {
-                if (res.success) {
-                    toast.success('Track removed successfully');
-                    setTracks(tracks.filter((_, i) => i !== index));
-                } else {
-                    toast.error(res.message || 'Failed to remove track');
-                }
-            }).catch((error) => {
-                toast.error('Failed to remove track');
-                console.error('Error removing track:', error);
-            });
+    const handleRemoveTrack = (trackId: string) => {
+        if (!trackId) {
+            toast.error('Track ID not found');
+            return;
         }
+
+        deleteDiscography(trackId).unwrap().then((res) => {
+            if (res.success) {
+                toast.success('Track removed successfully');
+                refetchDiscography(); // Refresh the discography data
+            } else {
+                toast.error(res.message || 'Failed to remove track');
+            }
+        }).catch((error) => {
+            toast.error('Failed to remove track');
+            console.error('Error removing track:', error);
+        });
     };
+
+    // Loading state
+    if (isLoadingDiscography) {
+        return (
+            <Layout>
+                <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900/50 flex items-center justify-center">
+                    <div className="text-white text-xl">Loading discography...</div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -236,50 +267,75 @@ export default function DiscographyPage() {
                                     type="text"
                                     placeholder="Paste your Spotify track link here"
                                     value={newTrackUrl}
-                                    onChange={(e) =>
-                                        setNewTrackUrl(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setNewTrackUrl(e.target.value);
+                                        setError(''); // Clear error when user types
+                                    }}
                                     className="flex-1 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500"
+                                    disabled={isAddingDiscography}
                                 />
                                 <Button
                                     onClick={handleAddTrack}
-                                    className="bg-emerald-500 hover:bg-emerald-600"
+                                    disabled={isAddingDiscography || !newTrackUrl.trim()}
+                                    className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50"
                                 >
-                                    Add
+                                    {isAddingDiscography ? 'Adding...' : 'Add'}
                                 </Button>
                             </div>
                             {error && (
                                 <p className="mt-2 text-sm text-red-500">
-                                    Please enter a valid Spotify link
+                                    {error}
                                 </p>
                             )}
                         </div>
 
                         {/* Tracks Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {tracks.map((trackId, index) => (
-                                <div key={index} className="relative group">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute -top-2 -right-2 z-10 bg-red-500/10 text-red-500 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        onClick={() => handleRemoveTrack(index)}
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </Button>
-                                    <iframe
-                                        style={{ borderRadius: '12px' }}
-                                        src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator`}
-                                        width="100%"
-                                        height="152"
-                                        frameBorder="0"
-                                        allowFullScreen
-                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                        loading="lazy"
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        {discographyData.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Music2 className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-zinc-400 mb-2">
+                                    No tracks in discography yet
+                                </h3>
+                                <p className="text-zinc-500">
+                                    Add your first track by pasting a Spotify link above
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {discographyData.map((track: any, index: number) => {
+                                    const trackId = track.trackId || getSpotifyTrackId(track.discographyUrl);
+                                    return (
+                                        <div key={track._id || index} className="relative group">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute -top-2 -right-2 z-10 bg-red-500/10 text-red-500 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => handleRemoveTrack(track._id)}
+                                                disabled={isDeletingDiscography}
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </Button>
+                                            {trackId ? (
+                                                <iframe
+                                                    style={{ borderRadius: '12px' }}
+                                                    src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator`}
+                                                    width="100%"
+                                                    height="152"
+                                                    frameBorder="0"
+                                                    allowFullScreen
+                                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div className="bg-zinc-800 rounded-lg p-4 h-[152px] flex items-center justify-center">
+                                                    <p className="text-zinc-400 text-sm">Invalid track URL</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
