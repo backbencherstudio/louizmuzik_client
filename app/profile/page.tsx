@@ -541,7 +541,7 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Social Media Links */}
-                  <div className="hidden md:flex justify-center md:justify-start gap-2 mt-6">
+                  <div className="flex justify-center md:justify-start gap-2 mt-6">
                     {userData?.instagramUsername && (
                       <Link
                         href={`https://instagram.com/${userData?.instagramUsername}`}
