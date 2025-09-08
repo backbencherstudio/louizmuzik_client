@@ -59,6 +59,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGetDiscographyQuery } from "../store/api/discographyApis/discographyApis";
 
 export default function ProfilePage() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -122,12 +123,16 @@ export default function ProfilePage() {
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
 
+  const { data: discography } = useGetDiscographyQuery(userId as string);
+  const discographyData = discography?.data || [];
+
   // Pagination logic for packs
   const totalPacks = premiumPacks?.length || 0;
   const totalPacksPages = Math.ceil(totalPacks / packsPerPage);
   const startPacksIndex = (currentPacksPage - 1) * packsPerPage;
   const endPacksIndex = startPacksIndex + packsPerPage;
-  const currentPacks = premiumPacks?.slice(startPacksIndex, endPacksIndex) || [];
+  const currentPacks =
+    premiumPacks?.slice(startPacksIndex, endPacksIndex) || [];
 
   const handlePacksPageChange = (page: number) => {
     setCurrentPacksPage(page);
@@ -162,8 +167,11 @@ export default function ProfilePage() {
         const searchLower = searchQuery.toLowerCase();
         const melodyNameLower = melody.name.toLowerCase();
         const producerNameLower = melody.producer.toLowerCase();
-        
-        if (!melodyNameLower.includes(searchLower) && !producerNameLower.includes(searchLower)) {
+
+        if (
+          !melodyNameLower.includes(searchLower) &&
+          !producerNameLower.includes(searchLower)
+        ) {
           return false;
         }
       }
@@ -570,6 +578,22 @@ export default function ProfilePage() {
                         <ExternalLink className="w-5 h-5" />
                       </Link>
                     )}
+                    {discographyData?.length > 0 && (
+                      <div className="">
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                        >
+                          <Link
+                            href={`/profile/discography/${userId}`}
+                            className="flex items-center gap-2"
+                          >
+                            View Discography
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -586,20 +610,6 @@ export default function ProfilePage() {
               <p className="text-lg text-zinc-300 leading-relaxed">
                 {userData?.about || "N/A"}
               </p>
-              <div className="mt-6">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
-                >
-                  <Link
-                    href={`/profile/discography/${userId}`}
-                    className="flex items-center gap-2"
-                  >
-                    View Discography
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -613,7 +623,8 @@ export default function ProfilePage() {
                 </h2>
                 {totalPacksPages > 1 && (
                   <div className="text-sm text-zinc-400">
-                    Showing {startPacksIndex + 1}-{Math.min(endPacksIndex, totalPacks)} of {totalPacks} packs
+                    Showing {startPacksIndex + 1}-
+                    {Math.min(endPacksIndex, totalPacks)} of {totalPacks} packs
                   </div>
                 )}
               </div>
@@ -644,7 +655,7 @@ export default function ProfilePage() {
                   </Link>
                 ))}
               </div>
-              
+
               {/* Packs Pagination */}
               {totalPacksPages > 1 && (
                 <div className="mt-6">
@@ -665,10 +676,10 @@ export default function ProfilePage() {
             <div className="mt-10">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-white">
-                  <span className="capitalize">{userData?.producer_name}</span>'s
-                  Melodies
+                  <span className="capitalize">{userData?.producer_name}</span>
+                  's Melodies
                 </h2>
-                
+
                 {/* Search Bar */}
                 <div className="flex flex-col md:flex-row w-full md:w-auto gap-3">
                   <div className="relative flex-1 md:w-64">
@@ -710,15 +721,21 @@ export default function ProfilePage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[150px]">
-                      <DropdownMenuItem onClick={() => handleSortByType("popular")}>
+                      <DropdownMenuItem
+                        onClick={() => handleSortByType("popular")}
+                      >
                         <TrendingUp className="mr-2 h-4 w-4" />
                         Most Popular
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSortByType("recent")}>
+                      <DropdownMenuItem
+                        onClick={() => handleSortByType("recent")}
+                      >
                         <Clock className="mr-2 h-4 w-4" />
                         Most Recent
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSortByType("random")}>
+                      <DropdownMenuItem
+                        onClick={() => handleSortByType("random")}
+                      >
                         <Shuffle className="mr-2 h-4 w-4" />
                         Random
                       </DropdownMenuItem>
@@ -726,7 +743,10 @@ export default function ProfilePage() {
                   </DropdownMenu>
                 </div>
 
-                <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
+                <Popover
+                  open={genrePopoverOpen}
+                  onOpenChange={setGenrePopoverOpen}
+                >
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -743,7 +763,9 @@ export default function ProfilePage() {
                           {genres.map((genre) => (
                             <CommandItem
                               key={genre as string}
-                              onSelect={() => handleGenreSelect(genre as string)}
+                              onSelect={() =>
+                                handleGenreSelect(genre as string)
+                              }
                               className="flex items-center gap-2 cursor-pointer"
                             >
                               <div
@@ -793,7 +815,10 @@ export default function ProfilePage() {
                   </PopoverContent>
                 </Popover>
 
-                <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
+                <Popover
+                  open={artistTypePopoverOpen}
+                  onOpenChange={setArtistTypePopoverOpen}
+                >
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -810,7 +835,9 @@ export default function ProfilePage() {
                           {artistTypes.map((type) => (
                             <CommandItem
                               key={type as string}
-                              onSelect={() => handleArtistTypeSelect(type as string)}
+                              onSelect={() =>
+                                handleArtistTypeSelect(type as string)
+                              }
                               className="flex items-center gap-2 cursor-pointer"
                             >
                               <div
