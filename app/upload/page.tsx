@@ -56,15 +56,19 @@ const instrumentOptions = [
 ];
 
 const artistTypeOptions = [
-    'Producer',
-    'Songwriter',
-    'Composer',
-    'Beatmaker',
-    'Musician',
-    'DJ',
-    'Artist',
-    'Band',
-];
+    "6lack", "2 Chainz", "21 Savage", "50 Cent", "Alicia Keys", "Amapiano", "Anuel AA", "Arcangel", "A$AP Ferg", "A$AP Rocky", 
+    "A Boogie wit da Hoodie", "Bad Bunny", "Beyoncé", "Benny Sings", "Beyoncé", "Burna Boy", "Cardi B", "Cañito de Santa", 
+    "Central Cee", "Chamanes Cortez", "Chris Brown", "Chronixx", "Chuckyy", "Daddy Yankee", "Damian Marley", "Danny Mendoza", 
+    "Don Toliver", "Duki", "Eladio Carrión", "Elvis Crespo", "Fetty Wap", "Future", "G Herbo", "Gazo", "Gente de Zona", "GloRilla", 
+    "Gunna", "Hamza", "Juice WRLD", "Jack Harlow", "J Balvin", "Jowell & Randy", "Justin Quiles", "Key Glock", "Kevin Gates", 
+    "Koffee", "Lil Baby", "Lil Durk", "Lil Tjay", "Lil Tecca", "Lil Uzi Vert", "Lil Yachty", "Megan Thee Stallion", "Migos", "Milo J", 
+    "Miky Woodz", "Moneybagg Yo", "Mora", "Morad", "Myke Towers", "Natti Natasha", "Nemzzz", "Nicki Minaj", "Nicky Jam", "NBA YoungBoy", 
+    "Omah Lay", "Omar Courtz", "Ozuna", "Partynextdoor", "Playboi Carti", "Polo G", "Pop Smoke", "Roa", "Roddy Ricch", "Rosalía", 
+    "Sean Paul", "Sech", "Shaggy", "Shenseea", "Shy Glizzy", "Smino", "Snoop Dogg", "Tempo", "Tego Calderón", "Tokischa", "Travis Scott", 
+    "Trippie Redd", "Tory Lanez", "Ty Dolla $ign", "Tyga", "Tyler, The Creator", "Wisin", "Wisin y Yandel", "Yandel", "YNW Melly", 
+    "Young Miko", "Young Thug", "Young Dolph", "YG", "YFG Fatso", "YN Jay", "Zion", "Zion & Lennox"
+  ];
+  
 
 interface TagInputProps {
     label: string;
