@@ -560,19 +560,23 @@ export default function ProfilePage() {
                           {userData?.producer_name || "John Doe"}
                         </h1>
                         <div className="relative w-5 h-5 md:w-7 md:h-7 mt-0.5 md:mt-1">
-                          <Image
-                            src="/verified-badge.png"
-                            alt="Verified Producer"
-                            width={28}
-                            height={28}
-                            className="object-contain"
-                          />
+                          {userData?.isPro && (
+                            <Image
+                              src="/verified-badge.png"
+                              alt="Verified Producer"
+                              width={28}
+                              height={28}
+                              className="object-contain"
+                            />
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium md:-mt-11">
-                          Verified Producer
-                        </span>
+                        {userData?.isPro && (
+                          <span className="px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs md:text-sm font-medium md:-mt-11">
+                            Verified Producer
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -631,6 +635,22 @@ export default function ProfilePage() {
                           <ExternalLink className="w-5 h-5" />
                         </Link>
                       )}
+                      {discographyData?.length > 0 && (
+                        <div className=" inline">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                          >
+                            <Link
+                              href={`/profile/discography/${id}`}
+                              className="flex items-center gap-2"
+                            >
+                              View Discography
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -647,22 +667,7 @@ export default function ProfilePage() {
                 <p className="text-lg text-zinc-300 leading-relaxed">
                   {userData?.about || "N/A"}
                 </p>
-                {discographyData?.length > 0 && (
-                  <div className="mt-6">
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
-                    >
-                      <Link
-                        href={`/profile/discography/${id}`}
-                        className="flex items-center gap-2"
-                      >
-                        View Discography
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+            
               </div>
             </div>
 
