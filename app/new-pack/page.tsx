@@ -235,7 +235,7 @@ export default function NewPackPage() {
       formData.append("video_path", packData.videoUrl);
       formData.append("included", packData.included);
       formData.append("genre", JSON.stringify(selectedGenres));
-      formData.append("producer", user.data?.producer_name);
+      formData.append("producer", user.data?.producer_name || user.data?.name || 'Unknown Producer');
 
       if (thumbnailFile) {
         formData.append("thumbnail_image", thumbnailFile);

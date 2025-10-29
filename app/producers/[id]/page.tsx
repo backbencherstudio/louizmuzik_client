@@ -1166,7 +1166,8 @@ export default function ProfilePage() {
                                 />
                               </div>
                             </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
+                            <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white
+                            ">
                               {melody?.name?.slice(0, 18)}...
                             </td>
                             <td className="whitespace-nowrap px-4 py-3">

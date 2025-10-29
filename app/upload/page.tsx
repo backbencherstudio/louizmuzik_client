@@ -188,6 +188,8 @@ export default function UploadPage() {
     const { data: user } = useLoggedInUserQuery(null);
     const userData = user?.data;
 
+    console.log(userData);
+
     const [createMelody, { isLoading: isCreatingMelody, reset: resetCreate }] = useCreateMelodyMutation();
     const [updateMelody, { isLoading: isUpdatingMelody, reset: resetUpdate }] = useUpdateMelodyMutation();
 
@@ -419,7 +421,7 @@ export default function UploadPage() {
         try {
             const formData = new FormData();
             formData.append('userId', userData?._id || '');
-            formData.append('producer', userData?.producer_name || '');
+            formData.append('producer', userData?.producer_name || userData?.name || 'Unknown Producer');
             formData.append('name', melodyName);
             formData.append('bpm', bpm);
             formData.append('key', selectedKey);
