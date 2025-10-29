@@ -24,8 +24,6 @@ export default function ProducersPage() {
   const { data: producersData, isLoading: isProducersDataLoading } =
     useAllProducersDataWithTopProducersDataQuery(null);
 
-  console.log("producersData", producersData);
-
   const topProducers = producersData?.data?.top5Producers || [];
   const allProducers = producersData?.data?.allProducers || [];
 

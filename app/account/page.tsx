@@ -52,15 +52,12 @@ export default function AccountPage() {
   // Update selectedCountry when user data changes
   useEffect(() => {
     if (user?.data?.country) {
-      console.log("Setting selectedCountry to:", user.data.country);
+      // console.log("Setting selectedCountry to:", user.data.country);
       setSelectedCountry(user.data.country);
     }
   }, [user?.data?.country]);
 
-  console.log("user 42", user);
-  console.log("User country:", user?.data?.country);
   const userId = user?.data?._id;
-  console.log("userId 34", userId);
   const [updateUserProfile, { isLoading: isUpdatingProfile }] =
     useUpdateUserProfileMutation();
 
@@ -82,7 +79,7 @@ export default function AccountPage() {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
+      // console.log(`${key}: ${value}`);
     });
 
     try {

@@ -24,10 +24,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
-  console.log(25, userData);
   const [isProcessing, setIsProcessing] = useState(false);
   const { cartItems } = useCart();
-  console.log("cartItems", cartItems);
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
   const total = subtotal;
@@ -61,11 +59,8 @@ export default function CheckoutPage() {
   }));
 
   const successFunction = async (data: any) => {
-    console.log(81, data?.data?.id);
-    console.log(82, data?.data?.status);
 
     if (data.data.id && data?.data?.status === "COMPLETED") {
-      console.log(selectedPackData);
       const res = await purchasePack(selectedPackData);
       if (res.data.success) {
         toast.success("Pack purchased successfully");

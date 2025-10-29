@@ -279,7 +279,6 @@ export default function FeedPage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
       } catch (error) {
         console.log("error", error);
       }

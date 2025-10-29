@@ -57,7 +57,6 @@ export default function AdminPage() {
   } = useGetPacksQuery(null);
 
   const allPacks = packsData?.data || [];
-  console.log(allPacks);
 
   const highlightedPacks = allPacks.filter(
     (pack: any) => pack?.highlight === true

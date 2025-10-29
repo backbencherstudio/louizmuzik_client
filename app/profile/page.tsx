@@ -118,8 +118,6 @@ export default function ProfilePage() {
   const [favoriteMelody] = useFavoriteMelodyMutation();
 
   const userData = userProfile?.data?.userData;
-  console.log(userData, "profile page");
-
   const melodies = userProfile?.data?.melodies;
   const premiumPacks = userProfile?.data?.packs;
 

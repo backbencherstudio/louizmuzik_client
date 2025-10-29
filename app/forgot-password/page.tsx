@@ -30,7 +30,6 @@ export default function ForgotPasswordPage() {
             formData.append('email', email);
             formData.append('password', password);
             const response = await resetPassword(formData).unwrap();
-            console.log(response);
             setUserEmail(email);
             setIsEmailSent(true);
             toast.success('Verification code sent to your email');

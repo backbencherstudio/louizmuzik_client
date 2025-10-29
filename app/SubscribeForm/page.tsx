@@ -24,7 +24,7 @@ interface CheckoutFormProps {
 const CheckoutForm = ({ totalPrice }: CheckoutFormProps) => {
   const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
-  console.log("userData",userData);
+  // console.log("userData",userData);
 
   const stripe = useStripe();
   const elements = useElements();

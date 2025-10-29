@@ -53,7 +53,6 @@ export const GoogleProvider = ({ children }: GoogleProviderProps) => {
           email: auth0User?.email,
           producer_name: auth0User?.name,
         }).unwrap();
-        console.log("res", res);
         if (res?.success) {
           localStorage.setItem("token", res?.data?.accessToken);
           

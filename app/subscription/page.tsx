@@ -25,14 +25,11 @@ export default function SubscriptionPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
-  console.log(userData);
   const customerId = userData?.customerId;
   const paypalSubscriptionId = userData?.paypalSubscriptionId;
   const { data: billingHistory, isLoading: isBillingHistoryLoading } =
     useGetBillingHistoryQuery(userData?._id);
-  console.log(50, billingHistory);
   const billingHistoryData = billingHistory?.data;
-  console.log(51, billingHistoryData);
 
   const [cancelSubscription, { isLoading: isCancelling }] =
     useCancelSubscriptionMutation();
@@ -41,7 +38,6 @@ export default function SubscriptionPage() {
 
   // Fix: Move this inside the component and add proper validation
   const nextBillingDate = userData?.nextBillingTime ? new Date(userData.nextBillingTime) : null;
-  console.log(52, nextBillingDate);
 
   // Helper function to safely format the date
   const formatNextBillingDate = () => {
@@ -73,8 +69,6 @@ export default function SubscriptionPage() {
 
   const handleCancelSubscription = async () => {
     try {
-      console.log(51, paypalSubscriptionId);
-
       const res = await cancelPaypalSubscription(paypalSubscriptionId);
       if (res.data.success) {
         toast.success("Subscription cancelled successfully");

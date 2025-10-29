@@ -92,8 +92,6 @@ export default function NewPackPage() {
   const [uploadProgress, setUploadProgress] = useState(0); 
   const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
   const { data: user } = useLoggedInUser();
-  console.log("user", user);
-
   const userData = user?.data;
 
   

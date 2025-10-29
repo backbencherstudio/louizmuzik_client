@@ -63,7 +63,6 @@ export default function SamplePacksPage() {
   const { data: packsData, isLoading, error } = useGetPacksQuery(null);
 
   const allPacks = packsData?.data || [];
-  console.log(allPacks);
 
   const [deletePack, { isLoading: isDeleting }] = useDeletePackMutation();
 

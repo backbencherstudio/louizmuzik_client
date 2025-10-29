@@ -146,9 +146,9 @@ export default function SalesPage() {
         setCurrentPage(1);
     };
 
-    const handleExport = () => {
-        console.log('Exporting sales data...');
-    };
+    // const handleExport = () => {
+    //     console.log('Exporting sales data...');
+    // };
 
     const handleTransactionClick = (transaction: TransformedSalesData) => {
         setSelectedTransaction(transaction);

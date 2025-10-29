@@ -11,11 +11,11 @@ import { Label } from "@/components/ui/label";
 import Layout from "@/components/layout";
 import SubscribeForm from "../SubscribeForm/page";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
+import { toast } from "sonner";
 
 export default function ProPage() {
   const { data: user, refetch } = useLoggedInUser();
   const userData = user?.data;
-  console.log("checkout-membership", userData?.hasUsedTrial);
   const [amount, setAmount] = useState("9.99");
   const [loading, setLoading] = useState(false);
 
@@ -32,10 +32,6 @@ export default function ProPage() {
           email,
         }
       );
-      console.log(res);
-      console.log(res?.data?.data);
-      console.log(res?.data?.data?.url);
-
       window.location.href = res?.data?.data?.url; // Redirect to PayPal approval
     } catch (err: any) {
       console.log(26, err);
@@ -58,8 +54,7 @@ export default function ProPage() {
       const res = await axios.post(
         `http://localhost:5000/api/v1/payment/cancel-subscription/${customerId}`
       );
-      console.log("Subscription cancelled successfully");
-      alert("Subscription cancelled successfully");
+      toast.success("Subscription cancelled successfully");
     } catch (err) {
       console.error("Failed to cancel subscription", err);
     }
@@ -70,8 +65,7 @@ export default function ProPage() {
       const res = await axios.post(
         `http://localhost:5000/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
       );
-      console.log("Subscription cancelled successfully");
-      alert("Subscription cancelled successfully");
+      toast.success("Subscription cancelled successfully");
     } catch (err) {
       console.error("Failed to cancel subscription", err);
     }

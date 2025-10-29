@@ -68,7 +68,6 @@ export default function FavoritesPage() {
     } else {
       try {
         const response = await melodyPlayCounter(melody._id).unwrap();
-        console.log("melodyPlayCounter", response);
       } catch (error) {
         console.log("error", error);
       }
@@ -113,7 +112,6 @@ export default function FavoritesPage() {
         artistType: "Producer",
       };
 
-      console.log("Playing pack:", packToPlay);
       setCurrentPlayingPack(packToPlay);
       setCurrentPlayingMelody(null);
       setIsAudioPlayerVisible(true);
@@ -123,7 +121,6 @@ export default function FavoritesPage() {
   const handleDownloadClick = async (melody: any) => {
     try {
       const response = await melodyDownloadCounter(melody._id).unwrap();
-      console.log("melodyDownloadCounter", response);
       
       const audioUrl = melody.audioUrl;  
       if (audioUrl) {

@@ -109,7 +109,6 @@ export default function ItemsPage() {
                 artistType: melody.artistType || 'Producer',
             };
             
-            console.log('Playing melody:', melodyToPlay); 
             setCurrentPlayingMelody(melodyToPlay);
             setCurrentPlayingPack(null);
             setIsAudioPlayerVisible(true);
@@ -137,7 +136,6 @@ export default function ItemsPage() {
                 artistType: 'Producer',
             };
             
-            console.log('Playing pack:', packToPlay); 
             setCurrentPlayingPack(packToPlay);
             setCurrentPlayingMelody(null);
             setIsAudioPlayerVisible(true);  

@@ -398,8 +398,6 @@ export default function ProfilePage() {
         genre: pack.genre || "Unknown",
         artistType: "Producer",
       };
-
-      console.log("Playing pack:", packToPlay);
       setCurrentPlayingPack(packToPlay);
       setCurrentPlayingMelody(null);
       setIsAudioPlayerVisible(true);

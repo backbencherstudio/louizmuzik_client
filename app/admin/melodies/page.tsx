@@ -49,7 +49,6 @@ export default function MelodiesPage() {
   const { data: melodiesData, isLoading, error } = useGetMelodiesQuery(null);
 
   const allMelodies = melodiesData?.data || [];
-  console.log(allMelodies);
 
   const [deleteMelody, { isLoading: isDeleting }] = useDeleteMelodyMutation();
 

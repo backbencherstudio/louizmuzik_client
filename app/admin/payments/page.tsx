@@ -77,7 +77,6 @@ function PaymentsPage() {
     const { data: billingHistory, isLoading: isBillingHistoryLoading } = useGetBillingHistoryQuery(null);
 
     const allBillingHistory = billingHistory?.data || [];
-    console.log(allBillingHistory);
 
     // Transform billing history data to payments format
     const transformBillingHistoryToPayments = (billingData: BillingHistoryItem[]): Payment[] => {

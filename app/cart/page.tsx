@@ -12,7 +12,6 @@ import { useCart } from '@/components/cart-context';
 export default function CartPage() {
     const { cartItems, removeFromCart } = useCart();
 
-    console.log(cartItems);
     
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);

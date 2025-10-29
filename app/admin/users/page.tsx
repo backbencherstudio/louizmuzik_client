@@ -74,7 +74,6 @@ export default function UsersPage() {
   // API call to get users
   const { data: usersData, isLoading, error, refetch } = useGetUsersQuery(null);
   const users = usersData?.data || [];
-  console.log(users);
 
   const {
     data: userDetails,

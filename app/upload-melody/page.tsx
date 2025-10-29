@@ -84,16 +84,10 @@ export default function UploadMelodyPage() {
         setIsLoading(true);
 
         try {
-            // This would be replaced with actual API calls
             if (isEditMode) {
-                // Update existing melody
-                console.log('Updating melody:', { id: editId, ...formData });
             } else {
-                // Create new melody
-                console.log('Creating new melody:', formData);
             }
 
-            // Redirect to items page after success
             window.location.href = '/items';
         } catch (error) {
             console.error('Error:', error);
