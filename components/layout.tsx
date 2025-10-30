@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   
   const logout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    window.location.href = "https://melodycollab.com/";
     toast.success("Logged out successfully");
   };
 
