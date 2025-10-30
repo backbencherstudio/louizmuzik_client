@@ -47,12 +47,15 @@ import { useAuth0 } from "@auth0/auth0-react";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { logout: auth0Logout } = useAuth0();
   const router = useRouter();
+
+  
   const logout = () => {
     localStorage.removeItem("token");
-    auth0Logout();
     window.location.href = "/";
     toast.success("Logged out successfully");
   };
+
+
   const pathname = usePathname();
   const { cartItems, removeFromCart } = useCart();
   const { data: user } = useLoggedInUser();

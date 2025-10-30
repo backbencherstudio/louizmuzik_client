@@ -10,9 +10,9 @@ export function SignOutButton() {
     const supabase = createClient();
 
     const handleSignOut = async () => {
-        const supabaseClient = await supabase;
-        await supabaseClient.auth.signOut();
-        router.push('/');
+        // const supabaseClient = await supabase;
+        // await supabaseClient.auth.signOut();
+        router.push('/turabi');
         router.refresh();
     };
 
@@ -23,7 +23,7 @@ export function SignOutButton() {
         >
             <div className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500">
                 <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
+                <span>Sign Out dfasf</span>
             </div>
         </DropdownMenuItem>
     );

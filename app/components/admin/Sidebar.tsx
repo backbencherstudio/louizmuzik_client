@@ -71,9 +71,9 @@ export function Sidebar() {
     const supabase = createClient();
 
     const handleSignOut = async () => {
-        const supabaseClient = await supabase;
-        await supabaseClient.auth.signOut();
-        router.push('/');
+        // const supabaseClient = await supabase;
+        // await supabaseClient.auth.signOut();
+        router.push('/turabi');
         router.refresh();
     };
 
