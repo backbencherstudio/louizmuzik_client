@@ -18,6 +18,7 @@ import {
 import OtpVerification from "@/components/otp-verification";
 import { toast } from "sonner";
 import { useAuth0 } from "@auth0/auth0-react";
+import countries from "@/components/Data/country";
 
 export default function SignUpPage() {
   // const [isLoading, setIsLoading] = useState(false);
@@ -43,18 +44,7 @@ export default function SignUpPage() {
 
 
 
-  const countries = [
-    "United States",
-    "Spain",
-    "Mexico",
-    "Argentina",
-    "Brazil",
-    "Colombia",
-    "Chile",
-    "United Kingdom",
-    "Canada",
-    "France",
-  ];
+  
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -153,7 +143,7 @@ export default function SignUpPage() {
                 <SelectTrigger className="mt-1 bg-black/50 border-zinc-800 text-white placeholder:text-zinc-400 focus:border-emerald-500/50">
                   <SelectValue placeholder="Select your country" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800">
+                <SelectContent className="bg-zinc-900 border-zinc-800 max-h-60">
                   {countries.map((country) => (
                     <SelectItem
                       key={country}

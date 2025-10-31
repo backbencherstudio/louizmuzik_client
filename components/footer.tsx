@@ -107,13 +107,6 @@ export function Footer() {
                                 <span className="sr-only">Instagram</span>
                             </Link>
                             <Link
-                                href="https://twitter.com"
-                                className="text-gray-400 hover:text-primary transition-colors"
-                            >
-                                <X size={24} />
-                                <span className="sr-only">X (Twitter)</span>
-                            </Link>
-                            <Link
                                 href="https://facebook.com"
                                 className="text-gray-400 hover:text-primary transition-colors"
                             >

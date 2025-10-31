@@ -36,7 +36,7 @@ export default function OtpVerification({ email, onVerificationSuccess, onBack }
     }, [timeLeft]);
 
     const handleOtpChange = (index: number, value: string) => {
-        if (value.length > 1) return; // Prevent multiple characters
+        if (value.length > 1) return; 
         
         const newOtp = [...otp];
         newOtp[index] = value;
@@ -53,6 +53,28 @@ export default function OtpVerification({ email, onVerificationSuccess, onBack }
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text');
+        const digits = pasted.replace(/\D/g, '').slice(0, 6).split('');
+        if (digits.length === 0) return;
+
+        const activeElement = typeof document !== 'undefined' ? (document.activeElement as HTMLInputElement | null) : null;
+        const startIndex = activeElement ? inputRefs.current.findIndex((el) => el === activeElement) : 0;
+        const boundedStart = startIndex >= 0 ? startIndex : 0;
+
+        const newOtp = [...otp];
+        for (let i = 0; i < digits.length && boundedStart + i < 6; i++) {
+            newOtp[boundedStart + i] = digits[i];
+        }
+        setOtp(newOtp);
+        setError('');
+
+        const nextEmptyIndex = newOtp.findIndex((d) => d === '');
+        const nextIndex = nextEmptyIndex === -1 ? 5 : Math.min(5, Math.max(boundedStart + digits.length, 0));
+        inputRefs.current[nextIndex]?.focus();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +97,13 @@ export default function OtpVerification({ email, onVerificationSuccess, onBack }
             }).unwrap();
             
             console.log('OTP verification successful:', response);
+            // If API returns an access token on OTP success, persist it for authenticated session
+            const accessToken = (response as any)?.data?.accessToken || (response as any)?.accessToken;
+            if (accessToken) {
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('token', accessToken);
+                }
+            }
             onVerificationSuccess();
         } catch (error: any) {
             console.error('OTP verification failed:', error);
@@ -134,7 +163,7 @@ export default function OtpVerification({ email, onVerificationSuccess, onBack }
                             Enter the 6-digit code
                         </Label>
                         
-                        <div className="flex justify-center space-x-2">
+                        <div className="flex justify-center space-x-2" onPaste={handlePaste}>
                             {otp.map((digit, index) => (
                                 <Input
                                     key={index}

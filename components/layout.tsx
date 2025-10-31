@@ -48,13 +48,30 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { logout: auth0Logout } = useAuth0();
   const router = useRouter();
 
-  
-  const logout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "https://melodycollab.com/";
-    toast.success("Logged out successfully");
-  };
+  const logout = async () => {
+    try {
+      localStorage.clear(); 
 
+      // Call Auth0 logout
+      await auth0Logout({
+        logoutParams: {
+          returnTo: window.location.origin, 
+        },
+      });
+      // Clear any session cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      window.location.href = "/";
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error during logout");
+    }
+  };
 
   const pathname = usePathname();
   const { cartItems, removeFromCart } = useCart();
@@ -137,9 +154,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       )}
 
       {user?.data?.role === "admin" && (
-        <button onClick={() => router.push("/admin")} className="w-full flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all">
-            <Shield className="h-4 w-4" />
-            Admin Panel
+        <button
+          onClick={() => router.push("/admin")}
+          className="w-full flex items-center gap-2 border border-emerald-500 text-emerald-500 rounded-lg px-3 py-2 hover:bg-emerald-500 hover:text-black transition-all"
+        >
+          <Shield className="h-4 w-4" />
+          Admin Panel
         </button>
       )}
     </>
