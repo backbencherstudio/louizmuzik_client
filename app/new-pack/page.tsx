@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Camera, FileArchive, Loader2, Play, Plus, X } from "lucide-react";
+import { Camera, FileArchive, Play, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,11 +26,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Layout from "@/components/layout";
-import { useCreatePackMutation, useUpdatePackMutation, useGetPackDetailsQuery } from "../store/api/packApis/packApis";
+import {
+  useUpdatePackMutation,
+  useGetPackDetailsQuery,
+} from "../store/api/packApis/packApis";
 import { toast } from "sonner";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
 
-// Lista predeterminada de géneros
 const AVAILABLE_GENRES = [
   "Trap",
   "Reggaeton",
@@ -64,9 +66,8 @@ const AVAILABLE_GENRES = [
   "Plug",
   "Phonk",
   "World",
-  "WestCoast"
+  "WestCoast",
 ];
-
 
 export default function NewPackPage() {
   const router = useRouter();
@@ -89,18 +90,14 @@ export default function NewPackPage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); 
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
   const { data: user } = useLoggedInUser();
   const userData = user?.data;
 
-  
-
-  
-  // Fetch pack details when editing
-  const { data: packDetails, isLoading: isLoadingPack } = useGetPackDetailsQuery(editId || "", {
-    skip: !editId,
-  });
+  const { data: packDetails, isLoading: isLoadingPack } =
+    useGetPackDetailsQuery(editId || "", { skip: !editId });
 
   useEffect(() => {
     if (packDetails?.data?.singlePackData && editId) {
@@ -129,15 +126,11 @@ export default function NewPackPage() {
   };
 
   const handleSamplePackUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setSamplePackFile(e.target.files[0]);
-    }
+    if (e.target.files?.[0]) setSamplePackFile(e.target.files[0]);
   };
 
   const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setAudioFile(e.target.files[0]);
-    }
+    if (e.target.files?.[0]) setAudioFile(e.target.files[0]);
   };
 
   const handleInputChange = (
@@ -155,46 +148,41 @@ export default function NewPackPage() {
   };
 
   const removeGenre = (genreToRemove: string) => {
-    setSelectedGenres(
-      selectedGenres.filter((genre) => genre !== genreToRemove)
-    );
+    setSelectedGenres(selectedGenres.filter((g) => g !== genreToRemove));
   };
 
-  // Helper function to get file name from path
   const getFileNameFromPath = (path: string) => {
     if (!path) return "";
-    return path.split('/').pop() || path.split('\\').pop() || path;
+    return path.split("/").pop() || path.split("\\").pop() || path;
   };
 
+  // ✅ FIXED handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    if(userData?.payementMethod === "stripe" && userData?.isPro === false){
+    if (
+      userData?.payementMethod === "stripe" &&
+      userData?.isPro === false
+    ) {
       toast.error("Please upgrade to a Pro membership to continue");
       router.push("/checkout-membership");
       return;
     }
 
-    if(userData?.payementMethod === "paypal" && userData?.subscriptionEndDate <= new Date().toISOString()){
+    if (
+      userData?.payementMethod === "paypal" &&
+      userData?.subscriptionEndDate <= new Date().toISOString()
+    ) {
       toast.error("Please upgrade to a Pro membership to continue");
       router.push("/checkout-membership");
       return;
     }
 
     try {
-
-      if(user?.data?.paypalEmail === "" || !user?.data?.paypalEmail ){
-        toast.error("Please link your PayPal account to continue");
-        router.push("/account");
-        return;
-      }
-
       if (!user?.data?._id) {
         toast.error("User not authenticated");
         return;
       }
-
       if (!packData.title.trim()) {
         toast.error("Pack title is required");
         return;
@@ -203,93 +191,86 @@ export default function NewPackPage() {
         toast.error("Price must be at least $0.99");
         return;
       }
-      
-      // For new packs, require all files
-      if (!editId) {
-        if (!thumbnailFile) {
-          toast.error("Thumbnail image is required");
-          return;
-        }
-        // if (!samplePackFile) {
-        //   toast.error("Sample pack file is required");
-        //   return;
-        // }
-        if (!audioFile) {
-          toast.error("Audio demo is required");
-          return;
-        }
+      if (!editId && !thumbnailFile) {
+        toast.error("Thumbnail image is required");
+        return;
       }
-      
+      if (!editId && !audioFile) {
+        toast.error("Audio demo is required");
+        return;
+      }
       if (selectedGenres.length === 0) {
         toast.error("At least one genre must be selected");
         return;
       }
 
+      setIsLoading(true);
+      setUploadProgress(0);
+
       const formData = new FormData();
-      formData.append("userId", user.data?._id);
+      formData.append("userId", user.data._id);
       formData.append("title", packData.title);
-      formData.append("description", packData.description); // Fixed: use description instead of included
+      formData.append("description", packData.description);
       formData.append("price", packData.price);
       formData.append("video_path", packData.videoUrl);
       formData.append("included", packData.included);
       formData.append("genre", JSON.stringify(selectedGenres));
-      formData.append("producer", user.data?.producer_name || user.data?.name || 'Unknown Producer');
+      formData.append(
+        "producer",
+        user.data?.producer_name || user.data?.name || "Unknown Producer"
+      );
 
-      if (thumbnailFile) {
-        formData.append("thumbnail_image", thumbnailFile);
-      }
-      if (samplePackFile) {
-        formData.append("zip_path", samplePackFile);
-      }
-      if (audioFile) {
-        formData.append("audio_path", audioFile);
-      }
+      if (thumbnailFile) formData.append("thumbnail_image", thumbnailFile);
+      if (samplePackFile) formData.append("zip_path", samplePackFile);
+      if (audioFile) formData.append("audio_path", audioFile);
 
       if (editId) {
-        // Update existing pack
-        try {
-          await updatePack({ id: editId, formData }).unwrap();
-          toast.success("Pack updated successfully");
-          router.push("/items");
-        } catch (error) {
-          console.error("Error updating pack:", error);
-          toast.error("Failed to update pack");
-        }
-      } else {
-        // Create new pack
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          "POST",
-          `${process.env.NEXT_PUBLIC_API_URL}/pack/create-pack`,
-          true
-        );
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status === 200) {
-            toast.success("Pack created successfully");
-            router.push("/items");
-          } else {
-            toast.error("Failed to create pack");
-          }
-        };
-
-        xhr.onerror = () => {
-          toast.error("An error occurred during the upload");
-        };
-
-        xhr.send(formData);
+        await updatePack({ id: editId, formData }).unwrap();
+        toast.success("Pack updated successfully");
+        router.push("/items");
+        return;
       }
+
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/pack/create-pack`;
+      console.log("Uploading to:", apiUrl);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", apiUrl, true);
+      xhr.withCredentials = false;
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        console.log("Upload response:", xhr.status, xhr.responseText);
+        if (xhr.status === 200) {
+          toast.success("Pack created successfully");
+          router.push("/items");
+        } else {
+          toast.error(
+            `Upload failed: ${xhr.responseText || xhr.statusText}`
+          );
+        }
+        setUploadProgress(0);
+        setIsLoading(false);
+      };
+
+      xhr.onerror = (err) => {
+        console.error("XHR error:", err);
+        toast.error("An error occurred during the upload. Please try again.");
+        setUploadProgress(0);
+        setIsLoading(false);
+      };
+
+      xhr.send(formData);
     } catch (error) {
       console.error("Error saving pack:", error);
       toast.error(editId ? "Failed to update pack" : "Failed to create pack");
-    } finally {
+      setUploadProgress(0);
       setIsLoading(false);
     }
   };
@@ -298,10 +279,8 @@ export default function NewPackPage() {
     return (
       <Layout>
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-white">Loading pack details...</div>
-            </div>
+          <div className="mx-auto max-w-4xl flex justify-center items-center h-64">
+            <div className="text-white">Loading pack details...</div>
           </div>
         </div>
       </Layout>
