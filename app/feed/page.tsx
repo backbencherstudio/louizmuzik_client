@@ -44,6 +44,7 @@ import {
 import { toast } from "sonner";
 import { WaveformDisplay } from "@/components/waveform-display";
 import { useAudioContext } from "@/components/audio-context";
+import { MelodiesBrowseTable } from "@/components/melodies-browse-table";
 
 interface AudioItem {
   id: number;
@@ -105,9 +106,14 @@ export default function FeedPage() {
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
   const [favoriteMelodies, setFavoriteMelodies] = useState<number[]>([]);
-  const [sortConfig, setSortConfig] = useState({
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+    type: "popular" | "recent" | "random" | "default";
+  }>({
     key: "name",
     direction: "asc",
+    type: "default",
   });
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [currentPlayingPack, setCurrentPlayingPack] = useState<any>(null);
@@ -303,14 +309,21 @@ export default function FeedPage() {
     }
   };
 
-  const handleSort = (key: string) => {
-    setSortConfig((prevConfig) => ({
-      key,
-      direction:
-        prevConfig.key === key && prevConfig.direction === "asc"
-          ? "desc"
-          : "asc",
-    }));
+  const handleSort = (field: string) => {
+    setSortConfig((prevConfig) => {
+      if (prevConfig.key === field) {
+        return {
+          ...prevConfig,
+          direction: prevConfig.direction === "asc" ? "desc" : "asc",
+          type: "default",
+        };
+      }
+      return {
+        key: field,
+        direction: "asc",
+        type: "default",
+      };
+    });
   };
 
   // Filter and sort melodies
@@ -482,12 +495,12 @@ export default function FeedPage() {
                           href={`/product/${item._id}`}
                         >
                           <div className="relative aspect-square">
-                            <Image
+                           {item?.thumbnail_image &&  <Image
                               src={item?.thumbnail_image}
                               alt={item.title}
                               fill
                               className="object-cover"
-                            />
+                            />}
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button
                                 variant="ghost"
@@ -569,12 +582,13 @@ export default function FeedPage() {
                       className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                     >
                       <div className="relative aspect-square">
-                        <Image
-                          src={item.thumbnail_image}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
+                          {item?.thumbnail_image && <Image
+                            src={item.thumbnail_image}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />}
+                          
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button
                             variant="ghost"
@@ -830,332 +844,20 @@ export default function FeedPage() {
                 <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
                   <div className="overflow-x-auto">
                     {/* Desktop Table */}
-                    <table className="w-full hidden md:table">
-                      <thead>
-                        <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                          <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
-                            #
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                            Thumbnail
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("name")}
-                          >
-                            <div className="flex items-center gap-1">
-                              NAME
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "name"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "name" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
-                            Waveform
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("producer")}
-                          >
-                            <div className="flex items-center gap-1">
-                              PRODUCER
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "producer"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "producer" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("bpm")}
-                          >
-                            <div className="flex items-center gap-1">
-                              BPM
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "bpm"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "bpm" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("key")}
-                          >
-                            <div className="flex items-center gap-1">
-                              KEY
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "key"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "key" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("genre")}
-                          >
-                            <div className="flex items-center gap-1">
-                              GENRE
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "genre"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "genre" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th
-                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                            onClick={() => handleSort("artistType")}
-                          >
-                            <div className="flex items-center gap-1">
-                              ARTIST TYPE
-                              <ChevronUp
-                                className={`h-3 w-3 transition-transform ${
-                                  sortConfig.key === "artistType"
-                                    ? "text-emerald-500"
-                                    : "text-zinc-600"
-                                } ${
-                                  sortConfig.key === "artistType" &&
-                                  sortConfig.direction === "desc"
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
-                            ACTIONS
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {getCurrentMelodies().map((melody: any) => (
-                          <tr
-                            key={melody._id || melody.id}
-                            className="border-b border-zinc-800 hover:bg-zinc-900/30"
-                          >
-                            <td className="whitespace-nowrap px-4 py-3 text-center">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-8 w-8 rounded-full ${
-                                  currentPlayingMelody?._id === melody._id
-                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                                    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                                }`}
-                                onClick={() => handlePlayClick(melody)}
-                              >
-                                {currentPlayingMelody?._id === melody._id ? (
-                                  <Pause className="h-4 w-4" />
-                                ) : (
-                                  <Play className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3">
-                              <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                                <Image
-                                  src={
-                                    melody.userId?.profile_image ||
-                                    "/placeholder.svg"
-                                  }
-                                  alt={melody.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                              {melody.name?.slice(0, 18)}...
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3">
-                              <WaveformDisplay
-                                audioUrl={
-                                  melody.audio_path ||
-                                  melody.audio ||
-                                  melody.audioUrl
-                                }
-                                isPlaying={
-                                  currentPlayingMelody?._id === melody._id
-                                }
-                                onPlayPause={() => handlePlayClick(melody)}
-                                height={30}
-                                width="200px"
-                                isControlled={true}
-                                currentTime={
-                                  currentMelodyId === melody._id
-                                    ? currentTime
-                                    : 0
-                                }
-                                duration={
-                                  currentMelodyId === melody._id ? duration : 0
-                                }
-                              />
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                              {melody.producer}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                              {melody.bpm}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                              {melody.key}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                              {Array.isArray(melody.genre)
-                                ? melody.genre.join(", ")
-                                : melody.genre}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                              {Array.isArray(melody.artistType)
-                                ? melody.artistType.join(", ")
-                                : melody.artistType}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <Button
-                                  onClick={() => toogleFavorite(melody._id)}
-                                  variant="ghost"
-                                  size="icon"
-                                  className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                                    isMelodyFavorite(melody._id)
-                                      ? "text-red-500"
-                                      : ""
-                                  }`}
-                                >
-                                  {isMelodyFavorite(melody._id) ? (
-                                    <FaHeart size={20} color="red" />
-                                  ) : (
-                                    <FaRegHeart size={20} />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-zinc-400 hover:text-white"
-                                  onClick={() => handleDownloadClick(melody)}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                    {/* Mobile Table */}
-                    <table className="w-full md:hidden">
-                      <tbody>
-                        {getCurrentMelodies().map((melody: any) => (
-                          <tr
-                            key={melody._id || melody.id}
-                            className="border-b border-zinc-800 hover:bg-zinc-900/30"
-                          >
-                            <td className="px-4 py-3 flex items-center gap-3">
-                              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
-                                <Image
-                                  src={
-                                    melody.userId?.profile_image ||
-                                    "/placeholder.svg"
-                                  }
-                                  alt={melody.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-8 w-8 flex-shrink-0 rounded-full ${
-                                  currentPlayingMelody?._id === melody._id
-                                    ? "bg-emerald-500 text-black hover:bg-emerald-600"
-                                    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                                }`}
-                                onClick={() => handlePlayClick(melody)}
-                              >
-                                {currentPlayingMelody?._id === melody._id ? (
-                                  <Pause className="h-4 w-4" />
-                                ) : (
-                                  <Play className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">
-                                  {melody.name}
-                                </p>
-                                <p className="text-xs text-zinc-400 truncate mt-0.5">
-                                  {melody.producer}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className={`h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-red-500 ${
-                                    isMelodyFavorite(melody._id) ? "" : ""
-                                  }`}
-                                  onClick={() => toogleFavorite(melody._id)}
-                                >
-                                  {isMelodyFavorite(melody._id) ? (
-                                    <FaHeart size={20} color="red" />
-                                  ) : (
-                                    <FaRegHeart size={20} />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 flex-shrink-0 text-zinc-400 hover:text-white"
-                                  onClick={() => handleDownloadClick(melody)}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <MelodiesBrowseTable
+                      melodies={getCurrentMelodies()}
+                      currentPlayingMelody={currentPlayingMelody}
+                      onPlayClick={handlePlayClick}
+                      onDownloadClick={handleDownloadClick}
+                      onFavoriteClick={(melodyId) => toogleFavorite(melodyId)}
+                      isFavorite={isMelodyFavorite}
+                      sortConfig={sortConfig}
+                      onSort={handleSort}
+                      currentTime={currentTime}
+                      duration={duration}
+                      currentMelodyId={currentMelodyId}
+                      showProducerColumn={true}
+                    />
                   </div>
                 </div>
 

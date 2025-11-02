@@ -354,12 +354,16 @@ export default function ProductAnalyticsPage() {
                                     >
                                         <td className="whitespace-nowrap px-4 py-3">
                                             <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                                                <Image
-                                                    src={product.image}
-                                                    alt={product.name}
-                                                    fill
-                                                    className="object-cover"
-                                                />
+                                                {
+                                                    product.image && (
+                                                        <Image
+                                                            src={product.image}
+                                                            alt={product.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    )
+                                                }
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3">

@@ -77,13 +77,17 @@ export default function ProductAltPage() {
             <div className="min-h-screen bg-gradient-to-b from-zinc-900 to-black">
                 {/* Hero Section */}
                 <div className="relative h-[60vh] w-full overflow-hidden">
-                    <Image
-                        src={product.image}
-                        alt={product.title}
-                        fill
-                        className="object-cover brightness-50"
-                        priority
-                    />
+                    {
+                        product.image && (
+                            <Image
+                                src={product.image}
+                                alt={product.title}
+                                fill
+                                className="object-cover brightness-50"
+                                priority
+                            />
+                        )
+                    }
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
 
                     {/* Floating Stats Card */}

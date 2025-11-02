@@ -59,7 +59,6 @@ export default function CheckoutPage() {
   }));
 
   const successFunction = async (data: any) => {
-
     if (data.data.id && data?.data?.status === "COMPLETED") {
       const res = await purchasePack(selectedPackData);
       if (res.data.success) {
@@ -210,12 +209,14 @@ export default function CheckoutPage() {
                   {cartItems.map((item: any) => (
                     <div key={item.id} className="flex items-start gap-3">
                       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-900">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
+                        {item.image && (
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
                       </div>
                       <div className="flex-1">
                         <h3 className="text-sm font-medium text-white">
