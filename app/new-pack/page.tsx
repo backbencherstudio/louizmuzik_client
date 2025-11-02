@@ -156,7 +156,6 @@ export default function NewPackPage() {
     return path.split("/").pop() || path.split("\\").pop() || path;
   };
 
-  // ✅ FIXED handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

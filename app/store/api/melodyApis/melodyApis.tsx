@@ -70,7 +70,7 @@ export const melodyApi = baseApi.injectEndpoints({
         url: `/melody/melodyPlay/${id}`,
         method: "PATCH",
       }),
-      invalidatesTags: ["Melody"],
+      // invalidatesTags: ["Melody"],
     }),
 
     getFavoriteMelody: build.query({

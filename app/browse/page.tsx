@@ -95,7 +95,6 @@ export default function BrowsePage() {
   const { data: melodiesData, refetch: refetchMelodies } =
     useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
-  console.log("melodies", melodies);
 
   // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -759,7 +758,7 @@ export default function BrowsePage() {
                         {melody?.producer}
                       </Link>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td className="whitespace-nowrap px-4 py-3 lg:hidden">
                       <WaveformDisplay
                         audioUrl={melody.audioUrl}
                         isPlaying={currentPlayingMelody?._id === melody._id}
