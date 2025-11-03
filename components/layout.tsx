@@ -608,20 +608,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <span>Manage Account</span>
                   </Link>
                 </DropdownMenuItem>
-                {isPro && (
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
+                <DropdownMenuItem
+                  asChild
+                  className="hover:bg-transparent focus:bg-transparent"
+                >
+                  <Link
+                    href="/items"
+                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
                   >
-                    <Link
-                      href="/items"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                    >
-                      <ListMusic className="h-4 w-4" />
-                      <span>Your Items</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
+                    <ListMusic className="h-4 w-4" />
+                    <span>Your Items</span>
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-zinc-800" />
               <DropdownMenuGroup>

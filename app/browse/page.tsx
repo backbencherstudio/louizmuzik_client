@@ -417,7 +417,7 @@ export default function BrowsePage() {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
           <div className="flex items-center gap-2">
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
