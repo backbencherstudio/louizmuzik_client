@@ -32,6 +32,7 @@ import { usePackSalesHistoryQuery } from "../store/api/paymentApis/paymentApis";
 import { AudioPlayer } from "@/components/audio-player";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
+import { redirect } from "next/navigation";
 
 // TypeScript interfaces
 interface Melody {
@@ -282,6 +283,8 @@ export default function DashboardPage() {
     error,
     isLoading: isLoadingUser,
   } = useLoggedInUserQuery(null);
+  const isPro = userData?.data?.isPro;
+  console.log("isPro", isPro);
   const userId = userData?.data?._id;
   const followers = userData?.data?.followersCounter;
   const totalFollowers = formatedFollowers(followers || 0);
@@ -381,6 +384,10 @@ export default function DashboardPage() {
 
   const { totalPlays, totalDownloads } = calculateTotals();
 
+
+  if (!isPro) {
+    return redirect("/browse");
+  }
  
 
   return (

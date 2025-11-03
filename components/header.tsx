@@ -17,6 +17,9 @@ export function Header() {
   const isAdmin = user?.data?.role === "admin";
   console.log(isAdmin);
 
+  const isPro = user?.data?.isPro;
+  console.log("isPro", isPro);
+
   const { isAuthenticated } = useAuth();
 
   

@@ -50,12 +50,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      localStorage.clear(); 
+      localStorage.clear();
 
       // Call Auth0 logout
       await auth0Logout({
         logoutParams: {
-          returnTo: window.location.origin, 
+          returnTo: window.location.origin,
         },
       });
       // Clear any session cookies
@@ -77,21 +77,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { cartItems, removeFromCart } = useCart();
   const { data: user } = useLoggedInUser();
 
-  const isPro = user?.data?.isPro === true;
+  const isPro = user?.data?.isPro;
+
+  console.log("isPro from layout component", isPro);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
   const NavLinks = () => (
     <>
-      <Link
-        href="/dashboard"
-        className={`flex items-center gap-2 ${
-          pathname === "/dashboard" ? "text-white" : "text-zinc-400"
-        } hover:text-white`}
-      >
-        <LayoutDashboard className="h-5 w-5" />
-        Dashboard
-      </Link>
+      {isPro ? (
+        <Link
+          href="/dashboard"
+          className={`flex items-center gap-2 ${
+            pathname === "/dashboard" ? "text-white" : "text-zinc-400"
+          } hover:text-white`}
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          Dashboard
+        </Link>
+      ) : (
+        ""
+      )}
       <Link
         href="/browse"
         className={`flex items-center gap-2 ${
@@ -349,18 +355,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       <span>Manage Account</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
-                  >
-                    <Link
-                      href="/items"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                  {isPro && (
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
                     >
-                      <ListMusic className="h-4 w-4" />
-                      <span>Your Items</span>
-                    </Link>
-                  </DropdownMenuItem>
+                      <Link
+                        href="/items"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                      >
+                        <ListMusic className="h-4 w-4" />
+                        <span>Your Items</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-zinc-800" />
                 <DropdownMenuGroup>
@@ -390,60 +398,68 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-zinc-800" />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
-                  >
-                    <Link
-                      href="/analytics"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                    >
-                      <BarChart2 className="h-4 w-4" />
-                      <span>Analytics</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
-                  >
-                    <Link
-                      href="/sales"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                    >
-                      <Receipt className="h-4 w-4" />
-                      <span>Sales History</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-zinc-800" />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
-                  >
-                    <Link
-                      href="/new-pack"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                    >
-                      <FileMusic className="h-4 w-4" />
-                      <span>Add New Pack</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    asChild
-                    className="hover:bg-transparent focus:bg-transparent"
-                  >
-                    <Link
-                      href="/upload"
-                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                    >
-                      <Upload className="h-4 w-4" />
-                      <span>Upload Melodies</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-zinc-800" />
+                {isPro && (
+                  <>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        asChild
+                        className="hover:bg-transparent focus:bg-transparent"
+                      >
+                        <Link
+                          href="/analytics"
+                          className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                        >
+                          <BarChart2 className="h-4 w-4" />
+                          <span>Analytics</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
+                        className="hover:bg-transparent focus:bg-transparent"
+                      >
+                        <Link
+                          href="/sales"
+                          className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                        >
+                          <Receipt className="h-4 w-4" />
+                          <span>Sales History</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator className="bg-zinc-800" />
+                  </>
+                )}
+                {isPro && (
+                  <>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        asChild
+                        className="hover:bg-transparent focus:bg-transparent"
+                      >
+                        <Link
+                          href="/new-pack"
+                          className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                        >
+                          <FileMusic className="h-4 w-4" />
+                          <span>Add New Pack</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
+                        className="hover:bg-transparent focus:bg-transparent"
+                      >
+                        <Link
+                          href="/upload"
+                          className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>Upload Melodies</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator className="bg-zinc-800" />
+                  </>
+                )}
                 <DropdownMenuItem
                   asChild
                   className="hover:bg-transparent focus:bg-transparent"
@@ -548,12 +564,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            asChild
-            className="h-12 rounded-full bg-emerald-500 px-6 text-base font-medium text-black hover:bg-emerald-600"
-          >
-            <Link href="/upload">Upload Melody</Link>
-          </Button>
+          {isPro && (
+            <Button
+              asChild
+              className="h-12 rounded-full bg-emerald-500 px-6 text-base font-medium text-black hover:bg-emerald-600"
+            >
+              <Link href="/upload">Upload Melody</Link>
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -590,18 +608,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <span>Manage Account</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  asChild
-                  className="hover:bg-transparent focus:bg-transparent"
-                >
-                  <Link
-                    href="/items"
-                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                {isPro && (
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:bg-transparent focus:bg-transparent"
                   >
-                    <ListMusic className="h-4 w-4" />
-                    <span>Your Items</span>
-                  </Link>
-                </DropdownMenuItem>
+                    <Link
+                      href="/items"
+                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                    >
+                      <ListMusic className="h-4 w-4" />
+                      <span>Your Items</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-zinc-800" />
               <DropdownMenuGroup>
@@ -631,60 +651,68 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  asChild
-                  className="hover:bg-transparent focus:bg-transparent"
-                >
-                  <Link
-                    href="/analytics"
-                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                  >
-                    <BarChart2 className="h-4 w-4" />
-                    <span>Analytics</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  asChild
-                  className="hover:bg-transparent focus:bg-transparent"
-                >
-                  <Link
-                    href="/sales"
-                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                  >
-                    <Receipt className="h-4 w-4" />
-                    <span>Sales History</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  asChild
-                  className="hover:bg-transparent focus:bg-transparent"
-                >
-                  <Link
-                    href="/new-pack"
-                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                  >
-                    <FileMusic className="h-4 w-4" />
-                    <span>Add New Pack</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  asChild
-                  className="hover:bg-transparent focus:bg-transparent"
-                >
-                  <Link
-                    href="/upload"
-                    className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                  >
-                    <Upload className="h-4 w-4" />
-                    <span>Upload Melodies</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-zinc-800" />
+              {isPro && (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
+                    >
+                      <Link
+                        href="/analytics"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                      >
+                        <BarChart2 className="h-4 w-4" />
+                        <span>Analytics</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
+                    >
+                      <Link
+                        href="/sales"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                      >
+                        <Receipt className="h-4 w-4" />
+                        <span>Sales History</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                </>
+              )}
+              {isPro && (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
+                    >
+                      <Link
+                        href="/new-pack"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                      >
+                        <FileMusic className="h-4 w-4" />
+                        <span>Add New Pack</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
+                    >
+                      <Link
+                        href="/upload"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span>Upload Melodies</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                </>
+              )}
               <DropdownMenuItem
                 asChild
                 className="hover:bg-transparent focus:bg-transparent"

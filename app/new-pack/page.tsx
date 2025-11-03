@@ -4,7 +4,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, redirect } from "next/navigation";
 import { Camera, FileArchive, Play, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -156,13 +156,13 @@ export default function NewPackPage() {
     return path.split("/").pop() || path.split("\\").pop() || path;
   };
 
+  const isPro = userData?.isPro;
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      userData?.payementMethod === "stripe" &&
-      userData?.isPro === false
-    ) {
+    if (!isPro) {
       toast.error("Please upgrade to a Pro membership to continue");
       router.push("/checkout-membership");
       return;
@@ -273,6 +273,8 @@ export default function NewPackPage() {
       setIsLoading(false);
     }
   };
+
+  
 
   if (isLoadingPack && editId) {
     return (
