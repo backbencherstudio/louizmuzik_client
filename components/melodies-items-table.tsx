@@ -63,19 +63,19 @@ export function MelodiesItemsTable({
             <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
               Producer
             </th>
-            <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+            <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
               Waveform
             </th>
-            <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+            <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
               BPM
             </th>
-            <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+            <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
               Key
             </th>
-            <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+            <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
               Genre
             </th>
-            <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+            <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
               Artist Type
             </th>
             <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
@@ -131,7 +131,7 @@ export function MelodiesItemsTable({
                   {melody?.producer}
                 </Link>
               </td>
-              <td className="whitespace-nowrap px-4 py-3">
+              <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3">
                 <WaveformDisplay
                   key={melody.audioUrl || melody._id}
                   audioUrl={melody?.audio_path || melody?.audio || melody?.audioUrl || ""}
@@ -144,18 +144,18 @@ export function MelodiesItemsTable({
                   duration={currentMelodyId === melody._id ? duration : 0}
                 />
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+              <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                 {melody.bpm}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+              <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                 {melody.key}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+              <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                 {Array.isArray(melody?.genre)
                   ? melody.genre.join(", ")
                   : melody?.genre}
               </td>
-              <td className="px-4 py-3 text-sm text-zinc-400">
+              <td className="hidden 2xl:table-cell px-4 py-3 text-sm text-zinc-400">
                 {Array.isArray(melody?.artistType)
                   ? melody.artistType.join(", ")
                   : melody?.artistType}

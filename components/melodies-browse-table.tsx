@@ -116,11 +116,11 @@ export function MelodiesBrowseTable({
                   </div>
                 </th>
               )}
-              <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+              <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
                 WAVEFORM
               </th>
               <th
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("bpm")}
               >
                 <div className="flex items-center gap-1">
@@ -140,7 +140,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("key")}
               >
                 <div className="flex items-center gap-1">
@@ -160,7 +160,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("genre")}
               >
                 <div className="flex items-center gap-1">
@@ -180,7 +180,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("artistType")}
               >
                 <div className="flex items-center gap-1">
@@ -254,7 +254,7 @@ export function MelodiesBrowseTable({
                     </Link>
                   </td>
                 )}
-                <td className="whitespace-nowrap px-4 py-3 ">
+                <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 ">
                   <WaveformDisplay
                     audioUrl={melody.audioUrl || melody.audio_path || melody.audio || ""}
                     isPlaying={currentPlayingMelody?._id === melody._id}
@@ -268,18 +268,18 @@ export function MelodiesBrowseTable({
                     duration={currentMelodyId === melody._id ? duration : 0}
                   />
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                   {melody?.bpm}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                   {melody?.key}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                   {Array.isArray(melody?.genre)
                     ? melody.genre.join(", ")
                     : melody?.genre}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
                   {Array.isArray(melody?.artistType)
                     ? melody.artistType.join(", ")
                     : melody?.artistType}
