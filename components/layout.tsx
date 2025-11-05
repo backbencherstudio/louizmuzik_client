@@ -429,9 +429,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuSeparator className="bg-zinc-800" />
                   </>
                 )}
-                {isPro && (
-                  <>
-                    <DropdownMenuGroup>
+                <>
+                  <DropdownMenuGroup>
+                    {isPro && (
                       <DropdownMenuItem
                         asChild
                         className="hover:bg-transparent focus:bg-transparent"
@@ -444,22 +444,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           <span>Add New Pack</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        asChild
-                        className="hover:bg-transparent focus:bg-transparent"
+                    )}
+                    <DropdownMenuItem
+                      asChild
+                      className="hover:bg-transparent focus:bg-transparent"
+                    >
+                      <Link
+                        href="/upload"
+                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
                       >
-                        <Link
-                          href="/upload"
-                          className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                        >
-                          <Upload className="h-4 w-4" />
-                          <span>Upload Melodies</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator className="bg-zinc-800" />
-                  </>
-                )}
+                        <Upload className="h-4 w-4" />
+                        <span>Upload Melodies</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                </>
                 <DropdownMenuItem
                   asChild
                   className="hover:bg-transparent focus:bg-transparent"
@@ -564,14 +564,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          {isPro && (
-            <Button
-              asChild
-              className="h-12 rounded-full bg-emerald-500 px-6 text-base font-medium text-black hover:bg-emerald-600"
-            >
-              <Link href="/upload">Upload Melody</Link>
-            </Button>
-          )}
+          <Button
+            asChild
+            className="h-12 rounded-full bg-emerald-500 px-6 text-base font-medium text-black hover:bg-emerald-600"
+          >
+            <Link href="/upload">Upload Melody</Link>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -680,9 +678,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <DropdownMenuSeparator className="bg-zinc-800" />
                 </>
               )}
-              {isPro && (
-                <>
-                  <DropdownMenuGroup>
+              <>
+                <DropdownMenuGroup>
+                  {isPro && (
                     <DropdownMenuItem
                       asChild
                       className="hover:bg-transparent focus:bg-transparent"
@@ -695,22 +693,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <span>Add New Pack</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      asChild
-                      className="hover:bg-transparent focus:bg-transparent"
+                  )}
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:bg-transparent focus:bg-transparent"
+                  >
+                    <Link
+                      href="/upload"
+                      className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
                     >
-                      <Link
-                        href="/upload"
-                        className="flex w-full items-center gap-2 text-white hover:text-emerald-500 transition-colors [&>svg]:hover:text-emerald-500"
-                      >
-                        <Upload className="h-4 w-4" />
-                        <span>Upload Melodies</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="bg-zinc-800" />
-                </>
-              )}
+                      <Upload className="h-4 w-4" />
+                      <span>Upload Melodies</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-zinc-800" />
+              </>
               <DropdownMenuItem
                 asChild
                 className="hover:bg-transparent focus:bg-transparent"

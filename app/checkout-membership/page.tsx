@@ -6,8 +6,6 @@ import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Layout from "@/components/layout";
 import SubscribeForm from "../SubscribeForm/page";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
@@ -26,7 +24,7 @@ export default function ProPage() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/v1/payment/paypalSubscription",
+        `${process.env.NEXT_PUBLIC_API_URL}/payment/paypalSubscription`,
         {
           amount,
           email,
@@ -52,7 +50,7 @@ export default function ProPage() {
   const handleStripeCancelSubscription = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/payment/cancel-subscription/${customerId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/cancel-subscription/${customerId}`
       );
       toast.success("Subscription cancelled successfully");
     } catch (err) {
@@ -63,7 +61,7 @@ export default function ProPage() {
   const handleCancelSubscription = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/paypalSubscriptionCancel/${paypalSubscriptionId}`
       );
       toast.success("Subscription cancelled successfully");
     } catch (err) {
@@ -115,7 +113,7 @@ export default function ProPage() {
                         <Button
                           onClick={handleSubscribe}
                           disabled={loading}
-                          className="w-full h-14 bg-yellow-600 hover:bg-yellow-600 text-white font-semibold text-lg transition-all duration-200 transform hover:scale-[1.02]"
+                          className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-lg transition-all duration-200 transform hover:scale-[1.02]"
                         >
                           {loading ? (
                             <div className="flex items-center gap-3">
@@ -124,14 +122,6 @@ export default function ProPage() {
                             </div>
                           ) : (
                             <div className="flex items-center gap-3">
-                              <Image
-                                src="/logo.png"
-                                alt="PayPal"
-                                width={400}
-                                height={24}
-                                className="h-6 w-auto hidden sm:block"
-                              />
-                              With{" "}
                               <Image
                                 src="/images/paypal.png"
                                 alt="PayPal"
@@ -181,7 +171,11 @@ export default function ProPage() {
 
                 {/* Summary Card */}
                 <div className="order-1 lg:order-2">
-                  <Card className={`border-0 ${userData?.hasUsedTrial === true ? "" : "bg-zinc-900/50 "} sticky top-8`}>
+                  <Card
+                    className={`border-0 ${
+                      userData?.hasUsedTrial === true ? "" : "bg-zinc-900/50 "
+                    } sticky top-8`}
+                  >
                     <CardHeader className="pb-6">
                       <CardTitle className="text-xl sm:text-2xl font-bold text-white">
                         Order Summary

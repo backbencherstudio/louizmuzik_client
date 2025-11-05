@@ -73,7 +73,7 @@ const CheckoutForm = ({ totalPrice }: CheckoutFormProps) => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/v1/payment/stripeSubscription",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/stripeSubscription",
         {
           email: userData?.email,
           name: userData?.name,
@@ -119,7 +119,7 @@ const CheckoutForm = ({ totalPrice }: CheckoutFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="hidden">
             <Label
               htmlFor="amount"
               className="text-sm font-medium text-zinc-300"

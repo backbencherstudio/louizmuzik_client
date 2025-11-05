@@ -32,7 +32,7 @@ import { usePackSalesHistoryQuery } from "../store/api/paymentApis/paymentApis";
 import { AudioPlayer } from "@/components/audio-player";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 // TypeScript interfaces
 interface Melody {
@@ -270,6 +270,7 @@ const calculateTotalRevenue = (packsData: Pack[]): number => {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("7days");
   const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState<TimeRange>("7days");
   const [currentPlayingMelody, setCurrentPlayingMelody] = useState<PlayingMelody | null>(null);
@@ -386,7 +387,10 @@ export default function DashboardPage() {
 
 
   if (!isPro) {
-    return redirect("/browse");
+
+    setTimeout(() => {
+      router.push("/browse");
+    }, 2000);
   }
  
 
