@@ -1,8 +1,8 @@
 'use client'
 import { useLoggedInUserQuery } from "@/app/store/api/authApis/authApi";
+import { Loader } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 
 const ProtectedRoute = ({ children, role }: { children: React.ReactNode, role: string }) => {
@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, role }: { children: React.ReactNode, role: s
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-emerald-500 animate-spin"><AiOutlineLoading3Quarters size={32} /></div>
+        <div className="text-emerald-500 animate-spin"><Loader className="text-2xl text-emerald-500 animate-spin" /></div>
       </div>
     );
   }
