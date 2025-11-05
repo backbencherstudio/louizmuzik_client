@@ -14,6 +14,7 @@ import {
     Plus,
     X,
     Loader2,
+    Loader,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -214,7 +215,7 @@ export default function DiscographyPage() {
                                             onClick={() => handleFollowUnFollowProducer()}
                                         >
                                             {isFollowingLoading && (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <Loader className="w-4 h-4 animate-spin" />
                                             )}
                                             {isFollowing ? "Unfollow" : "Follow"}
                                         </Button>

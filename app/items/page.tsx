@@ -11,6 +11,7 @@ import {
   Pencil,
   Trash,
   Loader2,
+  Loader,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -164,7 +165,7 @@ export default function ItemsPage() {
     <>
       {isLoadingPacks || isLoadingMelodies ? (
         <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="text-2xl text-emerald-500 animate-spin" />
+          <Loader className="text-2xl text-emerald-500 animate-spin" />
         </div>
       ) : (
         <Layout>

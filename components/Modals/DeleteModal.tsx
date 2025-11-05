@@ -1,7 +1,7 @@
 'use client'
 import React from 'react';
 import { Button } from '../ui/button';
-import { X } from 'lucide-react';
+import { Loader, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 interface DeleteModalProps {
@@ -52,7 +52,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
             className="bg-red-500 hover:bg-red-600 text-white"
           >
             {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader className="h-4 w-4 animate-spin" />
             ) : (
               'Delete'
             )}

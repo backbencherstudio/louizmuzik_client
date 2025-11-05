@@ -12,9 +12,7 @@ import {
   ExternalLink,
   Play,
   Pause,
-  Loader2,
   Download,
-  Heart,
   ChevronDown,
   ChevronUp,
   Search,
@@ -23,6 +21,7 @@ import {
   TrendingUp,
   Clock,
   Shuffle,
+  Loader,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -544,7 +543,7 @@ export default function ProfilePage() {
                         onClick={() => handleFollowUnFollowProducer()}
                       >
                         {isFollowingLoading && (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader className="w-4 h-4 animate-spin" />
                         )}
                         {isFollowing ? "Unfollow" : "Follow"}
                       </Button>
