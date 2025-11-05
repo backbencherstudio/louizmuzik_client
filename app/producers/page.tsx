@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Loader, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,13 @@ import { Pagination } from "@/components/ui/pagination";
 import Layout from "@/components/layout";
 import { useAllProducersDataWithTopProducersDataQuery } from "../store/api/userManagementApis/userManagementApis";
 import countries from "@/components/Data/country";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ProducersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,8 +68,6 @@ export default function ProducersPage() {
     setCurrentPage(1);
   };
 
- 
-
   return (
     <Layout>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
@@ -114,22 +116,28 @@ export default function ProducersPage() {
                 GLOBAL
               </Button>
               <div>
-              <Select value={selectedCountry === "GLOBAL" ? "" : selectedCountry} onValueChange={handleCountrySelect}>
-                <SelectTrigger className="w-48  text-white">
-                  <SelectValue placeholder="Select Country" className="text-white" />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800 h-96">
-                  {countries.map((country) => (
-                    <SelectItem
-                      key={country}
-                      value={country}
-                      className="text-white hover:bg-zinc-800 hover:text-emerald-500 focus:bg-zinc-800 focus:text-emerald-500"
-                    >
-                      {country}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Select
+                  value={selectedCountry === "GLOBAL" ? "" : selectedCountry}
+                  onValueChange={handleCountrySelect}
+                >
+                  <SelectTrigger className="w-48  text-white">
+                    <SelectValue
+                      placeholder="Select Country"
+                      className="text-white"
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 h-96">
+                    {countries.map((country) => (
+                      <SelectItem
+                        key={country}
+                        value={country}
+                        className="text-white hover:bg-zinc-800 hover:text-emerald-500 focus:bg-zinc-800 focus:text-emerald-500"
+                      >
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button
@@ -142,51 +150,60 @@ export default function ProducersPage() {
           </div>
 
           {/* Top Producers */}
-          {topProducers.length > 0 && (
-            <div className="mb-12">
-              <h2 className="mb-6 text-2xl font-bold text-emerald-500">
-                Top Producers
-              </h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {topProducers.map((producer: any) => (
-                  <Link
-                    key={producer._id}
-                    href={`/producers/${producer._id}`}
-                    className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
-                  >
-                    <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
-                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
-                      <Image
-                        src={
-                          producer.profile_image ||
-                          "/images/profiles/banner-profile.jpg"
-                        }
-                        alt={producer.producer_name || "Producer"}
-                        fill
-                        className="object-cover transition-transform duration-300  shadow-lg  shadow-black/20  "
-                      />
-                        </div>
-                      </div>
-                    <div className="flex items-center justify-center gap-1">
-                      <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
-                        {producer?.producer_name ||
-                          producer?.name ||
-                          "Unknown Producer"}
-                      </h3>
-                      {producer.isPro && (
-                        <Image
-                          src="/verified-badge.png"
-                          alt="Verified"
-                          width={16}
-                          height={16}
-                          className="w-4 h-4"
-                        />
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
+
+          {isProducersDataLoading ? (
+            <div className="flex justify-center items-center">
+              <Loader className="text-2xl text-emerald-500 animate-spin" />
             </div>
+          ) : (
+            <>
+              {topProducers.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="mb-6 text-2xl font-bold text-emerald-500">
+                    Top Producers
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {topProducers.map((producer: any) => (
+                      <Link
+                        key={producer._id}
+                        href={`/producers/${producer._id}`}
+                        className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
+                      >
+                        <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                          <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
+                            <Image
+                              src={
+                                producer.profile_image ||
+                                "/images/profiles/banner-profile.jpg"
+                              }
+                              alt={producer.producer_name || "Producer"}
+                              fill
+                              className="object-cover transition-transform duration-300  shadow-lg  shadow-black/20  "
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center gap-1">
+                          <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
+                            {producer?.producer_name ||
+                              producer?.name ||
+                              "Unknown Producer"}
+                          </h3>
+                          {producer.isPro && (
+                            <Image
+                              src="/verified-badge.png"
+                              alt="Verified"
+                              width={16}
+                              height={16}
+                              className="w-4 h-4"
+                            />
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* All Producers */}
@@ -214,45 +231,53 @@ export default function ProducersPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {currentProducers.map((producer: any) => (
-                    <Link
-                      key={producer._id}
-                      href={`/producers/${producer._id}`}
-                      className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
-                    >
-                      <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
-                        <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
-                          <Image
-                            src={
-                              producer.profile_image ||
-                              "/images/profiles/banner-profile.jpg"
-                            }
-                            alt={
-                              producer?.producer_name ||
-                              producer?.name ||
-                              "Producer"
-                            }
-                            fill
-                            className="object-cover transition-transform duration-300 "
-                          />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-center gap-1">
-                        <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
-                          {producer.producer_name || "Unknown Producer"}
-                        </h3>
-                        {producer.isPro && (
-                          <Image
-                            src="/verified-badge.png"
-                            alt="Verified"
-                            width={16}
-                            height={16}
-                            className="w-4 h-4"
-                          />
-                        )}
-                      </div>
-                    </Link>
-                  ))}
+                  {isProducersDataLoading ? (
+                    <div className="flex justify-center items-center">
+                      <Loader className="text-2xl text-emerald-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
+                      {currentProducers.map((producer: any) => (
+                        <Link
+                          key={producer._id}
+                          href={`/producers/${producer._id}`}
+                          className="group block overflow-hidden rounded-lg bg-[#0f0f0f] p-4 transition-colors hover:bg-[#0f0f0f]/80"
+                        >
+                          <div className="bg-gradient-to-bl to-[#181818] from-[#504b4f] p-4 mb-4 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                            <div className="relative  aspect-square overflow-hidden rounded  shadow-[-5px_10px_8px_0px] shadow-black/50  group-hover:scale-105 transition-transform duration-300">
+                              <Image
+                                src={
+                                  producer.profile_image ||
+                                  "/images/profiles/banner-profile.jpg"
+                                }
+                                alt={
+                                  producer?.producer_name ||
+                                  producer?.name ||
+                                  "Producer"
+                                }
+                                fill
+                                className="object-cover transition-transform duration-300 "
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-center gap-1">
+                            <h3 className="text-center text-sm font-medium text-white group-hover:text-emerald-500">
+                              {producer.producer_name || "Unknown Producer"}
+                            </h3>
+                            {producer.isPro && (
+                              <Image
+                                src="/verified-badge.png"
+                                alt="Verified"
+                                width={16}
+                                height={16}
+                                className="w-4 h-4"
+                              />
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
 
                 {/* Pagination */}

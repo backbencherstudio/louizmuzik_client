@@ -14,6 +14,7 @@ import {
   Pause,
   MoreVertical,
   Check,
+  Loader,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout";
@@ -471,36 +472,135 @@ export default function FeedPage() {
               the newest sample packs they've released.
             </p>
           </div>
-
-          {/* Latest Products Title */}
-          {packs.length > 0 && (
+          {isFollowingProducerContentLoading ? (
+            <div className="flex justify-center items-center">
+              <Loader className="text-2xl text-emerald-500 animate-spin" />
+            </div>
+          ) : (
             <>
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-emerald-500">
-                  Latest Products
-                </h2>
-              </div>
+              {/* Latest Products Title */}
+              {packs.length > 0 && (
+                <>
+                  <div className="flex items-center mb-6">
+                    <h2 className="text-2xl font-bold text-emerald-500">
+                      Latest Products
+                    </h2>
+                  </div>
 
-              {/* Packs Section */}
-              <div className="relative px-6 mb-24">
-                {/* Mobile Slider */}
-                <div className="block md:hidden relative">
-                  <div className="grid grid-cols-2 gap-4">
-                    {getCurrentItems()
-                      .slice(0, 2)
-                      .map((item: Pack) => (
+                  {/* Packs Section */}
+                  <div className="relative px-6 mb-24">
+                    {/* Mobile Slider */}
+                    <div className="block md:hidden relative">
+                      <div className="grid grid-cols-2 gap-4">
+                        {getCurrentItems()
+                          .slice(0, 2)
+                          .map((item: Pack) => (
+                            <Link
+                              key={item._id}
+                              className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
+                              href={`/product/${item._id}`}
+                            >
+                              <div className="relative aspect-square">
+                                {item?.thumbnail_image && (
+                                  <Image
+                                    src={item?.thumbnail_image}
+                                    alt={item.title}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePlayClick(item);
+                                    }}
+                                  >
+                                    <Play className="h-6 w-6" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="p-4">
+                                <h3 className="text-base font-semibold text-white mb-1">
+                                  {item.title}
+                                </h3>
+                                <Link
+                                  href={`/producers/${item?.userId?._id}`}
+                                  className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
+                                >
+                                  {item.producer}
+                                </Link>
+                                <div className="mt-2">
+                                  <span className="text-xl font-bold text-white">
+                                    ${item.price.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                      </div>
+
+                      {/* Mobile Navigation Dots */}
+                      <div className="flex justify-center items-center gap-2 mt-4">
+                        {Array.from({
+                          length: Math.ceil(packs.length / 2),
+                        }).map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentPage(index)}
+                            className={`h-2 rounded-full transition-all ${
+                              currentPage === index
+                                ? "w-4 bg-emerald-500"
+                                : "w-2 bg-zinc-700"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Mobile Navigation Buttons */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handlePrevious}
+                        disabled={currentPage === 0}
+                        className="absolute -left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleNext}
+                        disabled={
+                          currentPage >= Math.ceil(packs.length / 2) - 1
+                        }
+                        className="absolute -right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Desktop Grid */}
+                    <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
+                      {getCurrentItems().map((item: Pack) => (
                         <Link
                           key={item._id}
-                          className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                           href={`/product/${item._id}`}
+                          className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
                         >
                           <div className="relative aspect-square">
-                           {item?.thumbnail_image &&  <Image
-                              src={item?.thumbnail_image}
-                              alt={item.title}
-                              fill
-                              className="object-cover"
-                            />}
+                            {item?.thumbnail_image && (
+                              <Image
+                                src={item.thumbnail_image}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                              />
+                            )}
+
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button
                                 variant="ghost"
@@ -533,345 +633,264 @@ export default function FeedPage() {
                           </div>
                         </Link>
                       ))}
+                    </div>
+
+                    {/* Desktop Navigation Buttons */}
+                    <div className="hidden md:block">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handlePrevious}
+                        disabled={currentPage === 0}
+                        className="absolute -left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleNext}
+                        disabled={
+                          currentPage >=
+                          Math.ceil(packs.length / itemsPerPage) - 1
+                        }
+                        className="absolute -right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Latest Melodies Title */}
+              {melodies.length > 0 && (
+                <>
+                  <div className="flex items-center mb-6">
+                    <h2 className="text-2xl font-bold text-emerald-500">
+                      Latest Melodies
+                    </h2>
                   </div>
 
-                  {/* Mobile Navigation Dots */}
-                  <div className="flex justify-center items-center gap-2 mt-4">
-                    {Array.from({
-                      length: Math.ceil(packs.length / 2),
-                    }).map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentPage(index)}
-                        className={`h-2 rounded-full transition-all ${
-                          currentPage === index
-                            ? "w-4 bg-emerald-500"
-                            : "w-2 bg-zinc-700"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Mobile Navigation Buttons */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0}
-                    className="absolute -left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleNext}
-                    disabled={currentPage >= Math.ceil(packs.length / 2) - 1}
-                    className="absolute -right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Desktop Grid */}
-                <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4">
-                  {getCurrentItems().map((item: Pack) => (
-                    <Link
-                      key={item._id}
-                      href={`/product/${item._id}`}
-                      className="bg-zinc-950 rounded-xl overflow-hidden group cursor-pointer"
-                    >
-                      <div className="relative aspect-square">
-                          {item?.thumbnail_image && <Image
-                            src={item.thumbnail_image}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
-                          />}
-                          
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {/* Melodies Section */}
+                  <div className="mb-32">
+                    <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                      {/* Popularity Filter */}
+                      <Popover
+                        open={popularityPopoverOpen}
+                        onOpenChange={setPopularityPopoverOpen}
+                      >
+                        <PopoverTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePlayClick(item);
-                            }}
+                            variant="outline"
+                            className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
                           >
-                            <Play className="h-6 w-6" />
+                            {selectedPopularity
+                              ? popularityOptions.find(
+                                  (opt) => opt.value === selectedPopularity
+                                )?.label
+                              : "POPULARITY"}
+                            <ChevronDown className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-base font-semibold text-white mb-1">
-                          {item.title}
-                        </h3>
-                        <Link
-                          href={`/producers/${item?.userId?._id}`}
-                          className="text-emerald-500 hover:text-emerald-400 transition-colors text-sm font-medium"
-                        >
-                          {item.producer}
-                        </Link>
-                        <div className="mt-2">
-                          <span className="text-xl font-bold text-white">
-                            ${item.price.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-0" align="center">
+                          <Command>
+                            <CommandList>
+                              <CommandGroup>
+                                {popularityOptions.map((option) => (
+                                  <CommandItem
+                                    key={option.value}
+                                    onSelect={() =>
+                                      handlePopularitySelect(option.value)
+                                    }
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <div
+                                      className={`flex-1 ${
+                                        selectedPopularity === option.value
+                                          ? "text-emerald-500"
+                                          : "text-white"
+                                      }`}
+                                    >
+                                      {option.label}
+                                    </div>
+                                    {selectedPopularity === option.value && (
+                                      <Check className="h-4 w-4 text-emerald-500" />
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
 
-                {/* Desktop Navigation Buttons */}
-                <div className="hidden md:block">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0}
-                    className="absolute -left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleNext}
-                    disabled={
-                      currentPage >= Math.ceil(packs.length / itemsPerPage) - 1
-                    }
-                    className="absolute -right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Latest Melodies Title */}
-          {melodies.length > 0 && (
-            <>
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-emerald-500">
-                  Latest Melodies
-                </h2>
-              </div>
-
-              {/* Melodies Section */}
-              <div className="mb-32">
-                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                  {/* Popularity Filter */}
-                  <Popover
-                    open={popularityPopoverOpen}
-                    onOpenChange={setPopularityPopoverOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                      {/* Genre Filter */}
+                      <Popover
+                        open={genrePopoverOpen}
+                        onOpenChange={setGenrePopoverOpen}
                       >
-                        {selectedPopularity
-                          ? popularityOptions.find(
-                              (opt) => opt.value === selectedPopularity
-                            )?.label
-                          : "POPULARITY"}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-48 p-0" align="center">
-                      <Command>
-                        <CommandList>
-                          <CommandGroup>
-                            {popularityOptions.map((option) => (
-                              <CommandItem
-                                key={option.value}
-                                onSelect={() =>
-                                  handlePopularitySelect(option.value)
-                                }
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <div
-                                  className={`flex-1 ${
-                                    selectedPopularity === option.value
-                                      ? "text-emerald-500"
-                                      : "text-white"
-                                  }`}
-                                >
-                                  {option.label}
-                                </div>
-                                {selectedPopularity === option.value && (
-                                  <Check className="h-4 w-4 text-emerald-500" />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                          >
+                            {selectedGenre || "GENRES"}
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-0" align="center">
+                          <Command>
+                            <CommandList>
+                              <CommandGroup>
+                                {genres.map((genre) => (
+                                  <CommandItem
+                                    key={genre}
+                                    onSelect={() => handleGenreSelect(genre)}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <div
+                                      className={`flex-1 ${
+                                        selectedGenre === genre
+                                          ? "text-emerald-500"
+                                          : "text-white"
+                                      }`}
+                                    >
+                                      {genre}
+                                    </div>
+                                    {selectedGenre === genre && (
+                                      <Check className="h-4 w-4 text-emerald-500" />
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
 
-                  {/* Genre Filter */}
-                  <Popover
-                    open={genrePopoverOpen}
-                    onOpenChange={setGenrePopoverOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                      >
-                        {selectedGenre || "GENRES"}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-48 p-0" align="center">
-                      <Command>
-                        <CommandList>
-                          <CommandGroup>
-                            {genres.map((genre) => (
-                              <CommandItem
-                                key={genre}
-                                onSelect={() => handleGenreSelect(genre)}
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <div
-                                  className={`flex-1 ${
-                                    selectedGenre === genre
-                                      ? "text-emerald-500"
-                                      : "text-white"
-                                  }`}
-                                >
-                                  {genre}
-                                </div>
-                                {selectedGenre === genre && (
-                                  <Check className="h-4 w-4 text-emerald-500" />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* BPM Filter */}
-                  <BpmFilter
-                    onApply={handleBpmFilterApply}
-                    onClear={handleBpmFilterClear}
-                  />
-
-                  {/* Key Filter */}
-                  <Popover
-                    open={keyPopoverOpen}
-                    onOpenChange={setKeyPopoverOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
-                      >
-                        {selectedKey || "KEY"}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0" align="center">
-                      <KeySelector
-                        value={selectedKey}
-                        onChange={(key) => {
-                          setSelectedKey(key);
-                          setCurrentMelodiesPage(1); // Reset to first page
-                          setKeyPopoverOpen(false); // Close the popover after selection
-                        }}
+                      {/* BPM Filter */}
+                      <BpmFilter
+                        onApply={handleBpmFilterApply}
+                        onClear={handleBpmFilterClear}
                       />
-                    </PopoverContent>
-                  </Popover>
 
-                  {/* Artist Type Filter */}
-                  <Popover
-                    open={artistTypePopoverOpen}
-                    onOpenChange={setArtistTypePopoverOpen}
-                  >
-                    <PopoverTrigger asChild>
+                      {/* Key Filter */}
+                      <Popover
+                        open={keyPopoverOpen}
+                        onOpenChange={setKeyPopoverOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                          >
+                            {selectedKey || "KEY"}
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0" align="center">
+                          <KeySelector
+                            value={selectedKey}
+                            onChange={(key) => {
+                              setSelectedKey(key);
+                              setCurrentMelodiesPage(1); // Reset to first page
+                              setKeyPopoverOpen(false); // Close the popover after selection
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* Artist Type Filter */}
+                      <Popover
+                        open={artistTypePopoverOpen}
+                        onOpenChange={setArtistTypePopoverOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                          >
+                            {selectedArtistType || "ARTIST TYPE"}
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-0" align="center">
+                          <Command>
+                            <CommandList>
+                              <CommandGroup>
+                                {artistTypes.map((type) => (
+                                  <CommandItem
+                                    key={type}
+                                    onSelect={() =>
+                                      handleArtistTypeSelect(type)
+                                    }
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <div
+                                      className={`flex-1 ${
+                                        selectedArtistType === type
+                                          ? "text-emerald-500"
+                                          : "text-white"
+                                      }`}
+                                    >
+                                      {type}
+                                    </div>
+                                    {selectedArtistType === type && (
+                                      <Check className="h-4 w-4 text-emerald-500" />
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+
                       <Button
                         variant="outline"
-                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 gap-2"
+                        className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
+                        onClick={handleClearAllFilters}
                       >
-                        {selectedArtistType || "ARTIST TYPE"}
-                        <ChevronDown className="h-4 w-4" />
+                        Clear Filters
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-48 p-0" align="center">
-                      <Command>
-                        <CommandList>
-                          <CommandGroup>
-                            {artistTypes.map((type) => (
-                              <CommandItem
-                                key={type}
-                                onSelect={() => handleArtistTypeSelect(type)}
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <div
-                                  className={`flex-1 ${
-                                    selectedArtistType === type
-                                      ? "text-emerald-500"
-                                      : "text-white"
-                                  }`}
-                                >
-                                  {type}
-                                </div>
-                                {selectedArtistType === type && (
-                                  <Check className="h-4 w-4 text-emerald-500" />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                    </div>
 
-                  <Button
-                    variant="outline"
-                    className="h-10 border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
-                    onClick={handleClearAllFilters}
-                  >
-                    Clear Filters
-                  </Button>
-                </div>
+                    <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
+                      <div className="overflow-x-auto">
+                        {/* Desktop Table */}
+                        <MelodiesBrowseTable
+                          melodies={getCurrentMelodies()}
+                          currentPlayingMelody={currentPlayingMelody}
+                          onPlayClick={handlePlayClick}
+                          onDownloadClick={handleDownloadClick}
+                          onFavoriteClick={(melodyId) =>
+                            toogleFavorite(melodyId)
+                          }
+                          isFavorite={isMelodyFavorite}
+                          sortConfig={sortConfig}
+                          onSort={handleSort}
+                          currentTime={currentTime}
+                          duration={duration}
+                          currentMelodyId={currentMelodyId}
+                          showProducerColumn={true}
+                        />
+                      </div>
+                    </div>
 
-                <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
-                  <div className="overflow-x-auto">
-                    {/* Desktop Table */}
-                    <MelodiesBrowseTable
-                      melodies={getCurrentMelodies()}
-                      currentPlayingMelody={currentPlayingMelody}
-                      onPlayClick={handlePlayClick}
-                      onDownloadClick={handleDownloadClick}
-                      onFavoriteClick={(melodyId) => toogleFavorite(melodyId)}
-                      isFavorite={isMelodyFavorite}
-                      sortConfig={sortConfig}
-                      onSort={handleSort}
-                      currentTime={currentTime}
-                      duration={duration}
-                      currentMelodyId={currentMelodyId}
-                      showProducerColumn={true}
-                    />
+                    {/* Melodies Pagination */}
+                    <div className="mt-6 mb-24">
+                      <Pagination
+                        currentPage={currentMelodiesPage}
+                        totalPages={totalMelodiesPages}
+                        onPageChange={handleMelodiesPageChange}
+                        totalItems={totalMelodies}
+                        itemsPerPage={melodiesPerPage}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                {/* Melodies Pagination */}
-                <div className="mt-6 mb-24">
-                  <Pagination
-                    currentPage={currentMelodiesPage}
-                    totalPages={totalMelodiesPages}
-                    onPageChange={handleMelodiesPageChange}
-                    totalItems={totalMelodies}
-                    itemsPerPage={melodiesPerPage}
-                  />
-                </div>
-              </div>
+                </>
+              )}
             </>
           )}
         </div>

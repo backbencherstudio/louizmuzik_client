@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Pause, Download, Heart } from "lucide-react";
+import { Play, Pause, Download, Heart, Loader } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -116,135 +116,170 @@ const formatCurrency = (amount: number): string => {
   return `$${amount.toFixed(2)}`;
 };
 
-const processDownloadData = (rawData: any[], selectedTimeRange: TimeRange): DownloadData[] => {
+const processDownloadData = (
+  rawData: any[],
+  selectedTimeRange: TimeRange
+): DownloadData[] => {
   if (!rawData || !Array.isArray(rawData)) {
     return [];
   }
 
   const now = new Date();
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   const downloadsByDay = new Map<string, number>();
 
-  if (selectedTimeRange === '7days') {
+  if (selectedTimeRange === "7days") {
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
       const dayName = dayNames[date.getDay()];
       downloadsByDay.set(dayName, 0);
     }
-  } else if (selectedTimeRange === 'month') {
+  } else if (selectedTimeRange === "month") {
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
       const dayKey = date.getDate().toString();
       downloadsByDay.set(dayKey, 0);
     }
-  } else if (selectedTimeRange === 'ytd') {
+  } else if (selectedTimeRange === "ytd") {
     for (let i = 0; i <= now.getMonth(); i++) {
       downloadsByDay.set(monthNames[i], 0);
     }
   }
 
-  rawData.forEach(item => {
+  rawData.forEach((item) => {
     if (item.date) {
       const downloadDate = new Date(item.date);
       let dayKey: string | undefined;
 
-      if (selectedTimeRange === '7days') {
+      if (selectedTimeRange === "7days") {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(now.getDate() - 7);
         if (downloadDate >= sevenDaysAgo) {
           dayKey = dayNames[downloadDate.getDay()];
         }
-      } else if (selectedTimeRange === 'month') {
+      } else if (selectedTimeRange === "month") {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
         if (downloadDate >= thirtyDaysAgo) {
           dayKey = downloadDate.getDate().toString();
         }
-      } else if (selectedTimeRange === 'ytd') {
+      } else if (selectedTimeRange === "ytd") {
         if (downloadDate.getFullYear() === now.getFullYear()) {
           dayKey = monthNames[downloadDate.getMonth()];
         }
       }
 
       if (dayKey && downloadsByDay.has(dayKey)) {
-        downloadsByDay.set(dayKey, downloadsByDay.get(dayKey)! + (item.downloads || 0));
+        downloadsByDay.set(
+          dayKey,
+          downloadsByDay.get(dayKey)! + (item.downloads || 0)
+        );
       }
     }
   });
 
   return Array.from(downloadsByDay.entries()).map(([day, downloads]) => ({
     day,
-    downloads
+    downloads,
   }));
 };
 
-const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: TimeRange): SalesData[] => {
+const processSalesHistoryData = (
+  salesHistoryData: any[],
+  selectedTimeRange: TimeRange
+): SalesData[] => {
   if (!salesHistoryData || !Array.isArray(salesHistoryData)) {
     return [];
   }
 
   const now = new Date();
   const startDate = new Date();
-  
+
   switch (selectedTimeRange) {
-    case '7days':
+    case "7days":
       startDate.setDate(now.getDate() - 7);
       break;
-    case 'month':
+    case "month":
       startDate.setMonth(now.getMonth() - 1);
       break;
-    case 'ytd':
-      startDate.setMonth(0, 1); 
+    case "ytd":
+      startDate.setMonth(0, 1);
       break;
     default:
       startDate.setDate(now.getDate() - 7);
   }
 
   const salesByDay = new Map<string, number>();
-  
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
-  if (selectedTimeRange === '7days') {
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  if (selectedTimeRange === "7days") {
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
       const dayName = dayNames[date.getDay()];
       salesByDay.set(dayName, 0);
     }
-  } else if (selectedTimeRange === 'month') {
+  } else if (selectedTimeRange === "month") {
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
       const dayKey = date.getDate().toString();
       salesByDay.set(dayKey, 0);
     }
-  } else if (selectedTimeRange === 'ytd') {
+  } else if (selectedTimeRange === "ytd") {
     for (let i = 0; i <= now.getMonth(); i++) {
       salesByDay.set(monthNames[i], 0);
     }
   }
 
-  salesHistoryData.forEach(salesEntry => {
+  salesHistoryData.forEach((salesEntry) => {
     if (salesEntry.salesCount && salesEntry.createdAt) {
       const saleDate = new Date(salesEntry.createdAt);
-      
+
       if (saleDate >= startDate && saleDate <= now) {
         const salesCount = salesEntry.salesCount;
-        
+
         let dayKey: string | undefined;
-        if (selectedTimeRange === '7days') {
+        if (selectedTimeRange === "7days") {
           dayKey = dayNames[saleDate.getDay()];
-        } else if (selectedTimeRange === 'month') {
+        } else if (selectedTimeRange === "month") {
           dayKey = saleDate.getDate().toString();
-        } else if (selectedTimeRange === 'ytd') {
+        } else if (selectedTimeRange === "ytd") {
           dayKey = monthNames[saleDate.getMonth()];
         }
-        
+
         if (dayKey && salesByDay.has(dayKey)) {
           salesByDay.set(dayKey, salesByDay.get(dayKey)! + salesCount);
         }
@@ -254,7 +289,7 @@ const processSalesHistoryData = (salesHistoryData: any[], selectedTimeRange: Tim
 
   return Array.from(salesByDay.entries()).map(([day, sales]) => ({
     day,
-    sales: sales 
+    sales: sales,
   }));
 };
 
@@ -266,15 +301,18 @@ const calculateTotalRevenue = (packsData: Pack[]): number => {
   return packsData.reduce((total, pack) => {
     const sales = pack.sales || 0;
     const price = pack.price || 0;
-    return total + (sales * price);
+    return total + sales * price;
   }, 0);
 };
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("7days");
-  const [selectedSalesTimeRange, setSelectedSalesTimeRange] = useState<TimeRange>("7days");
-  const [currentPlayingMelody, setCurrentPlayingMelody] = useState<PlayingMelody | null>(null);
+  const [selectedTimeRange, setSelectedTimeRange] =
+    useState<TimeRange>("7days");
+  const [selectedSalesTimeRange, setSelectedSalesTimeRange] =
+    useState<TimeRange>("7days");
+  const [currentPlayingMelody, setCurrentPlayingMelody] =
+    useState<PlayingMelody | null>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -282,7 +320,7 @@ export default function DashboardPage() {
 
   // Use useLoggedInUser directly instead of useProRoute (no auto-redirect)
   const { data: userData, isLoading: isLoadingUser } = useLoggedInUser();
-  
+
   const followers = userData?.data?.followersCounter;
   const totalFollowers = formatedFollowers(followers || 0);
   const isPro = userData?.data?.isPro;
@@ -290,23 +328,30 @@ export default function DashboardPage() {
 
   // Allow queries to run for both PRO and non-PRO users (so non-PRO can see preview)
   const { data: melodiesData, refetch: refetchMelodies } =
-    useGetMelodyByUserIdQuery(userId || '', { skip: !userId });
+    useGetMelodyByUserIdQuery(userId || "", { skip: !userId });
   const melodies = melodiesData?.data as Melody[] | undefined;
-  
 
-  const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId || '', { skip: !userId });
+  const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(
+    userId || "",
+    { skip: !userId }
+  );
   const packs = packsData?.data as Pack[] | undefined;
- 
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
-    useDownloadChartMelodyQuery(userId || '', { skip: !userId });
-  const downloadData = processDownloadData(downloadChartData?.data || [], selectedTimeRange);
+    useDownloadChartMelodyQuery(userId || "", { skip: !userId });
+  const downloadData = processDownloadData(
+    downloadChartData?.data || [],
+    selectedTimeRange
+  );
 
   const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
-    usePackSalesHistoryQuery(userId || '', { skip: !userId });
+    usePackSalesHistoryQuery(userId || "", { skip: !userId });
   const packSalesHistoryData = packSalesHistory?.data;
-  
-  const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
+
+  const salesData = processSalesHistoryData(
+    packSalesHistoryData || [],
+    selectedSalesTimeRange
+  );
 
   const totalRevenue = calculateTotalRevenue(packs || []);
 
@@ -320,7 +365,6 @@ export default function DashboardPage() {
     return userData?.data?.favourite_melodies?.includes(melodyId) || false;
   };
 
-  
   const toggleFavorite = async (melodyId: string): Promise<void> => {
     if (melodyId && userId) {
       await favoriteMelody({ id: melodyId, userId: userId }).unwrap();
@@ -340,20 +384,22 @@ export default function DashboardPage() {
       } catch (error) {
         console.log("error", error);
       }
-      
+
       const melodyToPlay: PlayingMelody = {
-        _id: melody._id, 
+        _id: melody._id,
         name: melody.name,
         producer: melody.producer,
         image: melody.image || "",
         audio: melody.audio_path || melody.audio || melody.audioUrl || "",
         audioUrl: melody.audio_path || melody.audio || melody.audioUrl || "",
         bpm: melody.bpm || 120,
-        key: melody.key || 'C Maj',
-        genre: Array.isArray(melody.genre) ? melody.genre.join(', ') : melody.genre || 'Unknown',
-        artistType: melody.artistType || 'Producer',
+        key: melody.key || "C Maj",
+        genre: Array.isArray(melody.genre)
+          ? melody.genre.join(", ")
+          : melody.genre || "Unknown",
+        artistType: melody.artistType || "Producer",
       };
-      
+
       setCurrentPlayingMelody(melodyToPlay);
       setIsAudioPlayerVisible(true);
       setShouldAutoPlay(true);
@@ -365,7 +411,10 @@ export default function DashboardPage() {
     setIsCollabModalOpen(true);
   };
 
-  const calculateTotals = (): { totalPlays: number; totalDownloads: number } => {
+  const calculateTotals = (): {
+    totalPlays: number;
+    totalDownloads: number;
+  } => {
     if (!melodies || !Array.isArray(melodies)) {
       return { totalPlays: 0, totalDownloads: 0 };
     }
@@ -394,10 +443,8 @@ export default function DashboardPage() {
   if (isLoadingUser) {
     return (
       <Layout>
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl flex justify-center items-center">
-            <div className="text-white">Loading...</div>
-          </div>
+        <div className="flex justify-center items-center min-h-[90vh]">
+          <Loader className="text-2xl text-emerald-500 animate-spin" />
         </div>
       </Layout>
     );
@@ -405,7 +452,11 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <div className={`relative ${isAudioPlayerVisible ? 'mb-10' : ''} container mx-auto space-y-8 px-4 py-8`}>
+      <div
+        className={`relative ${
+          isAudioPlayerVisible ? "mb-10" : ""
+        } container mx-auto space-y-8 px-4 py-8`}
+      >
         {/* Dashboard Content - always render */}
         {/* Stats Overview */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -475,7 +526,9 @@ export default function DashboardPage() {
                 </h3>
                 <Tabs
                   value={selectedTimeRange}
-                  onValueChange={(value: string) => setSelectedTimeRange(value as TimeRange)}
+                  onValueChange={(value: string) =>
+                    setSelectedTimeRange(value as TimeRange)
+                  }
                   className="space-y-4"
                 >
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
@@ -573,9 +626,11 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-medium text-white">
                   Sales Overview
                 </h3>
-                <Tabs 
-                  value={selectedSalesTimeRange} 
-                  onValueChange={(value: string) => setSelectedSalesTimeRange(value as TimeRange)}
+                <Tabs
+                  value={selectedSalesTimeRange}
+                  onValueChange={(value: string) =>
+                    setSelectedSalesTimeRange(value as TimeRange)
+                  }
                   className="space-y-4"
                 >
                   <TabsList className="grid w-full grid-cols-3 bg-zinc-800/50">
@@ -677,89 +732,98 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-white">
                   Top Melodies
                 </h2>
-                {
-                  (melodies?.length || 0) > 0 ? <Link
-                  href="/analytics?tab=melodies"
-                  className="text-sm text-emerald-500 hover:text-emerald-400"
-                >
-                  View All
-                </Link> : ""
-                }
-              </div>
-              {
-                (melodies?.length || 0) > 0 ? <div className="space-y-4">
-                {melodies?.slice(0, 3).map((melody: Melody) => (
-                  <div
-                    key={melody._id}
-                    className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-zinc-800/50"
+                {(melodies?.length || 0) > 0 ? (
+                  <Link
+                    href="/analytics?tab=melodies"
+                    className="text-sm text-emerald-500 hover:text-emerald-400"
                   >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`h-12 w-12 rounded-full transition-all ${
-                        currentPlayingMelody?._id === melody._id
-                          ? 'bg-emerald-500 text-black hover:bg-emerald-600'
-                          : 'bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-500'
-                      }`}
-                      onClick={() => handlePlayClick(melody)}
+                    View All
+                  </Link>
+                ) : (
+                  ""
+                )}
+              </div>
+              {(melodies?.length || 0) > 0 ? (
+                <div className="space-y-4">
+                  {melodies?.slice(0, 3).map((melody: Melody) => (
+                    <div
+                      key={melody._id}
+                      className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-zinc-800/50"
                     >
-                      {currentPlayingMelody?._id === melody._id ? (
-                        <Pause className="h-5 w-5" />
-                      ) : (
-                        <Play className="h-5 w-5 text-white" />
-                      )}
-                    </Button>
-                    <div className="flex-1 text-sm font-medium text-zinc-400 w-1/4">
-                      <WaveformDisplay
-                        audioUrl={melody.audioUrl || melody.audio_path || melody.audio || ""}
-                        isPlaying={currentPlayingMelody?._id === melody._id}
-                        onPlayPause={() => handlePlayClick(melody)}
-                        height={30}
-                        width=""
-                        isControlled={true}
-                        currentTime={currentMelodyId === melody._id ? currentTime : 0}
-                        duration={currentMelodyId === melody._id ? duration : 0}
-                      />
-                    </div>
-                    <div className="flex-1 text-sm font-medium text-zinc-400">
-                      {melody.name}
-                    </div>
-                    <div className="text-sm text-zinc-500">
-                      {melody.plays || 0} plays
-                    </div>
-                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
-                          isMelodyFavorite(melody._id)
-                            ? 'text-red-500'
-                            : ''
+                        className={`h-12 w-12 rounded-full transition-all ${
+                          currentPlayingMelody?._id === melody._id
+                            ? "bg-emerald-500 text-black hover:bg-emerald-600"
+                            : "bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-500"
                         }`}
-                        onClick={() => toggleFavorite(melody._id)}
+                        onClick={() => handlePlayClick(melody)}
                       >
-                        <Heart
-                          className={`h-4 w-4 ${
-                            isMelodyFavorite(melody._id)
-                              ? 'fill-current'
-                              : ''
-                          }`}
+                        {currentPlayingMelody?._id === melody._id ? (
+                          <Pause className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5 text-white" />
+                        )}
+                      </Button>
+                      <div className="flex-1 text-sm font-medium text-zinc-400 w-1/4">
+                        <WaveformDisplay
+                          audioUrl={
+                            melody.audioUrl ||
+                            melody.audio_path ||
+                            melody.audio ||
+                            ""
+                          }
+                          isPlaying={currentPlayingMelody?._id === melody._id}
+                          onPlayPause={() => handlePlayClick(melody)}
+                          height={30}
+                          width=""
+                          isControlled={true}
+                          currentTime={
+                            currentMelodyId === melody._id ? currentTime : 0
+                          }
+                          duration={
+                            currentMelodyId === melody._id ? duration : 0
+                          }
                         />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-zinc-400 hover:text-white"
-                        onClick={() => handleDownloadClick(melody)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      </div>
+                      <div className="flex-1 text-sm font-medium text-zinc-400">
+                        {melody.name}
+                      </div>
+                      <div className="text-sm text-zinc-500">
+                        {melody.plays || 0} plays
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-8 w-8 text-zinc-400 hover:text-red-500 ${
+                            isMelodyFavorite(melody._id) ? "text-red-500" : ""
+                          }`}
+                          onClick={() => toggleFavorite(melody._id)}
+                        >
+                          <Heart
+                            className={`h-4 w-4 ${
+                              isMelodyFavorite(melody._id) ? "fill-current" : ""
+                            }`}
+                          />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-zinc-400 hover:text-white"
+                          onClick={() => handleDownloadClick(melody)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div> : <div className="text-white text-center">No melodies found</div>
-              }
+                  ))}
+                </div>
+              ) : (
+                <div className="text-white text-center">No melodies found</div>
+              )}
             </div>
           </Card>
 
@@ -770,43 +834,53 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-white">
                   Latest Packs
                 </h2>
-                {
-                  (packs?.length || 0) > 0 ? <Link
-                  href="/analytics?tab=products"
-                  className="text-sm text-emerald-500 hover:text-emerald-400"
-                >
-                  View All
-                </Link> : ""
-                }
-              </div>
-              {
-                (packs?.length || 0) > 0 ? <div className="grid grid-cols-3 gap-4">
-                {packs?.slice(0, 3).map((pack: Pack) => (
-                  <Link key={pack._id} href={`/product/${pack._id}`} className="group block">
-                    <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
-                      <Image
-                        src={pack.thumbnail_image || "/placeholder.svg"}
-                        alt={pack.title || pack.name || "Pack"}
-                        width={200}
-                        height={200}
-                        className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
-                      />
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-sm font-medium text-white group-hover:text-emerald-500 transition-colors truncate">
-                        {pack.title || pack.name}
-                      </div>
-                      <div className="text-xs text-emerald-500">
-                        {formatCurrency(pack.price || 0)}
-                      </div>
-                      <div className="text-xs text-zinc-500">
-                        {pack.sales || 0} sales
-                      </div>
-                    </div>
+                {(packs?.length || 0) > 0 ? (
+                  <Link
+                    href="/analytics?tab=products"
+                    className="text-sm text-emerald-500 hover:text-emerald-400"
+                  >
+                    View All
                   </Link>
-                ))}
-              </div> : <div className="text-white text-center">No Latest Packs found</div>
-              }
+                ) : (
+                  ""
+                )}
+              </div>
+              {(packs?.length || 0) > 0 ? (
+                <div className="grid grid-cols-3 gap-4">
+                  {packs?.slice(0, 3).map((pack: Pack) => (
+                    <Link
+                      key={pack._id}
+                      href={`/product/${pack._id}`}
+                      className="group block"
+                    >
+                      <div className="relative flex items-center justify-center aspect-square overflow-hidden rounded-lg bg-zinc-800/50">
+                        <Image
+                          src={pack.thumbnail_image || "/placeholder.svg"}
+                          alt={pack.title || pack.name || "Pack"}
+                          width={200}
+                          height={200}
+                          className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 group-hover:opacity-75"
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <div className="text-sm font-medium text-white group-hover:text-emerald-500 transition-colors truncate">
+                          {pack.title || pack.name}
+                        </div>
+                        <div className="text-xs text-emerald-500">
+                          {formatCurrency(pack.price || 0)}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {pack.sales || 0} sales
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-white text-center">
+                  No Latest Packs found
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -847,78 +921,66 @@ export default function DashboardPage() {
         )}
 
         {/* PRO Upgrade Modal - Show only for non-PRO users */}
-        {!isPro && mounted && createPortal(
-          <div className="fixed left-0 lg:left-64 top-16 right-0 bottom-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-40">
-            <div className="max-w-md w-full mx-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl relative z-10">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Image
-                    src="/isotype.png"
-                    alt="Melody Collab Isotype"
-                    width={32}
-                    height={32}
-                    className="text-emerald-500"
-                  />
+        {!isPro &&
+          mounted &&
+          createPortal(
+            <div className="fixed left-0 lg:left-64 top-16 right-0 bottom-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-40">
+              <div className="max-w-md w-full mx-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl relative z-10">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Image
+                      src="/isotype.png"
+                      alt="Melody Collab Isotype"
+                      width={32}
+                      height={32}
+                      className="text-emerald-500"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-bold text-emerald-500 mb-2">
+                    BECOME A PRO TO ACCESS
+                  </h2>
+                  <h3 className="text-xl font-bold text-emerald-500 mb-4">
+                    TO ALL ANALYTICS AND...
+                  </h3>
                 </div>
-                <h2 className="text-2xl font-bold text-emerald-500 mb-2">
-                  BECOME A PRO TO ACCESS
-                </h2>
-                <h3 className="text-xl font-bold text-emerald-500 mb-4">
-                  TO ALL ANALYTICS AND...
-                </h3>
-              </div>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Upload Unlimited Melodies</span>
                   </div>
-                  <span>Upload Unlimited Melodies</span>
-                </div>
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Sell Sample Packs</span>
                   </div>
-                  <span>Sell Sample Packs</span>
-                </div>
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Custom Sample Pack Store</span>
                   </div>
-                  <span>Custom Sample Pack Store</span>
-                </div>
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Sell On Producers Marketplace</span>
                   </div>
-                  <span>Sell On Producers Marketplace</span>
-                </div>
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Sell Digital Products</span>
                   </div>
-                  <span>Sell Digital Products</span>
-                </div>
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-5 h-5 text-emerald-500">
-                    ✓
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-5 h-5 text-emerald-500">✓</div>
+                    <span>Pro Analytics Dashboard</span>
                   </div>
-                  <span>Pro Analytics Dashboard</span>
                 </div>
-              </div>
 
-              <Button
-                asChild
-                className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-medium py-6 text-lg rounded-lg"
-              >
-                <Link href="/checkout-membership">
-                  Upgrade to Pro
-                </Link>
-              </Button>
-            </div>
-          </div>,
-          document.body
-        )}
+                <Button
+                  asChild
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-medium py-6 text-lg rounded-lg"
+                >
+                  <Link href="/checkout-membership">Upgrade to Pro</Link>
+                </Button>
+              </div>
+            </div>,
+            document.body
+          )}
       </div>
     </Layout>
   );

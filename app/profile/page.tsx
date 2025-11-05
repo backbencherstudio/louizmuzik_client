@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Clock,
   Shuffle,
+  Loader,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -430,12 +431,8 @@ export default function ProfilePage() {
   if (isUserProfileLoading) {
     return (
       <Layout>
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8 mt-8 lg:mt-12">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="text-white text-lg">Loading...</div>
-            </div>
-          </div>
+        <div className="flex justify-center items-center min-h-[90vh]">
+          <Loader className="text-2xl text-emerald-500 animate-spin" />
         </div>
       </Layout>
     );

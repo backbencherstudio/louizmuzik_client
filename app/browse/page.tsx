@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Clock,
   Shuffle,
+  Loader,
 } from "lucide-react";
 import {
   Command,
@@ -84,8 +85,11 @@ export default function BrowsePage() {
   const { data: user, refetch: refetchUser } = useLoggedInUser();
   const userId = user?.data?._id;
   // Get melodies
-  const { data: melodiesData, refetch: refetchMelodies } =
-    useGetMelodiesQuery(null);
+  const {
+    data: melodiesData,
+    refetch: refetchMelodies,
+    isLoading: isMelodiesLoading,
+  } = useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
 
   // Mutations
@@ -236,8 +240,11 @@ export default function BrowsePage() {
         const searchLower = searchQuery.toLowerCase();
         const melodyNameLower = melody.name.toLowerCase();
         const producerNameLower = melody.producer.toLowerCase();
-        
-        if (!melodyNameLower.includes(searchLower) && !producerNameLower.includes(searchLower)) {
+
+        if (
+          !melodyNameLower.includes(searchLower) &&
+          !producerNameLower.includes(searchLower)
+        ) {
           return false;
         }
       }
@@ -301,7 +308,6 @@ export default function BrowsePage() {
           : b.plays - a.plays;
       }
 
-      
       if (sortConfig.key === "bpm") {
         return sortConfig.direction === "asc" ? a.bpm - b.bpm : b.bpm - a.bpm;
       }
@@ -517,7 +523,10 @@ export default function BrowsePage() {
             </PopoverContent>
           </Popover>
 
-          <Popover open={artistTypePopoverOpen} onOpenChange={setArtistTypePopoverOpen}>
+          <Popover
+            open={artistTypePopoverOpen}
+            onOpenChange={setArtistTypePopoverOpen}
+          >
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -565,19 +574,28 @@ export default function BrowsePage() {
             Clear Filters
           </Button>
         </div>
-        <MelodiesBrowseTable
-          melodies={currentMelodies}
-          currentPlayingMelody={currentPlayingMelody}
-          onPlayClick={handlePlayClick}
-          onDownloadClick={handleDownloadClick}
-          onFavoriteClick={toogleFavorite}
-          isFavorite={isMelodyFavorite}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-          currentTime={currentTime}
-          duration={duration}
-          currentMelodyId={currentMelodyId}
-        />
+
+        {isMelodiesLoading ? (
+          <div className="flex justify-center items-center">
+            <Loader className="text-2xl text-emerald-500 animate-spin" />
+          </div>
+        ) : (
+          <MelodiesBrowseTable
+            melodies={currentMelodies}
+            currentPlayingMelody={currentPlayingMelody}
+            onPlayClick={handlePlayClick}
+            onDownloadClick={handleDownloadClick}
+            onFavoriteClick={toogleFavorite}
+            isFavorite={isMelodyFavorite}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            currentTime={currentTime}
+            duration={duration}
+            currentMelodyId={currentMelodyId}
+            showProducerColumn={false}
+          />
+        )}
+
         <div className="mt-6 mb-24">
           <Pagination
             currentPage={currentPage}

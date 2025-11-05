@@ -12,17 +12,25 @@ import {
   PlaySquare,
   Volume2,
   VolumeX,
+  Loader,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout";
 import { useCart } from "@/components/cart-context";
-import { useFavoritePackMutation, useGetPackDetailsQuery } from "@/app/store/api/packApis/packApis";
+import {
+  useFavoritePackMutation,
+  useGetPackDetailsQuery,
+} from "@/app/store/api/packApis/packApis";
 import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 import { Slider } from "@/components/ui/slider";
 import { Pagination } from "@/components/ui/pagination";
 
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -32,16 +40,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const itemsPerPage = 20;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { addToCart } = useCart();
-  const {
-    data: packDetails,
-    isLoading,
-    error,
-  } = useGetPackDetailsQuery(id);
+  const { data: packDetails, isLoading, error } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
   const producerId = pack?.userId?._id;
-  const { data: user ,refetch} = useLoggedInUser();
+  const { data: user, refetch } = useLoggedInUser();
   const userId = user?.data?._id;
-  const [favoritePack, { isLoading: isFavoritePackLoading }] = useFavoritePackMutation();
+  const [favoritePack, { isLoading: isFavoritePackLoading }] =
+    useFavoritePackMutation();
   const isFavorite = user?.data?.favourite_packs?.includes(id);
 
   const morePacks = packDetails?.data?.eachUserAllPack;
@@ -63,7 +68,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     // Scroll to top of the more packs section
     window.scrollTo({
       top: document.body.scrollHeight - 400,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -178,8 +183,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   if (isLoading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-white text-xl">Loading...</div>
+        <div className="min-h-[90vh] flex items-center justify-center">
+          <Loader className="text-2xl text-emerald-500 animate-spin" />
         </div>
       </Layout>
     );
@@ -322,7 +327,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Progress Slider */}
                     <div className="space-y-2">
                       <Slider
@@ -405,24 +410,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   </Link>
                 ))}
               </div>
-              
+
               {/* Page Info */}
               {totalPages > 1 && (
                 <div className="mt-4 text-center text-zinc-400 text-sm">
-                  Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} products
+                  Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
+                  {totalItems} products
                 </div>
               )}
-                             {totalPages > 1 && (
-                 <div className="mt-8 flex justify-center">
-                   <Pagination
-                     currentPage={currentPage}
-                     totalPages={totalPages}
-                     onPageChange={handlePageChange}
-                     totalItems={totalItems}
-                     itemsPerPage={itemsPerPage}
-                   />
-                 </div>
-               )}
+              {totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

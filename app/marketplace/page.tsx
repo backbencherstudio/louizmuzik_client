@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause, Loader } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,7 @@ export default function MarketplacePage() {
     useState<PlayingPack | null>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
 
-  const { data: allPacksData } = useAllPacksQuery(null);
+  const { data: allPacksData, isLoading: isLoadingPacks } = useAllPacksQuery(null);
   const packs: Pack[] = allPacksData?.data || [];
   const featuredPacks = packs.filter((pack: Pack) => pack.highlight === true);
 
@@ -131,6 +131,16 @@ export default function MarketplacePage() {
       setIsAudioPlayerVisible(true);
     }
   };
+
+  if (isLoadingPacks) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center min-h-[90vh]">
+          <Loader className="text-2xl text-emerald-500 animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
