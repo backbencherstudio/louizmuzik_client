@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, role }: { children: React.ReactNode, role: s
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-emerald-500 animate-spin"><Loader className="text-2xl text-emerald-500 animate-spin" /></div>
+        <div className="text-emerald-500"><Loader className="text-2xl text-emerald-500 animate-spin" /></div>
       </div>
     );
   }
