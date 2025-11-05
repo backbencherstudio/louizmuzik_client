@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { Play, Pause, Download, Heart } from "lucide-react";
@@ -382,6 +383,12 @@ export default function DashboardPage() {
   };
 
   const { totalPlays, totalDownloads } = calculateTotals();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Show loading while checking user status
   if (isLoadingUser) {
@@ -840,9 +847,9 @@ export default function DashboardPage() {
         )}
 
         {/* PRO Upgrade Modal - Show only for non-PRO users */}
-        {!isPro && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-            <div className="max-w-md w-full mx-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl">
+        {!isPro && mounted && createPortal(
+          <div className="fixed left-0 lg:left-64 top-16 right-0 bottom-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-40">
+            <div className="max-w-md w-full mx-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl relative z-10">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <Image
@@ -909,7 +916,8 @@ export default function DashboardPage() {
                 </Link>
               </Button>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </Layout>
