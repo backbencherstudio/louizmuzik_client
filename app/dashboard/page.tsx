@@ -18,7 +18,7 @@ import {
   YAxis,
 } from "recharts";
 import Layout from "@/components/layout";
-import { useLoggedInUserQuery } from "../store/api/authApis/authApi";
+import { useLoggedInUser } from "@/app/store/api/authApis/authApi";
 import {
   useDownloadChartMelodyQuery,
   useGetMelodyByUserIdQuery,
@@ -32,7 +32,7 @@ import { usePackSalesHistoryQuery } from "../store/api/paymentApis/paymentApis";
 import { AudioPlayer } from "@/components/audio-player";
 import { useAudioContext } from "@/components/audio-context";
 import { CollabModal } from "@/components/collab-modal";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // TypeScript interfaces
 interface Melody {
@@ -279,32 +279,30 @@ export default function DashboardPage() {
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [selectedMelody, setSelectedMelody] = useState<Melody | null>(null);
 
-  const {
-    data: userData,
-    error,
-    isLoading: isLoadingUser,
-  } = useLoggedInUserQuery(null);
-  const isPro = userData?.data?.isPro;
-  console.log("isPro", isPro);
-  const userId = userData?.data?._id;
+  // Use useLoggedInUser directly instead of useProRoute (no auto-redirect)
+  const { data: userData, isLoading: isLoadingUser } = useLoggedInUser();
+  
   const followers = userData?.data?.followersCounter;
   const totalFollowers = formatedFollowers(followers || 0);
+  const isPro = userData?.data?.isPro;
+  const userId = userData?.data?._id;
 
+  // Allow queries to run for both PRO and non-PRO users (so non-PRO can see preview)
   const { data: melodiesData, refetch: refetchMelodies } =
-    useGetMelodyByUserIdQuery(userId);
+    useGetMelodyByUserIdQuery(userId || '', { skip: !userId });
   const melodies = melodiesData?.data as Melody[] | undefined;
   
 
-  const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId);
+  const { data: packsData, refetch: refetchPacks } = useGetProducerPackQuery(userId || '', { skip: !userId });
   const packs = packsData?.data as Pack[] | undefined;
  
 
   const { data: downloadChartData, isLoading: isLoadingDownloadChart } =
-    useDownloadChartMelodyQuery(userId);
+    useDownloadChartMelodyQuery(userId || '', { skip: !userId });
   const downloadData = processDownloadData(downloadChartData?.data || [], selectedTimeRange);
 
   const { data: packSalesHistory, isLoading: isLoadingPackSalesHistory } =
-    usePackSalesHistoryQuery(userId);
+    usePackSalesHistoryQuery(userId || '', { skip: !userId });
   const packSalesHistoryData = packSalesHistory?.data;
   
   const salesData = processSalesHistoryData(packSalesHistoryData || [], selectedSalesTimeRange);
@@ -385,18 +383,23 @@ export default function DashboardPage() {
 
   const { totalPlays, totalDownloads } = calculateTotals();
 
-
-  if (!isPro) {
-
-    setTimeout(() => {
-      router.push("/browse");
-    }, 2000);
+  // Show loading while checking user status
+  if (isLoadingUser) {
+    return (
+      <Layout>
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl flex justify-center items-center">
+            <div className="text-white">Loading...</div>
+          </div>
+        </div>
+      </Layout>
+    );
   }
- 
 
   return (
     <Layout>
-      <div className={`${isAudioPlayerVisible ? 'mb-10' : ''} container mx-auto space-y-8 px-4 py-8`}>
+      <div className={`relative ${isAudioPlayerVisible ? 'mb-10' : ''} container mx-auto space-y-8 px-4 py-8`}>
+        {/* Dashboard Content - always render */}
         {/* Stats Overview */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card className="relative overflow-hidden border-0 bg-[#0F0F0F] shadow-xl transition-all hover:translate-y-[-2px]">
@@ -834,6 +837,79 @@ export default function DashboardPage() {
             onClose={() => setIsCollabModalOpen(false)}
             melodyData={selectedMelody}
           />
+        )}
+
+        {/* PRO Upgrade Modal - Show only for non-PRO users */}
+        {!isPro && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
+            <div className="max-w-md w-full mx-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Image
+                    src="/isotype.png"
+                    alt="Melody Collab Isotype"
+                    width={32}
+                    height={32}
+                    className="text-emerald-500"
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-emerald-500 mb-2">
+                  BECOME A PRO TO ACCESS
+                </h2>
+                <h3 className="text-xl font-bold text-emerald-500 mb-4">
+                  TO ALL ANALYTICS AND...
+                </h3>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Upload Unlimited Melodies</span>
+                </div>
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Sell Sample Packs</span>
+                </div>
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Custom Sample Pack Store</span>
+                </div>
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Sell On Producers Marketplace</span>
+                </div>
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Sell Digital Products</span>
+                </div>
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-5 h-5 text-emerald-500">
+                    ✓
+                  </div>
+                  <span>Pro Analytics Dashboard</span>
+                </div>
+              </div>
+
+              <Button
+                asChild
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-medium py-6 text-lg rounded-lg"
+              >
+                <Link href="/checkout-membership">
+                  Upgrade to Pro
+                </Link>
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </Layout>

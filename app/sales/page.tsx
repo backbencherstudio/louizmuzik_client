@@ -8,13 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
     Popover,
     PopoverContent,
     PopoverTrigger,
@@ -31,9 +24,9 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Copy, FileText, ArrowDownToLine } from 'lucide-react';
 import Image from 'next/image';
-import { useLoggedInUser } from '../store/api/authApis/authApi';
 import { useGetSalesHistoryQuery } from '../store/api/paymentApis/paymentApis';
 import { Pagination } from '@/components/ui/pagination';
+import { useProRoute } from '@/hooks/useProRoute';
 
 
 interface PackData {
@@ -86,11 +79,10 @@ export default function SalesPage() {
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<TransformedSalesData | null>(null);
 
-    const { data: userData, refetch: refetchUser } = useLoggedInUser();
-    const userId = userData?.data?._id;
+    const { isAuthorized, isLoading: isLoadingUser, userId } = useProRoute();
 
     const { data: salesHistory, isLoading: isLoadingSalesHistory } =
-        useGetSalesHistoryQuery(userId);
+        useGetSalesHistoryQuery(userId || '', { skip: !isAuthorized || !userId });
 
     // Transform the real data to match our display format
     const transformedSalesData: TransformedSalesData[] = salesHistory?.data?.map((transaction: SalesTransaction) => ({
@@ -154,6 +146,18 @@ export default function SalesPage() {
         setSelectedTransaction(transaction);
         setIsTransactionModalOpen(true);
     };
+
+    if (isLoadingUser || !isAuthorized) {
+        return (
+          <Layout>
+            <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+              <div className="mx-auto max-w-4xl flex justify-center items-center">
+                <div className="text-white">Loading...</div>
+              </div>
+            </div>
+          </Layout>
+        );
+      }
 
     if (isLoadingSalesHistory) {
         return (

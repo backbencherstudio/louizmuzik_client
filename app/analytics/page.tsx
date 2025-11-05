@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductAnalytics from "@/components/analytics/product-analytics";
 import MelodyAnalytics from "@/components/analytics/melody-analytics";
 import Layout from "@/components/layout";
+import { useProRoute } from "@/hooks/useProRoute";
 
 export default function AnalyticsPage() {
+  const { isAuthorized, isLoading: isLoadingUser } = useProRoute();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(
@@ -25,6 +27,19 @@ export default function AnalyticsPage() {
     setActiveTab(value);
     router.push(`/analytics?tab=${value}`);
   };
+
+  // Show loading while checking PRO status
+  if (isLoadingUser || !isAuthorized) {
+    return (
+      <Layout>
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl flex justify-center items-center">
+            <div className="text-white">Loading...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

@@ -32,6 +32,7 @@ import {
 } from "../store/api/packApis/packApis";
 import { toast } from "sonner";
 import { useLoggedInUser } from "../store/api/authApis/authApi";
+import { useProRoute } from "@/hooks/useProRoute";
 
 const AVAILABLE_GENRES = [
   "Trap",
@@ -93,6 +94,7 @@ export default function NewPackPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [updatePack, { isLoading: isUpdatingPack }] = useUpdatePackMutation();
+  const { isAuthorized, isLoading: isLoadingUser, userId } = useProRoute();
   const { data: user } = useLoggedInUser();
   const userData = user?.data;
 
@@ -157,7 +159,6 @@ export default function NewPackPage() {
   };
 
   const isPro = userData?.isPro;
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,9 +251,7 @@ export default function NewPackPage() {
           toast.success("Pack created successfully");
           router.push("/items");
         } else {
-          toast.error(
-            `Upload failed: ${xhr.responseText || xhr.statusText}`
-          );
+          toast.error(`Upload failed: ${xhr.responseText || xhr.statusText}`);
         }
         setUploadProgress(0);
         setIsLoading(false);
@@ -274,7 +273,17 @@ export default function NewPackPage() {
     }
   };
 
-  
+  if (isLoadingUser || !isAuthorized) {
+    return (
+      <Layout>
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl flex justify-center items-center">
+            <div className="text-white">Loading...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (isLoadingPack && editId) {
     return (
@@ -388,10 +397,10 @@ export default function NewPackPage() {
                         {samplePackFile
                           ? samplePackFile.name
                           : editId && packData.zip_path
-                            ? getFileNameFromPath(packData.zip_path)
-                            : editId 
-                              ? "Upload new file to replace existing one"
-                              : "Drag your .zip file to start uploading"}
+                          ? getFileNameFromPath(packData.zip_path)
+                          : editId
+                          ? "Upload new file to replace existing one"
+                          : "Drag your .zip file to start uploading"}
                       </p>
                       {!samplePackFile && (
                         <p className="text-xs text-zinc-500">OR</p>
@@ -433,10 +442,10 @@ export default function NewPackPage() {
                       {audioFile
                         ? audioFile.name
                         : editId && packData.audio_path
-                          ? getFileNameFromPath(packData.audio_path)
-                          : editId 
-                            ? "Upload new file to replace existing one"
-                            : "Drag your .wav or .mp3 file to start uploading"}
+                        ? getFileNameFromPath(packData.audio_path)
+                        : editId
+                        ? "Upload new file to replace existing one"
+                        : "Drag your .wav or .mp3 file to start uploading"}
                     </p>
                     {!audioFile && <p className="text-xs text-zinc-500">OR</p>}
                   </div>
@@ -606,7 +615,7 @@ export default function NewPackPage() {
                 </div>
               </div>
             )}
-            
+
             {/* Submit Button */}
             {uploadProgress === 0 && (
               <Button
@@ -614,10 +623,13 @@ export default function NewPackPage() {
                 disabled={!agreedToTerms || isLoading || isUpdatingPack}
                 className="w-full bg-emerald-500 py-6 text-black hover:bg-emerald-600 disabled:opacity-50"
               >
-                {isLoading || isUpdatingPack 
-                  ? (editId ? "Updating Pack..." : "Uploading Pack...") 
-                  : (editId ? "Update Pack" : "Upload This Pack")
-                }
+                {isLoading || isUpdatingPack
+                  ? editId
+                    ? "Updating Pack..."
+                    : "Uploading Pack..."
+                  : editId
+                  ? "Update Pack"
+                  : "Upload This Pack"}
               </Button>
             )}
           </form>
