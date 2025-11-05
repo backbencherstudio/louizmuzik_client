@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, ChevronDown, Search } from 'lucide-react';
+import { Calendar, ChevronDown, Loader, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
@@ -149,10 +149,10 @@ export default function SalesPage() {
 
     if (isLoadingUser || !isAuthorized) {
         return (
-          <Layout>
+            <Layout>
             <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-              <div className="mx-auto max-w-4xl flex justify-center items-center">
-                <div className="text-white">Loading...</div>
+              <div className="flex justify-center items-center min-h-[80vh]">
+                <Loader className="text-2xl text-emerald-500 animate-spin" />
               </div>
             </div>
           </Layout>
@@ -162,14 +162,9 @@ export default function SalesPage() {
     if (isLoadingSalesHistory) {
         return (
             <Layout>
-                <div className="p-8">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-white">
-                            Sales History
-                        </h1>
-                        <p className="mt-2 text-zinc-400">
-                            Loading your sales data...
-                        </p>
+                <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+                    <div className="flex justify-center items-center min-h-[80vh]">
+                        <Loader className="text-2xl text-emerald-500 animate-spin" />
                     </div>
                 </div>
             </Layout>

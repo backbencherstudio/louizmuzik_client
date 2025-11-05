@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter, redirect } from "next/navigation";
-import { Camera, FileArchive, Play, Plus, X } from "lucide-react";
+import { Camera, FileArchive, Loader, Play, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -277,8 +277,8 @@ export default function NewPackPage() {
     return (
       <Layout>
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl flex justify-center items-center">
-            <div className="text-white">Loading...</div>
+          <div className="flex justify-center items-center min-h-[80vh]">
+            <Loader className="text-2xl text-emerald-500 animate-spin" />
           </div>
         </div>
       </Layout>
@@ -289,8 +289,8 @@ export default function NewPackPage() {
     return (
       <Layout>
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl flex justify-center items-center h-64">
-            <div className="text-white">Loading pack details...</div>
+          <div className="flex justify-center items-center min-h-[80vh]">
+            <Loader className="text-2xl text-emerald-500 animate-spin" />
           </div>
         </div>
       </Layout>

@@ -7,6 +7,7 @@ import ProductAnalytics from "@/components/analytics/product-analytics";
 import MelodyAnalytics from "@/components/analytics/melody-analytics";
 import Layout from "@/components/layout";
 import { useProRoute } from "@/hooks/useProRoute";
+import { Loader } from "lucide-react";
 
 export default function AnalyticsPage() {
   const { isAuthorized, isLoading: isLoadingUser } = useProRoute();
@@ -33,8 +34,8 @@ export default function AnalyticsPage() {
     return (
       <Layout>
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl flex justify-center items-center">
-            <div className="text-white">Loading...</div>
+          <div className="flex justify-center items-center min-h-[80vh]">
+            <Loader className="text-2xl text-emerald-500 animate-spin" />
           </div>
         </div>
       </Layout>
