@@ -216,7 +216,7 @@ export default function ItemsPage() {
                                 e.stopPropagation();
                                 handlePackPlayClick(pack);
                               }}
-                              className="rounded-full bg-emerald-500/90 p-3 text-black hover:bg-emerald-500"
+                              className="rounded-full bg-emerald-500/90 h-12 w-12 text-black hover:bg-emerald-500"
                             >
                               {currentPlayingPack?._id === pack._id ? (
                                 <Pause className="h-6 w-6" />
