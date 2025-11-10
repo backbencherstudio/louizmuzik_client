@@ -56,7 +56,7 @@ export default function MarketplacePage() {
   const [currentPlayingPack, setCurrentPlayingPack] =
     useState<PlayingPack | null>(null);
   const [isAudioPlayerVisible, setIsAudioPlayerVisible] = useState(false);
-
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const { data: allPacksData, isLoading: isLoadingPacks } = useAllPacksQuery(null);
   const packs: Pack[] = allPacksData?.data || [];
   const featuredPacks = packs.filter((pack: Pack) => pack.highlight === true);
@@ -113,10 +113,30 @@ export default function MarketplacePage() {
     setCurrentSlide(index);
   };
 
+  // const handlePlayClick = (pack: Pack) => {
+  //   if (currentPlayingPack?._id === pack._id) {
+  //     setCurrentPlayingPack(null);
+  //     setIsAudioPlayerVisible(false);
+  //   } else {
+  //     setCurrentPlayingPack({
+  //       _id: pack._id,
+  //       name: pack.title || "Untitled Pack",
+  //       producer: pack.producer || "Unknown Producer",
+  //       image: pack.thumbnail_image || "/placeholder.svg?height=300&width=300",
+  //       audioUrl: pack.audio_path || "",
+  //       bpm: 120,
+  //       key: "C Maj",
+  //       artistType: "Producer",
+  //     });
+  //     setIsAudioPlayerVisible(true);
+  //   }
+  // };
+
   const handlePlayClick = (pack: Pack) => {
     if (currentPlayingPack?._id === pack._id) {
       setCurrentPlayingPack(null);
       setIsAudioPlayerVisible(false);
+      setShouldAutoPlay(false);
     } else {
       setCurrentPlayingPack({
         _id: pack._id,
@@ -129,6 +149,7 @@ export default function MarketplacePage() {
         artistType: "Producer",
       });
       setIsAudioPlayerVisible(true);
+      setShouldAutoPlay(true);
     }
   };
 
@@ -373,10 +394,19 @@ export default function MarketplacePage() {
       </div>
 
       {/* Audio Player */}
-      <AudioPlayer
+      {/* <AudioPlayer
         isVisible={isAudioPlayerVisible}
         melody={currentPlayingPack}
         onClose={() => setIsAudioPlayerVisible(false)}
+      /> */}
+        <AudioPlayer
+        isVisible={isAudioPlayerVisible}
+        melody={currentPlayingPack}
+        shouldAutoPlay={shouldAutoPlay}
+        onClose={() => {
+          setIsAudioPlayerVisible(false);
+          setShouldAutoPlay(false);
+        }}
       />
     </Layout>
   );
