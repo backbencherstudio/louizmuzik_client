@@ -22,6 +22,7 @@ interface CollabModalProps {
 
 export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter }: CollabModalProps) {
     const [isChecked, setIsChecked] = useState(false);
+    const [isLicenceDownloading, setIsLicenceDownloading] = useState(false);
 
     const handleDownloadMelody = async () => {
         try {
@@ -49,11 +50,42 @@ export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter
             toast.error("Failed to download melody. Please try again.");
         }
     };
+    
+    const handleDownloadLicence = async () => {
+        setIsLicenceDownloading(true);
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            
+            const response = await fetch(`${baseUrl}/melody/license/${melodyData._id}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
 
-    const handleDownloadLicence = () => {
-        // Handle licence download - this would typically generate a PDF
-        console.log('Downloading licence...');
-        onClose();
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${melodyData.name || 'license'}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            toast.success('Licence downloaded successfully!');
+            onClose();
+        } catch (error) {
+            console.error("Error downloading licence:", error);
+            toast.error("Failed to download licence. Please try again.");
+        } finally {
+            setIsLicenceDownloading(false);
+        }
     };
 
     return (
@@ -96,7 +128,7 @@ export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter
                             <span>
                                 Genre: {Array.isArray(melodyData?.genre) 
                                     ? melodyData.genre.join(', ') 
-                                    : melodyData?.genre || 'Unknown'}
+                                    : melodyData?.percentage || 'Unknown'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-zinc-300">
@@ -141,10 +173,10 @@ export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter
                         </Button>
                         <Button
                             onClick={handleDownloadLicence}
-                            disabled={!isChecked}
+                            disabled={!isChecked || isLicenceDownloading}
                             className="bg-emerald-500 text-black hover:bg-emerald-600 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed"
                         >
-                            Download Licence
+                            {isLicenceDownloading ? 'Downloading...' : 'Download Licence'}
                         </Button>
                     </div>
                 </div>

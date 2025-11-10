@@ -65,6 +65,14 @@ export const melodyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Melody"],
     }),
 
+    melodyLicenceDownload: build.query({
+      query: (id) => ({
+        url: `/melody/license/${id}`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
     melodyPlay: build.mutation({
       query: (id) => ({
         url: `/melody/melodyPlay/${id}`,
@@ -107,4 +115,5 @@ export const {
   useMelodyPlayMutation,
   useGetFavoriteMelodyQuery,
   useDownloadChartMelodyQuery,
+  useMelodyLicenceDownloadQuery,
   } = melodyApi;
