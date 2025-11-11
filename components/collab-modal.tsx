@@ -24,6 +24,8 @@ export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter
     const [isChecked, setIsChecked] = useState(false);
     const [isLicenceDownloading, setIsLicenceDownloading] = useState(false);
 
+    console.log(melodyData);
+
     const handleDownloadMelody = async () => {
         try {
             // First, increment the download counter
@@ -123,20 +125,11 @@ export function CollabModal({ isOpen, onClose, melodyData, melodyDownloadCounter
                                 Key: {melodyData?.key || 'Unknown'}
                             </span>
                         </div>
+                        
                         <div className="flex items-center gap-3 text-zinc-300">
                             <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                             <span>
-                                Genre: {Array.isArray(melodyData?.genre) 
-                                    ? melodyData.genre.join(', ') 
-                                    : melodyData?.percentage || 'Unknown'}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-zinc-300">
-                            <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                            <span>
-                                Artist Type: {Array.isArray(melodyData?.artistType) 
-                                    ? melodyData.artistType.join(', ') 
-                                    : melodyData?.artistType || 'Unknown'}
+                                Collaboration Percentage: {melodyData?.splitPercentage || 'Unknown'}%
                             </span>
                         </div>
                     </div>
