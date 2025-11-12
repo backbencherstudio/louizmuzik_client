@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Instagram, X, Facebook } from 'lucide-react';
+import { FaTiktok } from 'react-icons/fa';
 
 export function Footer() {
     return (
@@ -100,18 +101,20 @@ export function Footer() {
                         </h3>
                         <div className="flex space-x-4">
                             <Link
-                                href="https://instagram.com"
+                                target="_blank"
+                                href="https://www.instagram.com/melodycollab"
                                 className="text-gray-400 hover:text-primary transition-colors"
                             >
                                 <Instagram size={24} />
                                 <span className="sr-only">Instagram</span>
                             </Link>
                             <Link
-                                href="https://facebook.com"
+                                target="_blank"
+                                href="https://www.tiktok.com/@melody.collab"
                                 className="text-gray-400 hover:text-primary transition-colors"
                             >
-                                <Facebook size={24} />
-                                <span className="sr-only">Facebook</span>
+                                <FaTiktok size={24} />
+                                <span className="sr-only">Tiktok</span>
                             </Link>
                         </div>
                     </div>

@@ -14,27 +14,31 @@ import Image from "next/image";
 import { useState } from "react";
 import {
   useSignupMutation,
+  useLoginMutation,
 } from "../store/api/authApis/authApi";
 import OtpVerification from "@/components/otp-verification";
 import { toast } from "sonner";
 import { useAuth0 } from "@auth0/auth0-react";
 import countries from "@/components/Data/country";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
   // const [isLoading, setIsLoading] = useState(false);
   const [country, setCountry] = useState("");
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState(""); 
 
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
- 
+  const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation(); 
+  const router = useRouter();
 
   const {
-    loginWithRedirect: login,
+    loginWithRedirect: googleLogin, 
   } = useAuth0();
 
   const googleSignUp = () =>
-    login({
+    googleLogin({
       authorizationParams: {
         connection: "google-oauth2",
       },
@@ -62,6 +66,7 @@ export default function SignUpPage() {
       const response = await signup(data).unwrap();
       if (response?.success) {
         setUserEmail(data.email as string);
+        setUserPassword(data.password as string); // Store password
         setShowOtpVerification(true);
       } else {
         toast.error(response?.message);
@@ -74,13 +79,44 @@ export default function SignUpPage() {
     }
   };
 
-  const handleOtpVerificationSuccess = () => {
-    window.location.href = "/dashboard";
+  const handleOtpVerificationSuccess = async () => {
+    // Check if token is already set (from OTP verification)
+    const existingToken = localStorage.getItem("token");
+    
+    if (existingToken) {
+      // Token already set, redirect to dashboard
+      router.push("/dashboard");
+      return;
+    }
+
+    // If no token, automatically log in
+    try {
+      const response = await loginMutation({ 
+        email: userEmail, 
+        password: userPassword 
+      }).unwrap();
+
+      if (response.success) {
+        localStorage.setItem("token", response.data?.accessToken);
+        toast.success("Login successful");
+        router.push("/dashboard");
+      } else {
+        toast.error(response?.message || "Auto-login failed. Please login manually.");
+        router.push("/login");
+      }
+    } catch (error: any) {
+      console.error("Auto-login failed:", error);
+      const errorMessage = error?.data?.message || error?.message || "Auto-login failed";
+      toast.error(errorMessage);
+      // Redirect to login page if auto-login fails
+      router.push("/login");
+    }
   };
 
   const handleBackToSignup = () => {
     setShowOtpVerification(false);
     setUserEmail("");
+    setUserPassword(""); // Clear password when going back
   };
 
   // Show OTP verification if signup was successful
