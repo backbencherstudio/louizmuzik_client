@@ -28,6 +28,10 @@ interface AudioPlayerProps {
     bpm: number;
     key: string;
     artistType: string;
+    userId?: {
+      profile_image: string;
+    };
+
   } | null;
   onClose: () => void;
   isFavorite?: boolean;
@@ -61,7 +65,7 @@ export function AudioPlayer({
   const { setAudioState } = useAudioContext();
 
   useEffect(() => {
-    if (melody) {
+    if (melody && audioRef.current) {
       setIsPlaying(false);
       setIsLoading(true);
 
@@ -72,9 +76,38 @@ export function AudioPlayer({
         currentMelodyId: melody._id,
       });
 
-      if (audioRef.current) {
-        audioRef.current.src = melody.audioUrl || "";
-        audioRef.current.load();
+      const audio = audioRef.current;
+      
+      // Clear previous sources
+      while (audio.firstChild) {
+        audio.removeChild(audio.firstChild);
+      }
+
+      // Add source with proper type detection
+      if (melody.audioUrl && melody.audioUrl.trim() !== '') {
+        const source = document.createElement('source');
+        source.src = melody.audioUrl;
+        
+        // Detect MIME type from URL extension
+        const url = melody.audioUrl.toLowerCase();
+        if (url.includes('.wav')) {
+          source.type = 'audio/wav';
+        } else if (url.includes('.mp3')) {
+          source.type = 'audio/mpeg';
+        } else if (url.includes('.m4a')) {
+          source.type = 'audio/mp4';
+        } else if (url.includes('.ogg')) {
+          source.type = 'audio/ogg';
+        } else {
+          source.type = 'audio/mpeg'; 
+        }
+        
+        audio.appendChild(source);
+        
+        audio.load();
+      } else {
+        console.error("No valid audio URL provided for melody:", melody._id);
+        setIsLoading(false);
       }
     }
   }, [melody, setAudioState]);
@@ -168,13 +201,36 @@ export function AudioPlayer({
     });
   };
 
-  const handleAudioError = () => {
-    console.error("Audio loading error");
+  const handleAudioError = (e: any) => {
+    const audio = audioRef.current;
+    if (audio) {
+      const error = audio.error;
+      if (error) {
+        let errorMessage = "Unknown error";
+        switch (error.code) {
+          case error.MEDIA_ERR_ABORTED:
+            errorMessage = "Audio loading aborted";
+            break;
+          case error.MEDIA_ERR_NETWORK:
+            errorMessage = "Network error while loading audio";
+            break;
+          case error.MEDIA_ERR_DECODE:
+            errorMessage = "Audio decoding error";
+            break;
+          case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = `Audio format not supported: ${melody?.audioUrl}`;
+            break;
+        }
+        console.error("Audio loading error:", errorMessage, error);
+      }
+    }
     setIsLoading(false);
     setIsPlaying(false);
   };
 
   if (!isVisible || !melody) return null;
+
+  console.log(melody);
 
   return (
     <div className={`fixed bottom-0 right-0 bg-black z-50 lg:left-64 left-0`}>
@@ -185,7 +241,7 @@ export function AudioPlayer({
             <div className="flex items-center gap-3 w-[200px] flex-shrink-0">
               <div className="relative h-12 w-12 flex-shrink-0">
                 <Image
-                  src={melody.image || "/placeholder.svg?height=48&width=48"}
+                  src={melody?.userId?.profile_image || "/profilev2.jpg"}
                   alt={melody.name}
                   fill
                   className="object-cover rounded-md"
@@ -320,10 +376,9 @@ export function AudioPlayer({
           id={`audio-${melody._id}`}
           onError={handleAudioError}
           onCanPlay={() => setIsLoading(false)}
+          crossOrigin="anonymous"
+          preload="metadata"
         >
-          <source src={melody.audioUrl} type="audio/mpeg" />
-          <source src={melody.audioUrl} type="audio/wav" />
-          <source src={melody.audioUrl} type="audio/mp3" />
           Your browser does not support the audio element.
         </audio>
       </div>

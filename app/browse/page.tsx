@@ -92,6 +92,8 @@ export default function BrowsePage() {
   } = useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
 
+  console.log(melodies);
+
   // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
   const [melodyDownloadCounter] = useMelodyDownloadMutation();
@@ -158,6 +160,7 @@ export default function BrowsePage() {
         key: melody.key || "C Maj",
         genre: melody.genre || "Unknown",
         artistType: melody.artistType || "Producer",
+        userId: melody.userId,
       };
 
       setCurrentPlayingMelody(melodyToPlay);

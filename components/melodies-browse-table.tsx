@@ -48,7 +48,7 @@ interface MelodiesBrowseTableProps {
   currentTime?: number;
   duration?: number;
   currentMelodyId?: string | null;
-  showProducerColumn?: boolean; // Add this prop
+  showProducerColumn?: boolean; 
 }
 
 export function MelodiesBrowseTable({
@@ -63,7 +63,7 @@ export function MelodiesBrowseTable({
   currentTime = 0,
   duration = 0,
   currentMelodyId,
-  showProducerColumn = true, // Default to true for backward compatibility
+  showProducerColumn = true, 
 }: MelodiesBrowseTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
