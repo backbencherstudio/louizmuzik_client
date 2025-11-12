@@ -224,8 +224,8 @@ export default function ProfilePage() {
       }
 
       if (sortConfig.type === "recent") {
-        const dateA = new Date(a.uploadDate || "").getTime();
-        const dateB = new Date(b.uploadDate || "").getTime();
+        const dateA = new Date(a.createdAt || "").getTime();
+        const dateB = new Date(b.createdAt || "").getTime();
         return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
       }
 
