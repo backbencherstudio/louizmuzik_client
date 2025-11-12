@@ -92,7 +92,7 @@ export default function BrowsePage() {
   } = useGetMelodiesQuery(null);
   const melodies = melodiesData?.data;
 
-  console.log(melodies);
+  console.log("melodies >--------------->>", melodies);
 
   // Mutations
   const [melodyPlayCounter] = useMelodyPlayMutation();
@@ -219,13 +219,13 @@ export default function BrowsePage() {
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre === selectedGenre ? "" : genre);
     setCurrentPage(1);
-    setGenrePopoverOpen(false); // Close the popover after selection
+    setGenrePopoverOpen(false); 
   };
 
   const handleArtistTypeSelect = (type: string) => {
     setSelectedArtistType(type === selectedArtistType ? "" : type);
     setCurrentPage(1);
-    setArtistTypePopoverOpen(false); // Close the popover after selection
+    setArtistTypePopoverOpen(false); 
   };
 
   const handleClearAllFilters = () => {
@@ -300,8 +300,8 @@ export default function BrowsePage() {
       }
 
       if (sortConfig.type === "recent") {
-        const dateA = new Date(a.uploadDate || "").getTime();
-        const dateB = new Date(b.uploadDate || "").getTime();
+        const dateA = new Date(a.createdAt || "").getTime();
+        const dateB = new Date(b.createdAt || "").getTime();
         return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
       }
 
