@@ -292,21 +292,29 @@ export default function ItemsPage() {
               </div>
 
               {/* Melodies Table */}
-              <MelodiesItemsTable
-                melodies={filteredMelodies}
-                currentPlayingMelody={currentPlayingMelody}
-                onPlayClick={handlePlayClick}
-                onEditClick={(melodyId) => {
-                  router.push(`/upload?edit=${melodyId}`);
-                }}
-                onDeleteClick={(melody) => {
-                  setMelodyToDelete(melody);
-                  setDeleteModalOpen(true);
-                }}
-                currentTime={currentTime}
-                duration={duration}
-                currentMelodyId={currentMelodyId}
-              />
+              {filteredMelodies.length > 0 ? (
+                <MelodiesItemsTable
+                  melodies={filteredMelodies}
+                  currentPlayingMelody={currentPlayingMelody}
+                  onPlayClick={handlePlayClick}
+                  onEditClick={(melodyId) => {
+                    router.push(`/upload?edit=${melodyId}`);
+                  }}
+                  onDeleteClick={(melody) => {
+                    setMelodyToDelete(melody);
+                    setDeleteModalOpen(true);
+                  }}
+                  currentTime={currentTime}
+                  duration={duration}
+                  currentMelodyId={currentMelodyId}
+                />
+              ) : (
+                <p className="text-red-500 text-center">
+                  {searchQuery.trim()
+                    ? "No melodies found matching your search"
+                    : "Your melodies collection is empty. Time to create some music"}
+                </p>
+              )}
             </div>
 
             {/* Audio Player */}
