@@ -73,17 +73,17 @@ export default function ProPage() {
     <Layout>
       <div className="min-h-screen bg-black">
         {/* Hero Section */}
-        <div className="relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-          <div className="mx-auto max-w-7xl">
+        <div className="relative px-3 py-6 sm:px-5 sm:py-10 lg:px-6 lg:py-12">
+          <div className="mx-auto max-w-5xl">
             {userData?.hasUsedTrial === true ? (
               ""
             ) : (
-              <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-                <h1 className="mb-4 sm:mb-6 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white">
+              <div className="text-center mb-6 sm:mb-10 lg:mb-12">
+                <h1 className="mb-3 sm:mb-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
                   Start your{" "}
                   <span className="gradient-text">7-day free trial</span>
                 </h1>
-                <p className="text-base sm:text-lg lg:text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
                   Get access to all the benefits today for free and take your
                   career to the next level. No commitment required.
                 </p>
@@ -91,9 +91,9 @@ export default function ProPage() {
             )}
 
             {/* Main Content Grid */}
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               <div
-                className={`grid gap-8 ${
+                className={`grid gap-6 ${
                   userData?.hasUsedTrial === true
                     ? "lg:grid-cols-[1fr_450px]"
                     : "lg:grid-cols-[1fr_450px]"
@@ -101,19 +101,19 @@ export default function ProPage() {
               >
                 {/* Payment Form Section */}
                 <div className="order-2 lg:order-1">
-                  <Card className="border-0 bg-zinc-900/50  backdrop-blur-sm">
-                    <CardHeader className="pb-6">
-                      <CardTitle className="text-2xl sm:text-3xl font-bold text-white text-center">
+                  <Card className="border-0 bg-zinc-900/50 backdrop-blur-sm">
+                    <CardHeader className="pb-5">
+                      <CardTitle className="text-xl sm:text-2xl font-bold text-white text-center">
                         Choose Your Payment Method
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-5">
                       {/* PayPal Button */}
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <Button
                           onClick={handleSubscribe}
                           disabled={loading}
-                          className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-lg transition-all duration-200 transform hover:scale-[1.02]"
+                          className="w-full h-12 bg-[#FFC439] hover:bg-[#f9b81e] text-black font-semibold text-base transition-all duration-200 transform hover:scale-[1.01]"
                         >
                           {loading ? (
                             <div className="flex items-center gap-3">
@@ -136,14 +136,14 @@ export default function ProPage() {
                         {/* Divider */}
                         <div className="relative grid grid-cols-3 items-center">
                           <hr className="w-full" />
-                          <p className="text-zinc-400 text-sm text-center bg-zinc-900/50 px-4 py-1">
+                          <p className="text-zinc-400 text-xs text-center bg-zinc-900/50 px-3 py-1">
                             Or pay with card
                           </p>
                           <hr className="w-full" />
                         </div>
 
                         {/* Stripe Form */}
-                        <div className="bg-zinc-800/30 rounded-xl p-6">
+                        <div className="bg-zinc-800/30 rounded-xl p-5">
                           <SubscribeForm />
                         </div>
                       </div>
@@ -168,7 +168,7 @@ export default function ProPage() {
                     </CardContent>
                   </Card>
                   {/* Security Notice */}
-                  <div className="pt-4 max-w-5xl mx-auto">
+                  <div className="pt-3 max-w-4xl mx-auto">
                     <div className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg
@@ -198,8 +198,8 @@ export default function ProPage() {
                       userData?.hasUsedTrial === true ? "" : "bg-zinc-900/50 "
                     } sticky top-8`}
                   >
-                    <CardHeader className="pb-6">
-                      <CardTitle className="text-xl sm:text-2xl font-bold text-white">
+                    <CardHeader className="pb-5">
+                      <CardTitle className="text-lg sm:text-xl font-bold text-white">
                         Order Summary
                       </CardTitle>
                     </CardHeader>
