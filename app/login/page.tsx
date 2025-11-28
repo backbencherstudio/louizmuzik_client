@@ -16,6 +16,7 @@ import { useLoginMutation } from '../store/api/authApis/authApi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth0 } from '@auth0/auth0-react';
+import { jwtDecode } from 'jwt-decode';
 
 export default function LoginPage() {
 
@@ -44,7 +45,46 @@ export default function LoginPage() {
             if (response.success) {
                 toast.success('Login successful');
                 localStorage.setItem('token', response.data?.accessToken);
-                router.push('/dashboard');
+                
+                // Fetch user data to check isPro status
+                try {
+                    const token = response.data?.accessToken;
+                    if (token) {
+                        const decodedToken = jwtDecode<{ userId: string }>(token);
+                        const userId = decodedToken?.userId;
+                        
+                        if (userId) {
+                            const userResponse = await fetch(
+                                `${process.env.NEXT_PUBLIC_API_URL}/auth/userManagement/getSingleUserData/${userId}`,
+                                {
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                    },
+                                }
+                            );
+                            
+                            if (userResponse.ok) {
+                                const userData = await userResponse.json();
+                                const isPro = userData?.data?.isPro;
+                                
+                                if (isPro === true) {
+                                    router.push('/dashboard');
+                                } else {
+                                    router.push('/browse');
+                                }
+                            } else {
+                                router.push('/dashboard');
+                            }
+                        } else {
+                            router.push('/dashboard');
+                        }
+                    } else {
+                        router.push('/dashboard');
+                    }
+                } catch (userError) {
+                    console.error('Error fetching user data:', userError);
+                    router.push('/dashboard');
+                }
             }else{
                 toast.error(response?.message);
             }

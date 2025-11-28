@@ -11,6 +11,7 @@ import { useGoogleLoginMutation } from "@/app/store/api/authApis/authApi";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -56,8 +57,51 @@ export const GoogleProvider = ({ children }: GoogleProviderProps) => {
         if (res?.success) {
           localStorage.setItem("token", res?.data?.accessToken);
           
-          setIsGoogleSignupDone(true);
-          router.push("/dashboard");
+          // Fetch user data to check isPro status
+          try {
+            const token = res?.data?.accessToken;
+            if (token) {
+              const decodedToken = jwtDecode<{ userId: string }>(token);
+              const userId = decodedToken?.userId;
+              
+              if (userId) {
+                const userResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL}/auth/userManagement/getSingleUserData/${userId}`,
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                  }
+                );
+                
+                if (userResponse.ok) {
+                  const userData = await userResponse.json();
+                  const isPro = userData?.data?.isPro;
+                  
+                  setIsGoogleSignupDone(true);
+                  
+                  if (isPro === true) {
+                    router.push("/dashboard");
+                  } else {
+                    router.push("/browse");
+                  }
+                } else {
+                  setIsGoogleSignupDone(true);
+                  router.push("/dashboard");
+                }
+              } else {
+                setIsGoogleSignupDone(true);
+                router.push("/dashboard");
+              }
+            } else {
+              setIsGoogleSignupDone(true);
+              router.push("/dashboard");
+            }
+          } catch (userError) {
+            console.error("Error fetching user data:", userError);
+            setIsGoogleSignupDone(true);
+            router.push("/dashboard");
+          }
         }
       } catch (error) {
         console.log("error", error);
