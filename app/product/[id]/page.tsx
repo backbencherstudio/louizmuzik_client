@@ -42,6 +42,7 @@ export default function ProductPage({
   const { addToCart } = useCart();
   const { data: packDetails, isLoading, error } = useGetPackDetailsQuery(id);
   const pack = packDetails?.data.singlePackData;
+  console.log(pack);
   const producerId = pack?.userId?._id;
   const { data: user, refetch } = useLoggedInUser();
   const userId = user?.data?._id;
@@ -159,6 +160,24 @@ export default function ProductPage({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  // Helper function 
+  const isYouTubeUrl = (url: string | null): boolean => {
+    if (!url) return false;
+    return /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/.test(url);
+  };
+
+  // Helper function to convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string): string => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = match && match[2].length === 11 ? match[2] : null;
+    
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    return url;
+  };
+
   const handleAddToCart = () => {
     if (product) {
       addToCart({
@@ -222,11 +241,21 @@ export default function ProductPage({
               {/* Product Image or Video */}
               <div className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-900 mb-4">
                 {showVideo && product?.videoPreview ? (
-                  <video
-                    src={product?.videoPreview}
-                    controls
-                    className="w-full h-full object-cover"
-                  />
+                  isYouTubeUrl(product.videoPreview) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(product.videoPreview)}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={product.title}
+                    />
+                  ) : (
+                    <video
+                      src={product.videoPreview}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
+                  )
                 ) : (
                   <Image
                     src={product?.image}
