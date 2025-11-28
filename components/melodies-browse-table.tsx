@@ -67,15 +67,15 @@ export function MelodiesBrowseTable({
 }: MelodiesBrowseTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-800 bg-[#0F0F0F]">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto lg:overflow-x-visible">
         {/* Desktop Table */}
-        <table className="w-full hidden md:table">
+        <table className="w-full hidden md:table table-fixed">
           <thead>
             <tr className="border-b border-zinc-800 bg-zinc-900/50">
-              <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400"></th>
-              <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400"></th>
+              <th className="w-12 px-2 py-3 text-center text-xs font-medium text-zinc-400"></th>
+              <th className="w-14 px-2 py-3 text-left text-xs font-medium text-zinc-400"></th>
               <th
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="w-32 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("name")}
               >
                 <div className="flex items-center gap-1">
@@ -94,33 +94,31 @@ export function MelodiesBrowseTable({
                   />
                 </div>
               </th>
-              {showProducerColumn && (
-                <th
-                  className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
-                  onClick={() => onSort("producer")}
-                >
-                  <div className="flex items-center gap-1">
-                    PRODUCER
-                    <ChevronUp
-                      className={`h-3 w-3 transition-transform ${
-                        sortConfig.key === "producer"
-                          ? "text-emerald-500"
-                          : "text-zinc-600"
-                      } ${
-                        sortConfig.key === "producer" &&
-                        sortConfig.direction === "desc"
-                          ? "rotate-180"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                </th>
-              )}
-              <th className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400">
+              <th
+                className="w-28 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                onClick={() => onSort("producer")}
+              >
+                <div className="flex items-center gap-1">
+                  PRODUCER
+                  <ChevronUp
+                    className={`h-3 w-3 transition-transform ${
+                      sortConfig.key === "producer"
+                        ? "text-emerald-500"
+                        : "text-zinc-600"
+                    } ${
+                      sortConfig.key === "producer" &&
+                      sortConfig.direction === "desc"
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </div>
+              </th>
+              <th className="hidden lg:table-cell w-32 px-2 py-3 text-left text-xs font-medium text-zinc-400">
                 WAVEFORM
               </th>
               <th
-                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden lg:table-cell w-16 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("bpm")}
               >
                 <div className="flex items-center gap-1">
@@ -140,7 +138,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden lg:table-cell w-20 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("key")}
               >
                 <div className="flex items-center gap-1">
@@ -160,7 +158,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden lg:table-cell w-24 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("genre")}
               >
                 <div className="flex items-center gap-1">
@@ -180,7 +178,7 @@ export function MelodiesBrowseTable({
                 </div>
               </th>
               <th
-                className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
+                className="hidden lg:table-cell w-28 px-2 py-3 text-left text-xs font-medium text-zinc-400 cursor-pointer hover:text-white"
                 onClick={() => onSort("artistType")}
               >
                 <div className="flex items-center gap-1">
@@ -199,7 +197,7 @@ export function MelodiesBrowseTable({
                   />
                 </div>
               </th>
-              <th className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-zinc-400">
+              <th className="w-24 px-2 py-3 text-center text-xs font-medium text-zinc-400">
                 ACTIONS
               </th>
             </tr>
@@ -210,7 +208,7 @@ export function MelodiesBrowseTable({
                 key={melody._id}
                 className="border-b border-zinc-800 hover:bg-zinc-900/30"
               >
-                <td className="whitespace-nowrap px-4 py-3 text-center">
+                <td className="px-2 py-3 text-center">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -229,7 +227,7 @@ export function MelodiesBrowseTable({
                     )}
                   </Button>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">
+                <td className="px-2 py-3">
                   <div className="relative h-10 w-10 overflow-hidden rounded-md">
                     <Image
                       src={melody?.userId?.profile_image || "/logo.png"}
@@ -239,28 +237,26 @@ export function MelodiesBrowseTable({
                     />
                   </div>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-white">
-                  {melody?.name?.slice(0, 18)}...
+                <td className="px-2 py-3 text-sm font-medium text-white truncate">
+                  {melody?.name}
                 </td>
-                {showProducerColumn && (
-                  <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
-                    <Link
-                      href={`/producers/${melody?.userId?._id
-                        ?.toLowerCase()
-                        ?.replace(/\s+/g, "-") || "#"}`}
-                      className="hover:text-emerald-500 transition-colors"
-                    >
-                      {melody?.producer}
-                    </Link>
-                  </td>
-                )}
-                <td className="hidden 2xl:table-cell whitespace-nowrap px-4 py-3 ">
+                <td className="px-2 py-3 text-sm text-zinc-400 truncate">
+                  <Link
+                    href={`/producers/${melody?.userId?._id
+                      ?.toLowerCase()
+                      ?.replace(/\s+/g, "-") || "#"}`}
+                    className="hover:text-emerald-500 transition-colors"
+                  >
+                    {melody?.producer}
+                  </Link>
+                </td>
+                <td className="hidden lg:table-cell px-2 py-3">
                   <WaveformDisplay
                     audioUrl={melody.audioUrl || melody.audio_path || melody.audio || ""}
                     isPlaying={currentPlayingMelody?._id === melody._id}
                     onPlayPause={() => onPlayClick(melody)}
                     height={30}
-                    width="200px"
+                    // width="120px"
                     isControlled={true}
                     currentTime={
                       currentMelodyId === melody._id ? currentTime : 0
@@ -268,23 +264,23 @@ export function MelodiesBrowseTable({
                     duration={currentMelodyId === melody._id ? duration : 0}
                   />
                 </td>
-                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden lg:table-cell px-2 py-3 text-sm text-zinc-400">
                   {melody?.bpm}
                 </td>
-                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden lg:table-cell px-2 py-3 text-sm text-zinc-400">
                   {melody?.key}
                 </td>
-                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden lg:table-cell px-2 py-3 text-sm text-zinc-400 truncate">
                   {Array.isArray(melody?.genre)
                     ? melody.genre.join(", ")
                     : melody?.genre}
                 </td>
-                <td className="hidden xl:table-cell whitespace-nowrap px-4 py-3 text-sm text-zinc-400">
+                <td className="hidden lg:table-cell px-2 py-3 text-sm text-zinc-400 truncate">
                   {Array.isArray(melody?.artistType)
                     ? melody.artistType.join(", ")
                     : melody?.artistType}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-center">
+                <td className="px-2 py-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <Button
                       variant="ghost"
@@ -353,18 +349,16 @@ export function MelodiesBrowseTable({
                     <p className="text-sm font-medium text-white truncate">
                       {melody?.name?.slice(0, 18)}...
                     </p>
-                    {showProducerColumn && (
-                      <p className="text-xs text-zinc-400 truncate mt-0.5">
-                        <Link
-                          href={`/producers/${melody?.userId?._id
-                            ?.toLowerCase()
-                            ?.replace(/\s+/g, "-") || "#"}`}
-                          className="hover:text-emerald-500 transition-colors"
-                        >
-                          {melody?.producer?.slice(0, 10)}...
-                        </Link>
-                      </p>
-                    )}
+                    <p className="text-xs text-zinc-400 truncate mt-0.5">
+                      <Link
+                        href={`/producers/${melody?.userId?._id
+                          ?.toLowerCase()
+                          ?.replace(/\s+/g, "-") || "#"}`}
+                        className="hover:text-emerald-500 transition-colors"
+                      >
+                        {melody?.producer?.slice(0, 10)}...
+                      </Link>
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-2">
