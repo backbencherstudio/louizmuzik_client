@@ -158,7 +158,7 @@ export default function CheckoutPage() {
                       <PayPalButtons
                         createOrder={async () => {
                           const res = await axios.post(
-                            "${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create-order",
+                            `${process.env.NEXT_PUBLIC_API_URL}/payment/create-order`,
                             {
                               amount,
                               selectedData,
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
                         onApprove={async (data) => {
                           try {
                             const res = await axios.post(
-                              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/capture-order/${data.orderID}`
+                              `${process.env.NEXT_PUBLIC_API_URL}/payment/capture-order/${data.orderID}`
                             );
 
                             alert("✅ Payment successful!");
